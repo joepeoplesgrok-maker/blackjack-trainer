@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v7</title>
+<title>Blackjack & Card Counting Trainer Pro v8</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -915,6 +915,51 @@
  overflow: hidden;
  text-overflow: ellipsis;
  }
+ #tab-play .table-stage {
+ flex-direction: column;
+ flex: 1 0 auto;
+ gap: 4px;
+ }
+ #tab-play .live-tray-btn {
+ flex-direction: row;
+ width: 100%;
+ min-width: 0;
+ min-height: 44px;
+ height: 44px;
+ padding: 4px 8px;
+ gap: 10px;
+ }
+ #tab-play .live-meter {
+ flex-direction: row;
+ flex: 1 1 0;
+ gap: 6px;
+ }
+ #tab-play .live-meter-track {
+ width: auto;
+ flex: 1 1 auto;
+ height: 12px;
+ min-height: 12px;
+ }
+ #tab-play .live-meter-fill {
+ top: 0;
+ bottom: 0;
+ right: auto;
+ width: var(--fill, 0%);
+ height: 100%;
+ }
+ #tab-play .live-cut-mark {
+ top: 0;
+ bottom: 0;
+ left: var(--cut, 25%);
+ right: auto;
+ width: 2px;
+ height: auto;
+ }
+ #tab-play .live-tray-exact {
+ padding: 0;
+ align-self: center;
+ white-space: nowrap;
+ }
  #tab-play .table-felt {
  position: relative;
  flex-direction: row;
@@ -956,6 +1001,9 @@
 
  /* Desktop / Windows / Tablet enhancements */
  @media (min-width: 720px) {
+ .live-tray-btn { width: 52px; min-width: 52px; padding: 6px 5px; }
+ .live-meter-track { width: 16px; }
+ .live-meter-label { font-size: 0.6rem; }
  main { padding: 10px 14px 12px; }
  .chips-wrap { flex-direction: row; justify-content: space-between; align-items: center; }
  .bet-actions-row { width: 320px; }
@@ -1042,6 +1090,111 @@
  overflow: hidden;
  margin: 0 auto;
  }
+ /* Live shoe / discard bars beside the table (v8) */
+ .table-stage {
+ display: flex;
+ flex-direction: row;
+ align-items: stretch;
+ gap: 6px;
+ flex: 1 1 auto;
+ min-height: 0;
+ min-width: 0;
+ }
+ .table-stage > .table-felt {
+ flex: 1 1 auto;
+ min-width: 0;
+ }
+ .live-tray {
+ flex: 0 0 auto;
+ display: flex;
+ align-items: stretch;
+ min-width: 0;
+ }
+ .live-tray[hidden] { display: none !important; }
+ .live-tray-btn {
+ display: flex;
+ flex-direction: column;
+ justify-content: stretch;
+ gap: 6px;
+ width: 44px;
+ min-width: 44px;
+ padding: 5px 4px 4px;
+ background: rgba(0,0,0,0.28);
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ color: inherit;
+ font-family: inherit;
+ cursor: pointer;
+ min-height: 44px;
+ flex: 1 1 auto;
+ }
+ .live-tray-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+ .live-meter {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ flex: 1 1 0;
+ gap: 3px;
+ min-height: 0;
+ min-width: 0;
+ }
+ .live-meter-label {
+ font-size: 0.55rem;
+ font-weight: 700;
+ letter-spacing: 0.04em;
+ color: var(--muted);
+ text-transform: uppercase;
+ line-height: 1;
+ }
+ .live-meter-track {
+ position: relative;
+ flex: 1 1 auto;
+ width: 14px;
+ min-height: 44px;
+ background: rgba(0,0,0,0.5);
+ border: 1px solid rgba(255,255,255,0.08);
+ border-radius: 99px;
+ overflow: hidden;
+ }
+ .live-meter-fill {
+ position: absolute;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ width: 100%;
+ height: var(--fill, 0%);
+ transition: height 0.25s ease, width 0.25s ease;
+ }
+ .live-shoe .live-meter-fill {
+ background: linear-gradient(#d7b056, #8a6a22);
+ }
+ .live-discard .live-meter-fill {
+ background: linear-gradient(#b43434, #5a1010);
+ }
+ .live-cut-mark {
+ position: absolute;
+ left: 0;
+ right: 0;
+ bottom: var(--cut, 25%);
+ height: 2px;
+ background: var(--red, #e05555);
+ z-index: 1;
+ pointer-events: none;
+ box-shadow: 0 0 0 1px rgba(0,0,0,0.35);
+ }
+ .live-tray-exact {
+ display: block;
+ font-size: 0.58rem;
+ font-weight: 700;
+ color: var(--gold);
+ text-align: center;
+ line-height: 1.15;
+ padding: 1px 0 0;
+ }
+ .live-tray-exact[hidden] { display: none !important; }
+ @media (prefers-reduced-motion: reduce) {
+ .live-meter-fill { transition: none; }
+ }
  .discard-tray .tray-fill {
  position: absolute;
  left: 0; right: 0; bottom: 0;
@@ -1119,6 +1272,25 @@
 
  <div id="heat-hint" class="heat-hint" role="status"></div>
  <div id="other-seats" class="other-seats" hidden></div>
+ <div class="table-stage" id="table-stage">
+ <div id="live-tray" class="live-tray">
+ <button type="button" class="live-tray-btn" id="live-tray-btn" aria-label="Estimate decks remaining from the shoe and discard bars">
+ <div class="live-meter live-shoe">
+ <span class="live-meter-label">Shoe</span>
+ <div class="live-meter-track" aria-hidden="true">
+ <div class="live-meter-fill" id="live-shoe-fill"></div>
+ <div class="live-cut-mark" id="live-cut-mark" title="Cut card"></div>
+ </div>
+ </div>
+ <div class="live-meter live-discard">
+ <span class="live-meter-label">Discard</span>
+ <div class="live-meter-track" aria-hidden="true">
+ <div class="live-meter-fill" id="live-discard-fill"></div>
+ </div>
+ </div>
+ <span class="live-tray-exact" id="live-tray-exact" hidden></span>
+ </button>
+ </div>
  <div class="table-felt">
  <div class="zone">
  <div class="zone-title">
@@ -1132,6 +1304,7 @@
 
  <div class="zone" style="width:100%;">
  <div class="player-hands" id="player-hands"></div>
+ </div>
  </div>
  </div>
 
@@ -1542,7 +1715,8 @@
  <summary>Quizzes and drills</summary>
  <div class="guide-block-body">
  <p><strong>Count-check quizzes</strong> pause Table Play after a set number of hands, or at a random gap between 5 and 15 hands. Enter the running count and true count. The true-count answer uses your rounding setting (in Exact mode, either truncate or round is accepted, as before).</p>
- <p><strong>Deck estimation</strong> shows a discard-tray stack whose height matches cards already used. Guess decks remaining or played; a guess within 0.5 decks is correct.</p>
+ <p><strong>Live shoe and discard bars</strong> sit beside the table during Table Play (on by default). The Shoe bar empties and the Discard bar fills as cards come out, including other seats, and they reset on a shuffle. A red mark on the Shoe bar is the cut card. Exact numbers stay hidden unless you turn on “Show exact decks remaining.” Tap the bars at any time and estimate decks remaining; a guess within 0.5 decks is correct. Feedback shows the actual decks left and how your guess would have changed the true count. An optional prompt can ask every 5, 10, or 15 hands (off by default).</p>
+ <p><strong>Deck-estimation drill</strong> (a separate toggle) is a standalone quiz: a practice tray is shown at a random depth and you guess decks remaining or already played, also within 0.5 decks.</p>
  <p><strong>Speed Count</strong> times a full 52-card run. You enter the final RC (always 0 for a full deck). Time and accuracy are scored, and your best correct time is saved.</p>
  <p><strong>Timed decisions</strong> in Strategy Drill give you a set number of seconds. If the timer runs out, the hand is scored as a miss.</p>
  </div>
@@ -1574,6 +1748,7 @@
  <summary>What each toggle does</summary>
  <div class="guide-block-body">
  <p>Open <strong>Rules → Features</strong>. Turning a toggle off hides that tool’s screens and stops its logic (no grades, no quizzes, no extra seats, and so on). The core table, basic strategy, and charts remain. I18, Fab 4, and the insurance index can be switched independently. Rounding applies globally when you change it. Speed Count, Strategy Drill, Stats, and Risk Tools disappear from the mode list when turned off. How It Works and Table Play always stay in the list.</p>
+ <p><strong>Live shoe &amp; discard bars</strong> (on by default) shows the two bars on the table; turn it off to hide them and disable tap-to-estimate and auto-prompts. <strong>Show exact decks remaining</strong> (off by default) labels the bars with the true leftover decks so you can check your eye. <strong>Deck-estimate prompt</strong> asks you to guess leftover decks every N hands. <strong>Deck-estimation drill</strong> only adds the standalone practice quiz (it does not control the live bars).</p>
  </div>
  </details>
  </div>
@@ -1667,6 +1842,16 @@
  <select id="opt-quiz-int" aria-label="Count quiz frequency">
  <option value="0" selected>Off</option>
  <option value="random">Random (5–15 hands)</option>
+ <option value="5">Every 5 hands</option>
+ <option value="10">Every 10 hands</option>
+ <option value="15">Every 15 hands</option>
+ </select>
+ </div>
+ <div class="setting-row"><span class="lbl">Live shoe &amp; discard bars</span><input type="checkbox" id="feat-live-tray" checked aria-label="Show live shoe and discard bars on the table"></div>
+ <div class="setting-row"><span class="lbl">Show exact decks remaining</span><input type="checkbox" id="feat-exact-decks" aria-label="Show exact decks remaining on the live bars"></div>
+ <div class="setting-row"><span class="lbl">Deck-estimate prompt</span>
+ <select id="opt-deckest-int" aria-label="Auto deck-estimate prompt frequency">
+ <option value="0" selected>Off</option>
  <option value="5">Every 5 hands</option>
  <option value="10">Every 10 hands</option>
  <option value="15">Every 15 hands</option>
@@ -1868,13 +2053,16 @@
  sdBest: 0,
  speedBestCps: 0,
  speedBestMs: 0,
- schemaVersion: 7,
+ schemaVersion: 8,
  featI18: true,
  featFab4: true,
  featIns: true,
  featBetRamp: true,
  featBetGrade: false,
  featQuiz: false,
+ featLiveTray: true,
+ featShowExactDecks: false,
+ deckEstInterval: 0,
  featDeckEst: false,
  featSpeed: true,
  featStrat: true,
@@ -1898,7 +2086,10 @@
  if (saved.featI18 === undefined && saved.devCoach === 'basic') {
  s.featI18 = false; s.featFab4 = false; s.featIns = false;
  }
- s.schemaVersion = 7;
+ s.schemaVersion = 8;
+ if (saved.featLiveTray === undefined) s.featLiveTray = true;
+ if (saved.featShowExactDecks === undefined) s.featShowExactDecks = false;
+ if (saved.deckEstInterval === undefined) s.deckEstInterval = 0;
  if (!s.stats || s.stats.v !== 1) {
  s.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} };
  } else {
@@ -2015,6 +2206,34 @@
  return { ok: Number.isFinite(err) && err <= tol + 1e-9, error: err, actual: Number(actual), tolerance: tol };
  }
 
+ /** Live shoe / discard bar state. used = cards no longer in the shoe (burn + dealt).
+  decksRemaining matches getDecksRemaining (unseen = shoe + burn + hidden hole). */
+ function getShoeTrayState(opts) {
+ const decks = Math.max(1, (opts && opts.decks) | 0);
+ const total = decks * 52;
+ const inShoe = Math.max(0, (opts && opts.shoeLength) | 0);
+ const burn = Math.max(0, (opts && opts.burnCardCount) | 0);
+ const used = Math.max(0, total - inShoe);
+ const unseen = inShoe + ((opts && opts.holeUnseen) ? 1 : 0) + burn;
+ const decksRemaining = Math.max(0.25, unseen / 52);
+ const shoePct = Math.max(0, Math.min(100, (inShoe / total) * 100));
+ const discardPct = Math.max(0, Math.min(100, (used / total) * 100));
+ const cutIdx = (opts && opts.cutCardIndex) != null ? opts.cutCardIndex : Math.floor(total * 0.75);
+ const cutPct = Math.max(0, Math.min(100, ((total - cutIdx) / total) * 100));
+ return { total, inShoe, used, unseen, decksRemaining, shoePct, discardPct, cutPct };
+ }
+
+ function gradeLiveDeckEstimate(guess, actualDecks, runningCount, rounding) {
+ const g = gradeDeckEstimate(guess, actualDecks, 0.5);
+ const denomActual = Math.max(0.25, Number(actualDecks) || 0.25);
+ const actualTc = applyTcRounding(Number(runningCount) / denomActual, rounding || 'exact');
+ let guessTc = null;
+ if (Number.isFinite(Number(guess)) && Number(guess) > 0) {
+ guessTc = applyTcRounding(Number(runningCount) / Number(guess), rounding || 'exact');
+ }
+ return { ok: g.ok, error: g.error, actual: g.actual, tolerance: g.tolerance, actualTc, guessTc, runningCount: Number(runningCount) };
+ }
+
  function getHeatHint(prevBet, newBet, opts) {
  const jump = (opts && opts.jumpFactor) || 2;
  const unit = (opts && opts.unit) || 25;
@@ -2065,7 +2284,7 @@
  }
 
  function emptyCategoryStats() {
- return { hard: { c: 0, t: 0 }, soft: { c: 0, t: 0 }, pairs: { c: 0, t: 0 }, deviations: { c: 0, t: 0 }, bets: { c: 0, t: 0 }, insurance: { c: 0, t: 0 } };
+ return { hard: { c: 0, t: 0 }, soft: { c: 0, t: 0 }, pairs: { c: 0, t: 0 }, deviations: { c: 0, t: 0 }, bets: { c: 0, t: 0 }, insurance: { c: 0, t: 0 }, decks: { c: 0, t: 0 } };
  }
 
  function recordCategory(stats, category, correct) {
@@ -2752,6 +2971,7 @@
  let insuranceBet = 0;
  let isEvenMoneyOffer = false;
  let handsSinceQuiz = 0;
+ let handsSinceDeckEst = 0;
  let lastSuggestedAmount = 25;
 
  function refundInFlightBetsIfAny() {
@@ -2922,6 +3142,7 @@
  const pct = Math.min(100, ((cardsDealtCount + burnCardCount) / totalCards) * 100);
  document.getElementById('shoe-bar-fill').style.width = pct.toFixed(1) + '%';
  document.getElementById('count-hud').style.display = state.showHud ? 'block' : 'none';
+ if (typeof updateLiveTray === 'function') updateLiveTray();
  }
 
  function updateTopStats() {
@@ -3321,6 +3542,11 @@
  handsSinceQuiz = 0;
  scheduleNextQuiz();
  openCountQuiz();
+ } else if (shouldOfferDeckEstimate()) {
+ handsSinceDeckEst = 0;
+ openLiveDeckEstimate();
+ } else {
+ handsSinceDeckEst++;
  }
  }
 
@@ -4079,6 +4305,7 @@
  'feat-i18': 'featI18', 'feat-fab4': 'featFab4', 'feat-ins': 'featIns',
  'feat-bet-ramp': 'featBetRamp', 'feat-bet-grade': 'featBetGrade',
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
+ 'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
  'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
  };
@@ -4093,6 +4320,7 @@
  const ds = document.getElementById('opt-decision-sec'); if (ds) ds.value = String(state.decisionSec || 5);
  const os = document.getElementById('opt-other-seats'); if (os) os.value = String(state.otherSeats || 0);
  if (optQuizInt) optQuizInt.value = String(state.quizInterval || 0);
+ const deIntEl = document.getElementById('opt-deckest-int'); if (deIntEl) deIntEl.value = String(state.deckEstInterval || 0);
  }
 
  function bindFeatureToggles() {
@@ -4100,6 +4328,7 @@
  'feat-i18': 'featI18', 'feat-fab4': 'featFab4', 'feat-ins': 'featIns',
  'feat-bet-ramp': 'featBetRamp', 'feat-bet-grade': 'featBetGrade',
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
+ 'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
  'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
  };
@@ -4141,6 +4370,17 @@
  bindNum('opt-spread-min', 'spreadMin', 1);
  bindNum('opt-spread-max', 'spreadMax', 1);
  bindNum('opt-decision-sec', 'decisionSec', 2);
+ const deInt = document.getElementById('opt-deckest-int');
+ if (deInt) deInt.addEventListener('change', () => {
+ state.deckEstInterval = parseInt(deInt.value, 10) || 0;
+ if (state.deckEstInterval > 0) {
+ state.featLiveTray = true;
+ const ft = document.getElementById('feat-live-tray');
+ if (ft) ft.checked = true;
+ }
+ handsSinceDeckEst = 0;
+ saveState();
+ });
  const tr = document.getElementById('opt-tc-round');
  if (tr) tr.addEventListener('change', () => { state.tcRounding = tr.value; saveState(); updateHud(); });
  const os = document.getElementById('opt-other-seats');
@@ -4155,6 +4395,7 @@
  document.getElementById('btn-review-mistakes')?.addEventListener('click', startMistakeReview);
  document.getElementById('rk-compute')?.addEventListener('click', renderRiskTab);
  document.getElementById('de-start')?.addEventListener('click', openDeckEstimate);
+ document.getElementById('live-tray-btn')?.addEventListener('click', openLiveDeckEstimate);
  document.getElementById('de-close')?.addEventListener('click', () => document.getElementById('deckest-modal')?.classList.remove('open'));
  document.getElementById('de-submit')?.addEventListener('click', submitDeckEstimate);
  document.getElementById('deckest-modal')?.addEventListener('click', e => { if (e.target.id === 'deckest-modal') e.target.classList.remove('open'); });
@@ -4326,7 +4567,7 @@
  set('st-bank', formatMoney(state.bankroll));
  const cats = document.getElementById('st-cats');
  if (cats) {
- const labels = { hard: 'Hard', soft: 'Soft', pairs: 'Pairs', deviations: 'Deviations', bets: 'Bets', insurance: 'Insurance' };
+ const labels = { hard: 'Hard', soft: 'Soft', pairs: 'Pairs', deviations: 'Deviations', bets: 'Bets', insurance: 'Insurance', decks: 'Deck est.' };
  cats.innerHTML = Object.keys(labels).map(k => {
  const a = accStr(life[k]);
  const pct = life[k] && life[k].t ? (100 * life[k].c / life[k].t) : 0;
@@ -4418,22 +4659,90 @@
  function syncDeckEstButton() {
  const p = document.getElementById('deck-est-panel');
  if (p) p.hidden = !state.featDeckEst;
+ updateLiveTray();
  }
 
- let deActual = 0, deKind = 'remaining';
+ function shouldOfferDeckEstimate() {
+ if (!state.featLiveTray) return false;
+ const n = parseInt(state.deckEstInterval, 10) || 0;
+ return n > 0 && handsSinceDeckEst >= n;
+ }
+
+ function updateLiveTray() {
+ const wrap = document.getElementById('live-tray');
+ if (!wrap) return;
+ const on = !!state.featLiveTray;
+ wrap.hidden = !on;
+ if (!on) return;
+ const holeUnseen = holeHidden && dealerHand.length >= 2 && holeCardShoeId === currentShoeId;
+ const st = getShoeTrayState({
+ decks: state.decks,
+ shoeLength: shoe.length,
+ burnCardCount: burnCardCount,
+ cardsDealtCount: cardsDealtCount,
+ cutCardIndex: cutCardIndex,
+ holeUnseen: holeUnseen
+ });
+ const shoeFill = document.getElementById('live-shoe-fill');
+ const discFill = document.getElementById('live-discard-fill');
+ const cut = document.getElementById('live-cut-mark');
+ if (shoeFill) shoeFill.style.setProperty('--fill', st.shoePct.toFixed(2) + '%');
+ if (discFill) discFill.style.setProperty('--fill', st.discardPct.toFixed(2) + '%');
+ if (cut) cut.style.setProperty('--cut', st.cutPct.toFixed(2) + '%');
+ const exact = document.getElementById('live-tray-exact');
+ if (exact) {
+ exact.hidden = !state.featShowExactDecks;
+ if (state.featShowExactDecks) exact.textContent = st.decksRemaining.toFixed(1) + ' left';
+ }
+ }
+
+ let deActual = 0, deKind = 'remaining', deMode = 'drill';
+
+ function formatTcShort(tc) {
+ if (!Number.isFinite(tc)) return '—';
+ const n = (state.tcRounding && state.tcRounding !== 'exact') ? tc : Math.round(tc * 10) / 10;
+ return (n > 0 ? '+' : '') + (Number.isInteger(n) ? n : n.toFixed(1));
+ }
+
+ function openLiveDeckEstimate() {
+ if (!state.featLiveTray) return;
+ deMode = 'live';
+ deKind = 'remaining';
+ deActual = getDecksRemaining();
+ const tray = document.getElementById('de-tray');
+ if (tray) tray.style.display = 'none';
+ const lab = document.getElementById('de-q-label');
+ if (lab) lab.textContent = 'Decks remaining';
+ const pr = document.getElementById('de-prompt');
+ if (pr) pr.textContent = 'Look at the Shoe and Discard bars. Estimate how many decks remain in the shoe (within 0.5 is correct). Exact counts stay hidden unless you turned the assist on.';
+ const res = document.getElementById('de-result');
+ if (res) { res.style.display = 'none'; res.textContent = ''; }
+ const inp = document.getElementById('de-guess');
+ if (inp) inp.value = '';
+ const title = document.getElementById('de-title');
+ if (title) title.textContent = 'Estimate decks remaining';
+ document.getElementById('deckest-modal')?.classList.add('open');
+ if (inp) inp.focus();
+ }
+
  function openDeckEstimate() {
  if (!state.featDeckEst) return;
+ deMode = 'drill';
  const total = state.decks * 52;
  const used = Math.floor(total * (0.25 + Math.random() * 0.55));
  const remaining = Math.max(0, total - used);
  deKind = Math.random() < 0.5 ? 'remaining' : 'played';
  deActual = (deKind === 'remaining' ? remaining : used) / 52;
+ const tray = document.getElementById('de-tray');
+ if (tray) tray.style.display = '';
  const fill = document.getElementById('de-fill');
  if (fill) fill.style.height = Math.max(4, Math.min(100, (used / total) * 100)) + '%';
  const lab = document.getElementById('de-q-label');
  if (lab) lab.textContent = deKind === 'remaining' ? 'Decks remaining' : 'Decks played';
  const pr = document.getElementById('de-prompt');
  if (pr) pr.textContent = 'A ' + state.decks + '-deck shoe. The tray shows cards already used. Estimate decks ' + deKind + ' (within 0.5 is correct).';
+ const title = document.getElementById('de-title');
+ if (title) title.textContent = 'Deck Estimation';
  const res = document.getElementById('de-result');
  if (res) { res.style.display = 'none'; res.textContent = ''; }
  const g = document.getElementById('de-guess');
@@ -4442,14 +4751,33 @@
  }
  function submitDeckEstimate() {
  const guess = parseFloat(document.getElementById('de-guess')?.value);
- const g = gradeDeckEstimate(guess, deActual, 0.5);
  const res = document.getElementById('de-result');
  if (!res) return;
  res.style.display = 'flex';
- res.className = 'feedback-bar ' + (g.ok ? 'good' : 'warn');
- res.textContent = (g.ok ? '✓ Close enough. ' : '✗ Not quite. ') + 'Actual ' + deKind + ': ' + deActual.toFixed(1) + ' decks (you guessed ' + (Number.isFinite(guess) ? guess : '—') + ').';
+ let ok = false;
+ if (deMode === 'live') {
+ const actual = getDecksRemaining();
+ const g = gradeLiveDeckEstimate(guess, actual, runningCount, state.tcRounding || 'exact');
+ ok = g.ok;
+ const actualTxt = actual.toFixed(1);
+ const guessTxt = Number.isFinite(guess) ? String(guess) : '—';
+ let tcTxt = ' Actual TC is ' + formatTcShort(g.actualTc) + ' with RC ' + (runningCount > 0 ? '+' : '') + runningCount + '.';
+ if (g.guessTc != null) {
+ tcTxt = ' Your guess would make the TC ' + formatTcShort(g.guessTc) + '; the actual TC is ' + formatTcShort(g.actualTc) + ' (RC ' + (runningCount > 0 ? '+' : '') + runningCount + ').';
+ }
+ res.className = 'feedback-bar ' + (ok ? 'good' : 'warn');
+ res.textContent = (ok ? '✓ Close enough. ' : '✗ Not quite. ') + 'Actual decks remaining: ' + actualTxt + ' (you guessed ' + guessTxt + ').' + tcTxt;
+ } else {
+ const g = gradeDeckEstimate(guess, deActual, 0.5);
+ ok = g.ok;
+ res.className = 'feedback-bar ' + (ok ? 'good' : 'warn');
+ res.textContent = (ok ? '✓ Close enough. ' : '✗ Not quite. ') + 'Actual ' + deKind + ': ' + deActual.toFixed(1) + ' decks (you guessed ' + (Number.isFinite(guess) ? guess : '—') + ').';
+ }
  if (state.featStats) {
- // counted under a generic quiz — not a hand category
+ recordCategory(state.stats.session, 'decks', ok);
+ recordCategory(state.stats.lifetime, 'decks', ok);
+ saveState();
+ if (typeof renderStatsTab === 'function' && document.getElementById('tab-stats')?.classList.contains('active')) renderStatsTab();
  }
  }
 
@@ -4503,14 +4831,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v7')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v8')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v7', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v8', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v7'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v8'); } catch (e) {} }, 2500);
   });
 }
 </script>

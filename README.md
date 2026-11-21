@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v8)
+
+The **live shoe and discard bars** sit beside the table during Table Play (on by default). The Shoe bar empties and the Discard bar fills as cards come out, including other seats; both reset on a shuffle. A red mark on the Shoe bar is the cut card. Exact leftover decks stay hidden unless you enable “Show exact decks remaining.” Tap the bars to estimate decks remaining (within 0.5 decks). Feedback shows the true leftover decks and how your guess would have changed the true count. An optional prompt can ask every 5, 10, or 15 hands (off by default). The standalone **Deck Estimate Drill** is still a separate Features toggle.
+
 ## Feature guide (v7)
 
 Open **How It Works** in the header for the full write-up. The short version:
@@ -39,6 +43,13 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v8
+- Live **Shoe** and **Discard** bars on the Table Play felt (labeled, compact). The shoe empties and the discard fills as cards are dealt — including other seats — and both reset when the shoe is shuffled. A red cut-card mark sits on the shoe bar.
+- Exact leftover decks stay hidden by default so estimation stays a skill. An optional assist can show the true leftover decks on the bars.
+- Tap the bars at any time to estimate decks remaining (0.5-deck tolerance). Feedback includes the actual decks left and the true-count impact of your guess. Optional auto-prompts every N hands (off by default).
+- Settings → Features: “Live shoe & discard bars” is on by default; “Show exact decks remaining” and the prompt interval start off. The separate deck-estimation drill is unchanged.
+- Service worker cache bumped to `bj-trainer-v8`.
 
 ### v7
 - Configurable unit size and bet spread with a TC → units ramp, plus an optional bet-grading mode.
