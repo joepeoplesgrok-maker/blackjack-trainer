@@ -1,0 +1,2901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#08120e">
+<meta name="apple-mobile-web-app-title" content="BJ Trainer">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+
+<title>Blackjack & Card Counting Trainer Pro v4</title>
+<style>
+ :root {
+ --bg-dark: #0b1914;
+ --felt: #11382a;
+ --felt-light: #184d3a;
+ --panel: #12231c;
+ --panel-border: #244638;
+ --gold: #e5b94c;
+ --gold-dim: #b58d32;
+ --text: #eef5f1;
+ --muted: #93b0a3;
+ --green: #2ecc71;
+ --red: #e74c3c;
+ --blue: #3498db;
+ --purple: #9b59b6;
+ --amber: #d68910;
+ --card-bg: #ffffff;
+ --card-red: #c0392b;
+ --card-black: #1a1f24;
+ }
+
+ * {
+ box-sizing: border-box;
+ -webkit-tap-highlight-color: transparent;
+ }
+
+ html, body {
+ margin: 0;
+ padding: 0;
+ height: 100vh;
+ height: 100dvh;
+ width: 100%;
+ overflow: hidden;
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+ background: var(--bg-dark);
+ color: var(--text);
+ -webkit-text-size-adjust: 100%;
+ }
+
+ body {
+ display: flex;
+ flex-direction: column;
+ padding-bottom: env(safe-area-inset-bottom, 0px);
+ padding-left: env(safe-area-inset-left, 0px);
+ padding-right: env(safe-area-inset-right, 0px);
+ }
+
+ /* Cross-platform Dark Scrollbars (Windows / macOS / Linux) */
+ * {
+ scrollbar-width: thin;
+ scrollbar-color: #2b5746 #0b1914;
+ }
+ ::-webkit-scrollbar { width: 7px; height: 7px; }
+ ::-webkit-scrollbar-track { background: #0b1914; }
+ ::-webkit-scrollbar-thumb { background: #2b5746; border-radius: 99px; }
+ ::-webkit-scrollbar-thumb:hover { background: #3b755e; }
+
+ /* Compact App Header */
+ header {
+ background: #08120e;
+ border-bottom: 1px solid var(--panel-border);
+ padding: 6px 10px;
+ padding-top: max(6px, env(safe-area-inset-top, 6px));
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 8px;
+ flex-shrink: 0;
+ }
+
+ .mode-select-wrap {
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ flex: 1;
+ min-width: 0;
+ }
+
+ .brand-icon { color: var(--gold); font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
+
+ .mode-select {
+ background: var(--panel);
+ color: var(--gold);
+ border: 1px solid var(--gold-dim);
+ border-radius: 8px;
+ padding: 6px 8px;
+ font-size: 0.88rem;
+ font-weight: 700;
+ cursor: pointer;
+ max-width: 235px;
+ width: 100%;
+ outline: none;
+ touch-action: manipulation;
+ }
+
+ select option {
+ background-color: #12231c;
+ color: #eef5f1;
+ }
+
+ .header-actions {
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ flex-shrink: 0;
+ }
+
+ .icon-btn {
+ background: var(--panel);
+ color: var(--text);
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ padding: 6px 9px;
+ font-size: 0.8rem;
+ font-weight: 700;
+ cursor: pointer;
+ display: inline-flex;
+ align-items: center;
+ gap: 4px;
+ white-space: nowrap;
+ touch-action: manipulation;
+ }
+ .icon-btn:hover { border-color: var(--gold-dim); }
+ .icon-btn.accent { color: var(--gold); border-color: var(--gold-dim); }
+
+ /* Main Container */
+ main {
+ flex: 1 1 auto;
+ min-height: 0;
+ width: 100%;
+ max-width: 920px;
+ margin: 0 auto;
+ padding: 6px 8px 8px;
+ display: flex;
+ flex-direction: column;
+ overflow: hidden;
+ }
+
+ .tab-view {
+ display: none;
+ flex: 1 1 auto;
+ min-height: 0;
+ flex-direction: column;
+ gap: 6px;
+ }
+ .tab-view.active { display: flex; }
+
+ /* CRITICAL FIX: Charts & Guide uses block layout inside scroll container so flex never crushes accordions */
+ #tab-charts.tab-view.active {
+ display: block;
+ flex: 1 1 auto;
+ min-height: 0;
+ overflow-y: auto;
+ overflow-x: hidden;
+ -webkit-overflow-scrolling: touch;
+ overscroll-behavior: contain;
+ padding-right: 2px;
+ padding-bottom: 28px;
+ }
+
+ /* Compact Info Strips */
+ .strip {
+ background: var(--panel);
+ border: 1px solid var(--panel-border);
+ border-radius: 10px;
+ padding: 5px 8px;
+ flex-shrink: 0;
+ }
+
+ .stats-grid {
+ display: grid;
+ grid-template-columns: repeat(4, minmax(0, 1fr));
+ gap: 4px;
+ text-align: center;
+ }
+ .stats-grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+ .stat-cell {
+ background: rgba(0,0,0,0.25);
+ border-radius: 6px;
+ padding: 3px 4px;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ min-width: 0;
+ }
+ .stat-cell.tappable {
+ cursor: pointer;
+ border: 1px solid rgba(229,185,76,0.35);
+ transition: background 0.15s ease;
+ }
+ .stat-cell.tappable:hover { background: rgba(229,185,76,0.12); }
+
+ .stat-cell .label {
+ color: var(--muted);
+ font-size: 0.6rem;
+ text-transform: uppercase;
+ letter-spacing: 0.3px;
+ white-space: nowrap;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ }
+ .stat-cell .val {
+ font-weight: 800;
+ font-size: 0.84rem;
+ color: var(--text);
+ white-space: nowrap;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ }
+ .stat-cell .val.gold { color: var(--gold); }
+ .stat-cell .val.pos { color: var(--green); }
+ .stat-cell .val.neg { color: var(--red); }
+
+ .hud-divider {
+ margin-top: 5px;
+ padding-top: 5px;
+ border-top: 1px solid var(--panel-border);
+ }
+
+ /* Shoe Penetration Progress Bar */
+ .shoe-bar-wrap {
+ margin-top: 4px;
+ height: 4px;
+ background: rgba(0,0,0,0.4);
+ border-radius: 99px;
+ overflow: hidden;
+ position: relative;
+ }
+ .shoe-bar-fill {
+ height: 100%;
+ width: 0%;
+ background: linear-gradient(90deg, var(--green), var(--gold));
+ transition: width 0.2s ease;
+ }
+ .shoe-cut-mark {
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ left: 75%;
+ width: 2px;
+ background: var(--red);
+ }
+
+ /* Buttons & Inputs */
+ button {
+ font-family: inherit;
+ cursor: pointer;
+ border: none;
+ border-radius: 8px;
+ font-weight: 700;
+ touch-action: manipulation;
+ transition: transform 0.08s ease, opacity 0.15s ease, background 0.15s ease;
+ }
+ button:active:not(:disabled) { transform: scale(0.96); }
+ button:disabled { opacity: 0.34; cursor: not-allowed; }
+
+ .btn { padding: 9px 12px; font-size: 0.86rem; background: #214034; color: var(--text); border: 1px solid #305c4b; }
+ .btn:hover:not(:disabled) { background: #2a5243; }
+ .btn-gold { background: var(--gold); color: #0b1914; border: none; }
+ .btn-gold:hover:not(:disabled) { background: #f0c965; }
+ .btn-green { background: #1f8a4c; color: #fff; }
+ .btn-red { background: #b83227; color: #fff; }
+ .btn-blue { background: #2471a3; color: #fff; }
+ .btn-purple { background: #7d3c98; color: #fff; }
+ .btn-amber { background: #9a620c; color: #fff; }
+ .btn-sm { padding: 5px 9px; font-size: 0.78rem; }
+
+ select, input[type="number"], input[type="text"] {
+ background: #0b1914;
+ color: var(--text);
+ border: 1px solid var(--panel-border);
+ border-radius: 6px;
+ padding: 5px 7px;
+ font-size: 0.84rem;
+ }
+
+ /* Prevent iOS Safari auto-zoom on text/number inputs */
+ input[type="number"], input[type="text"] {
+ font-size: 16px;
+ }
+
+ .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+ .between { justify-content: space-between; }
+ .center { justify-content: center; }
+
+ /* Flex-Filling Casino Table */
+ .table-felt {
+ flex: 1 1 auto;
+ min-height: 0;
+ background: radial-gradient(circle at 50% 35%, var(--felt-light) 0%, var(--felt) 70%, #0b261c 100%);
+ border: 2px solid #2b5746;
+ border-radius: 14px;
+ padding: 10px;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ box-shadow: inset 0 0 36px rgba(0,0,0,0.45);
+ overflow: hidden;
+ position: relative;
+ touch-action: manipulation;
+ }
+
+ .zone {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ min-height: 0;
+ }
+
+ .zone-title {
+ font-size: 0.72rem;
+ text-transform: uppercase;
+ letter-spacing: 0.7px;
+ color: rgba(238,245,241,0.75);
+ margin-bottom: 5px;
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ }
+
+ .hand-score {
+ background: rgba(0,0,0,0.58);
+ color: #fff;
+ padding: 1px 7px;
+ border-radius: 99px;
+ font-size: 0.74rem;
+ font-weight: 800;
+ }
+ .hand-score.bust { background: var(--red); }
+ .hand-score.bj { background: var(--gold); color: #0b1914; }
+
+ .tc-badge {
+ background: rgba(0,0,0,0.65);
+ border: 1px solid var(--gold-dim);
+ color: var(--gold);
+ padding: 2px 9px;
+ border-radius: 99px;
+ font-size: 0.8rem;
+ font-weight: 800;
+ }
+ .tc-badge.pos { border-color: var(--green); color: var(--green); }
+ .tc-badge.neg { border-color: var(--red); color: #ff8c80; }
+
+ .cards-row {
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ min-height: 82px;
+ flex-wrap: nowrap;
+ }
+
+ .cards-row.overlap .card + .card { margin-left: -16px; }
+
+ /* Playing Cards */
+ .card {
+ width: 60px;
+ height: 86px;
+ background: var(--card-bg);
+ border-radius: 7px;
+ box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+ position: relative;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ padding: 4px 5px;
+ font-weight: 800;
+ user-select: none;
+ -webkit-user-select: none;
+ flex-shrink: 0;
+ animation: dealIn 0.14s ease-out;
+ }
+ .card.large { width: 82px; height: 118px; padding: 6px 8px; }
+ .card.red { color: var(--card-red); }
+ .card.black { color: var(--card-black); }
+ .card.back {
+ background: repeating-linear-gradient(45deg, #1b4f72, #1b4f72 5px, #154360 5px, #154360 10px);
+ border: 2px solid #e8f4f8;
+ }
+ .card-top { font-size: 0.88rem; line-height: 1; }
+ .card.large .card-top { font-size: 1.2rem; }
+ .card-center { font-size: 1.55rem; text-align: center; line-height: 1; }
+ .card.large .card-center { font-size: 2.3rem; }
+ .card-bot { font-size: 0.88rem; line-height: 1; text-align: right; transform: rotate(180deg); }
+ .card.large .card-bot { font-size: 1.2rem; }
+
+ .hi-lo-tag {
+ position: absolute;
+ top: -7px;
+ right: -6px;
+ font-size: 0.66rem;
+ font-weight: 800;
+ padding: 1px 5px;
+ border-radius: 99px;
+ color: #fff;
+ box-shadow: 0 2px 4px rgba(0,0,0,0.45);
+ z-index: 2;
+ }
+ .tag-plus { background: var(--green); color: #072613; }
+ .tag-zero { background: #607d8b; }
+ .tag-minus { background: var(--red); }
+
+ @keyframes dealIn {
+ from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+ to { opacity: 1; transform: translateY(0) scale(1); }
+ }
+
+ /* Split Hands */
+ .player-hands {
+ display: flex;
+ gap: 8px;
+ justify-content: center;
+ align-items: stretch;
+ width: 100%;
+ overflow-x: auto;
+ padding: 2px 0;
+ }
+
+ .player-hand-box {
+ background: rgba(0,0,0,0.2);
+ border: 2px solid transparent;
+ border-radius: 10px;
+ padding: 6px 8px;
+ min-width: 132px;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ flex-shrink: 0;
+ }
+ .player-hand-box.active-hand {
+ border-color: var(--gold);
+ background: rgba(229,185,76,0.1);
+ }
+
+ .hand-result {
+ margin-top: 4px;
+ font-size: 0.74rem;
+ font-weight: 800;
+ text-align: center;
+ padding: 2px 6px;
+ border-radius: 5px;
+ white-space: nowrap;
+ }
+ .res-win { background: rgba(46,204,113,0.22); color: #6ef2a4; }
+ .res-lose { background: rgba(231,76,60,0.22); color: #ff8c80; }
+ .res-push { background: rgba(149,165,166,0.22); color: #d5dbdb; }
+ .res-bj { background: rgba(229,185,76,0.28); color: var(--gold); }
+
+ /* Feedback Banner */
+ .feedback-bar {
+ min-height: 30px;
+ border-radius: 8px;
+ padding: 5px 10px;
+ font-size: 0.79rem;
+ font-weight: 600;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ text-align: center;
+ background: rgba(0,0,0,0.34);
+ color: var(--muted);
+ line-height: 1.25;
+ flex-shrink: 0;
+ }
+ .feedback-bar.good { background: rgba(46,204,113,0.2); color: #7ef7af; border: 1px solid rgba(46,204,113,0.4); }
+ .feedback-bar.warn { background: rgba(231,76,60,0.2); color: #ff998f; border: 1px solid rgba(231,76,60,0.4); }
+ .feedback-bar.info { background: rgba(229,185,76,0.18); color: var(--gold); border: 1px solid rgba(229,185,76,0.4); }
+
+ /* Bottom Controls */
+ .controls-bar {
+ background: var(--panel);
+ border: 1px solid var(--panel-border);
+ border-radius: 10px;
+ padding: 8px;
+ flex-shrink: 0;
+ }
+
+ .chips-wrap { display: flex; flex-direction: column; gap: 7px; }
+ .chips-row { display: flex; gap: 8px; justify-content: center; align-items: center; }
+ .chip {
+ width: 44px;
+ height: 44px;
+ border-radius: 50%;
+ border: 2px dashed rgba(255,255,255,0.75);
+ font-size: 0.76rem;
+ font-weight: 800;
+ color: #fff;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+ }
+ .chip-5 { background: #c0392b; }
+ .chip-25 { background: #1e8449; }
+ .chip-100 { background: #212f3d; }
+ .chip-500 { background: #6c3483; }
+
+ .bet-actions-row {
+ display: grid;
+ grid-template-columns: 1fr 1fr 2fr;
+ gap: 6px;
+ }
+
+ .action-grid {
+ display: grid;
+ grid-template-columns: repeat(4, minmax(0, 1fr));
+ gap: 5px;
+ }
+ .action-grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+ .action-grid .btn { padding: 12px 2px; font-size: 0.84rem; }
+
+ .ins-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+ .kbd-hint {
+ display: none;
+ font-size: 0.71rem;
+ color: var(--muted);
+ text-align: center;
+ margin-top: 6px;
+ }
+ @media (hover: hover) and (pointer: fine) {
+ .kbd-hint { display: block; }
+ }
+
+ /* Modals */
+ .modal-backdrop {
+ position: fixed;
+ inset: 0;
+ background: rgba(0,0,0,0.76);
+ display: none;
+ align-items: center;
+ justify-content: center;
+ z-index: 100;
+ padding: 14px;
+ }
+ .modal-backdrop.open { display: flex; }
+ .modal {
+ background: var(--panel);
+ border: 1px solid var(--gold-dim);
+ border-radius: 14px;
+ padding: 16px;
+ width: 100%;
+ max-width: 420px;
+ max-height: 88dvh;
+ overflow-y: auto;
+ -webkit-overflow-scrolling: touch;
+ box-shadow: 0 12px 32px rgba(0,0,0,0.65);
+ }
+ .modal h3 { margin: 0 0 10px; color: var(--gold); font-size: 1.02rem; }
+
+ .setting-row {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 7px 0;
+ border-bottom: 1px solid rgba(36,70,56,0.6);
+ font-size: 0.84rem;
+ gap: 10px;
+ }
+ .setting-row:last-of-type { border-bottom: none; }
+ .setting-row input[type="checkbox"] {
+ accent-color: var(--gold);
+ width: 18px;
+ height: 18px;
+ cursor: pointer;
+ }
+
+ .seed-box {
+ background: rgba(0,0,0,0.3);
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ padding: 8px;
+ margin-top: 8px;
+ font-size: 0.78rem;
+ }
+ .seed-code {
+ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+ color: var(--gold);
+ font-weight: 700;
+ word-break: break-all;
+ }
+
+ /* Charts & Reading Guide Accordions */
+ details.guide-section {
+ display: block;
+ background: var(--panel);
+ border: 1px solid var(--panel-border);
+ border-radius: 12px;
+ margin-bottom: 10px;
+ }
+ details.guide-section summary {
+ padding: 12px 13px;
+ font-weight: 800;
+ font-size: 0.9rem;
+ color: var(--gold);
+ cursor: pointer;
+ list-style: none;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ gap: 10px;
+ user-select: none;
+ -webkit-user-select: none;
+ }
+ details.guide-section summary::-webkit-details-marker { display: none; }
+ details.guide-section summary .sum-title {
+ flex: 1;
+ line-height: 1.3;
+ }
+ details.guide-section summary::after {
+ content: '+';
+ font-size: 1.15rem;
+ color: var(--muted);
+ font-weight: 700;
+ flex-shrink: 0;
+ }
+ details.guide-section[open] summary::after { content: '−'; color: var(--gold); }
+ details.guide-section[open] summary { border-bottom: 1px solid var(--panel-border); }
+
+ .guide-body {
+ padding: 11px 10px 14px;
+ font-size: 0.84rem;
+ line-height: 1.5;
+ color: var(--text);
+ }
+ .guide-body h4 { margin: 12px 0 5px; color: var(--gold); font-size: 0.86rem; }
+ .guide-body h4:first-child { margin-top: 0; }
+ .guide-body p { margin: 0 0 8px; color: #d8e8e0; }
+ .guide-body ul { margin: 4px 0 10px; padding-left: 18px; }
+ .guide-body li { margin-bottom: 4px; color: #d8e8e0; }
+
+ .formula-box {
+ background: rgba(0,0,0,0.35);
+ border-left: 3px solid var(--gold);
+ padding: 8px 10px;
+ border-radius: 6px;
+ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+ font-size: 0.8rem;
+ color: var(--gold);
+ margin: 8px 0;
+ }
+
+ /* Quick Deck Selector inside Basic Strategy Charts */
+ .deck-pills {
+ display: grid;
+ grid-template-columns: repeat(3, 1fr);
+ gap: 6px;
+ margin-bottom: 8px;
+ }
+ .deck-pill {
+ padding: 7px 6px;
+ font-size: 0.78rem;
+ font-weight: 800;
+ border-radius: 8px;
+ background: #0b1914;
+ color: var(--muted);
+ border: 1px solid var(--panel-border);
+ text-align: center;
+ }
+ .deck-pill.active {
+ background: var(--gold);
+ color: #0b1914;
+ border-color: var(--gold);
+ }
+
+ .rule-mini-bar {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 6px;
+ align-items: center;
+ justify-content: space-between;
+ background: rgba(0,0,0,0.24);
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ padding: 6px 8px;
+ margin-bottom: 8px;
+ font-size: 0.76rem;
+ }
+ .rule-mini-bar label {
+ display: inline-flex;
+ align-items: center;
+ gap: 4px;
+ color: var(--text);
+ cursor: pointer;
+ }
+ .rule-mini-bar input[type="checkbox"] { accent-color: var(--gold); }
+
+ .deck-callout {
+ background: rgba(229,185,76,0.1);
+ border: 1px solid rgba(229,185,76,0.35);
+ border-radius: 8px;
+ padding: 7px 9px;
+ font-size: 0.77rem;
+ color: #f3dc9b;
+ margin-bottom: 10px;
+ line-height: 1.4;
+ }
+
+ /* Responsive Zero-Cutoff Basic Strategy Tables */
+ .chart-wrap {
+ width: 100%;
+ overflow-x: auto;
+ margin-bottom: 10px;
+ }
+ table.strat-table {
+ border-collapse: collapse;
+ width: 100%;
+ table-layout: fixed;
+ font-size: clamp(0.64rem, 2.35vw, 0.78rem);
+ text-align: center;
+ }
+ table.strat-table.dev-table {
+ table-layout: auto;
+ font-size: clamp(0.68rem, 2.3vw, 0.78rem);
+ }
+ table.strat-table th, table.strat-table td {
+ border: 1px solid #1e3b2f;
+ padding: 5px 1px;
+ font-weight: 700;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ }
+ table.strat-table:not(.dev-table) th:first-child {
+ width: 16%;
+ }
+ table.strat-table.dev-table th, table.strat-table.dev-table td {
+ padding: 5px 4px;
+ }
+ table.strat-table th { background: #0c1f17; color: var(--gold); }
+ table.strat-table td.left { text-align: left; padding-left: 6px; font-weight: 600; white-space: normal; }
+ .c-H { background: #1e5631; color: #e8f8ee; }
+ .c-S { background: #8e2424; color: #fdecea; }
+ .c-D { background: #b7791f; color: #fff9eb; }
+ .c-Ds { background: #9c6514; color: #fff9eb; }
+ .c-P { background: #2c5282; color: #ebf4ff; }
+ .c-R, .c-Rs, .c-Rp { background: #6b4c1e; color: #fff3d6; }
+
+ .legend-pills {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 4px;
+ margin-bottom: 10px;
+ font-size: 0.68rem;
+ }
+ .legend-pills span {
+ padding: 2px 6px;
+ border-radius: 4px;
+ font-weight: 700;
+ }
+
+ /* Short phone screens (e.g. iPhone SE / compact Android) */
+ @media (max-height: 700px) {
+ .card { width: 52px; height: 74px; padding: 3px 4px; }
+ .card-top, .card-bot { font-size: 0.78rem; }
+ .card-center { font-size: 1.3rem; }
+ .card.large { width: 70px; height: 100px; }
+ .card.large .card-center { font-size: 1.85rem; }
+ .cards-row { min-height: 74px; }
+ .chip { width: 38px; height: 38px; font-size: 0.72rem; }
+ .table-felt { padding: 7px; }
+ .action-grid .btn { padding: 10px 2px; font-size: 0.8rem; }
+ }
+
+ /* Desktop / Windows / Tablet enhancements */
+ @media (min-width: 720px) {
+ main { padding: 10px 14px 12px; }
+ .card { width: 70px; height: 100px; }
+ .card-center { font-size: 1.85rem; }
+ .card.large { width: 96px; height: 136px; }
+ .card.large .card-center { font-size: 2.6rem; }
+ .chips-wrap { flex-direction: row; justify-content: space-between; align-items: center; }
+ .bet-actions-row { width: 320px; }
+ .guide-body { padding: 14px 16px 16px; }
+ table.strat-table th, table.strat-table td { padding: 6px 4px; }
+ }
+</style>
+</head>
+<body>
+
+<header>
+ <div class="mode-select-wrap">
+ <span class="brand-icon">♠</span>
+ <select id="mode-select" class="mode-select" aria-label="Select training mode">
+ <option value="play">Table Play</option>
+ <option value="speed">Speed Count Drill</option>
+ <option value="strat">Strategy &amp; Deviations Drill</option>
+ <option value="charts">Charts &amp; Counting Guide</option>
+ </select>
+ </div>
+ <div class="header-actions">
+ <button class="icon-btn accent" id="btn-check-count" title="Check Running & True Count">Quiz RC</button>
+ <button class="icon-btn" id="btn-open-settings" title="Table Rules & Settings">⚙ Rules</button>
+ </div>
+</header>
+
+<main>
+ <!-- ==================== TAB 1: TABLE PLAY ==================== -->
+ <section id="tab-play" class="tab-view active">
+ <div class="strip">
+ <div class="stats-grid">
+ <div class="stat-cell"><span class="label">Bankroll</span><span class="val gold" id="ui-bankroll">$1,000</span></div>
+ <div class="stat-cell"><span class="label">Bet</span><span class="val" id="ui-bet">$25</span></div>
+ <div class="stat-cell"><span class="label">Play Acc</span><span class="val" id="ui-play-acc">--</span></div>
+ <div class="stat-cell"><span class="label" id="ui-game-tag">6D · S17</span><span class="val" id="ui-hands-played">0 h</span></div>
+ </div>
+ <div id="count-hud" class="hud-divider">
+ <div class="stats-grid cols-5">
+ <div class="stat-cell"><span class="label">RC</span><span class="val" id="hud-rc">0</span></div>
+ <div class="stat-cell"><span class="label">Decks</span><span class="val" id="hud-decks">6.0</span></div>
+ <div class="stat-cell"><span class="label">TC</span><span class="val" id="hud-tc">0.0</span></div>
+ <div class="stat-cell"><span class="label">Edge</span><span class="val" id="hud-edge">-0.4%</span></div>
+ <div class="stat-cell tappable" id="hud-bet-cell" title="Tap to apply suggested bet">
+ <span class="label" id="hud-bet-label">1u Bet</span>
+ <span class="val gold" id="hud-bet">$25</span>
+ </div>
+ </div>
+ <div class="shoe-bar-wrap" id="shoe-bar-wrap" title="Shoe penetration (red line = cut card)">
+ <div class="shoe-bar-fill" id="shoe-bar-fill"></div>
+ <div class="shoe-cut-mark" id="shoe-cut-mark"></div>
+ </div>
+ </div>
+ </div>
+
+ <div class="table-felt">
+ <div class="zone">
+ <div class="zone-title">
+ <span>Dealer</span>
+ <span class="hand-score" id="dealer-score">--</span>
+ </div>
+ <div class="cards-row overlap" id="dealer-cards"></div>
+ </div>
+
+ <div class="feedback-bar" id="play-feedback">Tap chips (or tap Sug Bet) and hit Deal to start.</div>
+
+ <div class="zone" style="width:100%;">
+ <div class="player-hands" id="player-hands"></div>
+ </div>
+ </div>
+
+ <div class="controls-bar">
+ <!-- Betting Controls -->
+ <div id="bet-controls" class="chips-wrap">
+ <div class="chips-row" id="chips-row">
+ <button class="chip chip-5" data-chip="5">$5</button>
+ <button class="chip chip-25" data-chip="25">$25</button>
+ <button class="chip chip-100" data-chip="100">$100</button>
+ <button class="chip chip-500" data-chip="500">$500</button>
+ </div>
+ <div class="bet-actions-row" id="bet-actions-row">
+ <button class="btn btn-sm" id="btn-clear-bet">Clear</button>
+ <button class="btn btn-sm" id="btn-rebet">Rebet</button>
+ <button class="btn btn-gold" id="btn-deal">DEAL</button>
+ </div>
+ <button class="btn btn-gold" id="btn-quick-reload" style="display:none; width:100%;">Reload $1,000 Bankroll</button>
+ </div>
+
+ <!-- Insurance / Even Money Controls -->
+ <div id="insurance-controls" style="display:none; text-align:center;">
+ <div id="ins-prompt-text" style="margin-bottom:6px; font-size:0.84rem; font-weight:700; color:var(--gold);">Dealer shows Ace. Take Insurance? (2:1)</div>
+ <div class="ins-grid">
+ <button class="btn btn-gold" id="btn-ins-yes">Take Insurance</button>
+ <button class="btn" id="btn-ins-no">No Insurance</button>
+ </div>
+ </div>
+
+ <!-- Playing Controls -->
+ <div id="play-controls" style="display:none;">
+ <div class="action-grid cols-5" id="play-action-grid">
+ <button class="btn btn-green" id="btn-hit">Hit</button>
+ <button class="btn btn-red" id="btn-stand">Stand</button>
+ <button class="btn btn-blue" id="btn-double">Dbl</button>
+ <button class="btn btn-purple" id="btn-split">Split</button>
+ <button class="btn btn-amber" id="btn-surrender">Surr</button>
+ </div>
+ </div>
+
+ <div class="kbd-hint">Keys: Space/Enter = Deal · H = Hit · S = Stand · D = Double · P = Split · R = Surrender</div>
+ </div>
+ </section>
+
+ <!-- ==================== TAB 2: SPEED COUNT DRILL ==================== -->
+ <section id="tab-speed" class="tab-view">
+ <div class="strip">
+ <div class="stats-grid">
+ <div class="stat-cell"><span class="label">Cards</span><span class="val" id="sp-seen">0/52</span></div>
+ <div class="stat-cell"><span class="label">Time</span><span class="val" id="sp-time">0.0s</span></div>
+ <div class="stat-cell"><span class="label">Speed</span><span class="val gold" id="sp-cps">0.0 c/s</span></div>
+ <div class="stat-cell"><span class="label">Best</span><span class="val pos" id="sp-best">--</span></div>
+ </div>
+ </div>
+
+ <div class="table-felt" id="sp-stage" style="justify-content:center; align-items:center; gap:12px; cursor:pointer;">
+ <div class="cards-row center" id="sp-cards" style="gap:8px; min-height:110px;"></div>
+ <div class="feedback-bar" id="sp-feedback" style="width:100%; max-width:480px;">
+ Tap Start for a 52-card Hi-Lo countdown (a full deck always finishes at 0).
+ </div>
+ <div id="sp-answer-box" style="display:none;" class="row center">
+ <input type="number" id="sp-guess" placeholder="Count" inputmode="numeric" style="width:115px; text-align:center;">
+ <button class="btn btn-gold" id="sp-submit-guess">Submit</button>
+ </div>
+ </div>
+
+ <div class="controls-bar">
+ <div class="row between" style="margin-bottom:6px; gap:6px;">
+ <select id="sp-batch" aria-label="Cards per step" style="flex:1;">
+ <option value="1" selected>1 Card</option>
+ <option value="2">2 Cards (Pairs)</option>
+ <option value="3">3 Cards</option>
+ </select>
+ <select id="sp-mode" aria-label="Deal mode" style="flex:1;">
+ <option value="manual" selected>Manual Tap</option>
+ <option value="auto">Auto Deal</option>
+ </select>
+ <select id="sp-interval" aria-label="Auto interval" style="flex:1;">
+ <option value="600">0.6s</option>
+ <option value="1000" selected>1.0s</option>
+ <option value="1500">1.5s</option>
+ <option value="2000">2.0s</option>
+ </select>
+ <label style="font-size:0.78rem; color:var(--muted); display:flex; align-items:center; gap:4px;">
+ <input type="checkbox" id="sp-tags" style="accent-color:var(--gold);"> Tags
+ </label>
+ </div>
+ <div class="ins-grid">
+ <button class="btn btn-gold" id="sp-start">Start / Restart</button>
+ <button class="btn" id="sp-check">Check Count</button>
+ </div>
+ <div class="kbd-hint">Keys: Space = Next Card(s) in Manual mode</div>
+ </div>
+ </section>
+
+ <!-- ==================== TAB 3: STRATEGY & DEVIATIONS DRILL ==================== -->
+ <section id="tab-strat" class="tab-view">
+ <div class="strip">
+ <div class="stats-grid">
+ <div class="stat-cell"><span class="label">Acc</span><span class="val" id="sd-acc">--</span></div>
+ <div class="stat-cell"><span class="label">Streak</span><span class="val gold" id="sd-streak">0</span></div>
+ <div class="stat-cell"><span class="label">Best</span><span class="val pos" id="sd-best">0</span></div>
+ <div class="stat-cell"><span class="label">Total</span><span class="val" id="sd-total">0</span></div>
+ </div>
+ <div class="row between hud-divider" style="gap:6px;">
+ <select id="sd-filter" style="flex:1;">
+ <option value="all" selected>Basic Strategy: All</option>
+ <option value="hard">Hard Totals</option>
+ <option value="soft">Soft Totals</option>
+ <option value="pair">Pairs</option>
+ <option value="deviations">★ Illustrious 18 &amp; Fab 4</option>
+ </select>
+ <span style="font-size:0.72rem; color:var(--gold); font-weight:700;" id="sd-rules-label">6D, S17, DAS</span>
+ <button class="btn btn-sm" id="sd-reset">Reset</button>
+ </div>
+ </div>
+
+ <div class="table-felt" style="justify-content:space-around; align-items:center;">
+ <div class="zone">
+ <div class="zone-title">
+ <span>Dealer Upcard</span>
+ <span class="tc-badge" id="sd-tc-badge" style="display:none;">TC: +0</span>
+ </div>
+ <div class="cards-row" id="sd-dealer-card"></div>
+ </div>
+
+ <div class="feedback-bar" id="sd-feedback" style="width:100%; max-width:500px;">Pick the mathematically optimal play.</div>
+
+ <div class="zone">
+ <div class="zone-title">Your Hand <span class="hand-score" id="sd-hand-label">--</span></div>
+ <div class="cards-row" id="sd-player-cards" style="gap:8px;"></div>
+ </div>
+ </div>
+
+ <div class="controls-bar">
+ <div class="action-grid cols-5" id="sd-action-grid">
+ <button class="btn btn-green" data-sd-act="H">Hit</button>
+ <button class="btn btn-red" data-sd-act="S">Stand</button>
+ <button class="btn btn-blue" data-sd-act="D">Dbl</button>
+ <button class="btn btn-purple" data-sd-act="P" id="sd-btn-split">Split</button>
+ <button class="btn btn-amber" data-sd-act="R" id="sd-btn-surr">Surr</button>
+ </div>
+ <div class="kbd-hint">Keys: H = Hit · S = Stand · D = Double · P = Split · R = Surrender</div>
+ </div>
+ </section>
+
+ <!-- ==================== TAB 4: CHARTS & COUNTING GUIDE ==================== -->
+ <section id="tab-charts" class="tab-view">
+ <details class="guide-section" open>
+ <summary><span class="sum-title">1. Basic Strategy Cards (<span id="chart-rules-label">6D · S17 · DAS · LS</span>)</span></summary>
+ <div class="guide-body">
+ <!-- Quick Deck Strategy Card Switcher -->
+ <div class="deck-pills" id="chart-deck-pills">
+ <button class="deck-pill" data-chart-decks="2">Double Deck (2D)</button>
+ <button class="deck-pill active" data-chart-decks="6">6 Deck</button>
+ <button class="deck-pill" data-chart-decks="8">8 Deck</button>
+ </div>
+
+ <div class="rule-mini-bar">
+ <select id="chart-opt-decks" aria-label="All deck counts" style="padding:3px 6px; font-size:0.75rem;">
+ <option value="1">1D</option>
+ <option value="2">2D (Double)</option>
+ <option value="4">4D</option>
+ <option value="6" selected>6D</option>
+ <option value="8">8D</option>
+ </select>
+ <select id="chart-opt-s17" aria-label="Soft 17 rule" style="padding:3px 6px; font-size:0.75rem;">
+ <option value="S17" selected>S17</option>
+ <option value="H17">H17</option>
+ </select>
+ <label><input type="checkbox" id="chart-opt-das" checked> DAS</label>
+ <label><input type="checkbox" id="chart-opt-ls" checked> LS</label>
+ </div>
+
+ <div class="deck-callout" id="chart-deck-callout"></div>
+
+ <div class="legend-pills">
+ <span class="c-H">H = Hit</span>
+ <span class="c-S">S = Stand</span>
+ <span class="c-D">D = Dbl/Hit</span>
+ <span class="c-Ds">Ds = Dbl/Stand</span>
+ <span class="c-P">P = Split</span>
+ <span class="c-R">R = Surr/Hit</span>
+ <span class="c-Rs">Rs = Surr/Stand</span>
+ <span class="c-Rp">Rp = Surr/Split</span>
+ </div>
+
+ <h4>Hard Totals</h4>
+ <div class="chart-wrap" id="chart-hard"></div>
+
+ <h4>Soft Totals (Ace + X)</h4>
+ <div class="chart-wrap" id="chart-soft"></div>
+
+ <h4>Pairs</h4>
+ <div class="chart-wrap" id="chart-pairs"></div>
+ </div>
+ </details>
+
+ <details class="guide-section">
+ <summary><span class="sum-title">2. Illustrious 18 &amp; Fab 4 Deviations (<span id="dev-rules-label">6D · S17</span>)</span></summary>
+ <div class="guide-body">
+ <p>Don Schlesinger's <strong>Illustrious 18</strong> captures ~80% of all possible EV gain from playing deviations. This table automatically updates for your active deck count and S17/H17 rule.</p>
+ <h4>Illustrious 18 (Hi-Lo Index Plays)</h4>
+ <div class="chart-wrap" id="dev-i18-wrap"></div>
+ <h4>Fab 4 Late Surrender</h4>
+ <div class="chart-wrap" id="dev-fab4-wrap"></div>
+ </div>
+ </details>
+
+ <details class="guide-section">
+ <summary><span class="sum-title">3. Why Card Counting Works (The Math)</span></summary>
+ <div class="guide-body">
+ <p>Unlike roulette or slots, Blackjack has <strong>memory</strong>—cards already dealt are removed from the shoe until the next shuffle. Because rules treat players and dealers asymmetrically, a shoe rich in <strong>10s and Aces</strong> shifts expected value in your favor:</p>
+ <ul>
+ <li><strong>3:2 Blackjack Bonus:</strong> Both you and the dealer get more Blackjacks in high counts, but yours pays <strong>1.5x</strong> while the dealer's only takes <strong>1.0x</strong>. (Never play 6:5 tables—they add ~1.39% to house edge.)</li>
+ <li><strong>Dealer Must Hit Stiffs (12–16):</strong> You can stand on 12–16; the dealer is forced to hit and busts far more often when the shoe is dense with 10s.</li>
+ <li><strong>Doubling &amp; Splitting Pay More:</strong> Doubling on 10 or 11 lands a 20 or 21 much more often in positive counts.</li>
+ <li><strong>Deck Count &amp; Penetration:</strong> Fewer decks reduce base house edge (2D S17/DAS ≈ -0.19% vs 6D ≈ -0.41% vs 8D ≈ -0.43%), while deeper cut-card penetration creates extreme True Counts much more often.</li>
+ </ul>
+ </div>
+ </details>
+
+ <details class="guide-section">
+ <summary><span class="sum-title">4. Running Count, Cancellation &amp; True Count</span></summary>
+ <div class="guide-body">
+ <h4>Hi-Lo Tag Values</h4>
+ <ul>
+ <li><strong style="color:var(--green);">2, 3, 4, 5, 6 &rarr; +1</strong> (Low cards removed = stronger remaining shoe)</li>
+ <li><strong style="color:#9fb8c4;">7, 8, 9 &rarr; 0</strong> (Neutral—ignore them completely)</li>
+ <li><strong style="color:var(--red);">10, J, Q, K, A &rarr; -1</strong> (High cards removed = weaker remaining shoe)</li>
+ </ul>
+ <h4>Pro Speed Technique: Pair Cancellation</h4>
+ <p>Don't count cards one by one as they hit the felt. Wait until each player has two cards, then <strong>cancel pairs</strong>: a King (-1) and a 4 (+1) sum to 0—ignore both! Practice this in <em>Speed Count Drill &rarr; 2 Cards (Pairs)</em>.</p>
+ <h4>Converting to True Count</h4>
+ <p>A Running Count of +6 with 6 decks left is diluted (+1.0 per deck). With 1.5 decks left in Double Deck or late in a 6D shoe, it's a monster (+4.0 per deck). Always divide by unseen remaining decks (including the dealer's hole card and burn card):</p>
+ <div class="formula-box">True Count (TC) = Running Count &divide; Decks Remaining</div>
+ <p>Every <strong>+1 TC</strong> shifts your advantage by roughly <strong>+0.50%</strong>.</p>
+ </div>
+ </details>
+
+ <details class="guide-section">
+ <summary><span class="sum-title">5. Betting Strategies, Kelly Criterion &amp; Wonging</span></summary>
+ <div class="guide-body">
+ <p>Card counting generates ~80% of its profit from <strong>bet sizing</strong> and ~20% from playing deviations.</p>
+ <h4>Bet Spreads by Game Type</h4>
+ <ul>
+ <li><strong>Double Deck (2D):</strong> A <strong>1–6</strong> or <strong>1–8 unit spread</strong> beats the ~0.19%–0.39% house edge cleanly without extreme casino heat.</li>
+ <li><strong>6-Deck &amp; 8-Deck Shoes:</strong> Typically require a <strong>1–12</strong> or <strong>1–16 unit spread</strong> to overcome the ~0.41%–0.65% base house edge.</li>
+ </ul>
+ <h4>The Kelly Criterion (Dynamic Bankroll Sizing)</h4>
+ <div class="formula-box">Full Kelly Bet % = Edge &divide; Variance (&sigma;&sup2; &approx; 1.33)<br>Half-Kelly Bet = Bankroll &times; 0.5 &times; (Edge &divide; 1.33)</div>
+ <p><strong>Half-Kelly</strong> (selectable in <em>⚙ Rules &rarr; Betting Strategy</em>) achieves 75% of the maximum theoretical growth rate while dramatically cutting your Risk of Ruin (RoR).</p>
+ <h4>Wonging (Back-Counting)</h4>
+ <p><strong>Wonging In</strong> means sitting down only at TC &ge; +1/+2. <strong>Wonging Out</strong> means leaving whenever TC hits <strong>-2 or worse</strong>. Watch the HUD's <strong>WONG</strong> indicator in Table Play!</p>
+ </div>
+ </details>
+
+ <details class="guide-section">
+ <summary><span class="sum-title">6. Advanced Concepts &amp; Other Counting Systems</span></summary>
+ <div class="guide-body">
+ <h4>Spreading to Two Hands</h4>
+ <p>At high True Counts (TC &ge; +2 or +3), playing two spots at ~75% of your single-hand Kelly bet each lowers covariance-adjusted variance while pushing more total EV onto the table.</p>
+ <h4>Casino Heat &amp; Cover Play</h4>
+ <ul>
+ <li>Avoid robotic 1-to-12 jumps right after a losing hand; ramp naturally after wins when possible.</li>
+ <li><strong>Splitting 10s</strong> (I18 #4 &amp; #5) is the fastest way to draw pit attention—many pros skip it for longevity.</li>
+ <li>Keep sessions under 45–60 minutes per shift.</li>
+ </ul>
+ <h4>Other Counting Systems</h4>
+ <ul>
+ <li><strong>KO (Knock-Out):</strong> Unbalanced count (7s are +1) that eliminates True Count division entirely.</li>
+ <li><strong>Zen Count &amp; Omega II:</strong> Level-2 balanced systems (+2/+1/0/-1/-2) gaining ~5–10% higher playing efficiency than Hi-Lo.</li>
+ <li><strong>Hi-Opt II + Ace Side Count:</strong> Elite accuracy for single/double-deck pitch games.</li>
+ </ul>
+ </div>
+ </details>
+ </section>
+</main>
+
+<!-- Settings Modal -->
+<div class="modal-backdrop" id="settings-modal">
+ <div class="modal">
+ <div class="row between" style="margin-bottom:8px;">
+ <h3 style="margin:0;">Table Rules &amp; RNG Seed</h3>
+ <button class="btn btn-sm" id="btn-close-settings">Done</button>
+ </div>
+
+ <div class="setting-row">
+ <span>Decks in Shoe</span>
+ <select id="opt-decks">
+ <option value="1">1 Deck</option>
+ <option value="2">2 Decks (Double Deck)</option>
+ <option value="4">4 Decks</option>
+ <option value="6" selected>6 Decks</option>
+ <option value="8">8 Decks</option>
+ </select>
+ </div>
+ <div class="setting-row">
+ <span>Dealer Soft 17</span>
+ <select id="opt-s17">
+ <option value="S17" selected>Stands (S17)</option>
+ <option value="H17">Hits (H17)</option>
+ </select>
+ </div>
+ <div class="setting-row">
+ <span>Double After Split (DAS)</span>
+ <input type="checkbox" id="opt-das" checked>
+ </div>
+ <div class="setting-row">
+ <span>Late Surrender (LS)</span>
+ <input type="checkbox" id="opt-ls" checked>
+ </div>
+ <div class="setting-row">
+ <span>Coach Grade Mode</span>
+ <select id="opt-dev-coach">
+ <option value="basic">Basic Strategy Only</option>
+ <option value="i18" selected>Basic + I18 &amp; Fab 4</option>
+ </select>
+ </div>
+ <div class="setting-row">
+ <span>Betting Strategy (HUD)</span>
+ <select id="opt-bet-strat">
+ <option value="auto" selected>Auto by Deck (2D: 1–8 / 6–8D: 1–12)</option>
+ <option value="spread12">1–12 Unit Spread</option>
+ <option value="spread8">1–8 Unit Spread</option>
+ <option value="kelly">Half-Kelly (Dynamic)</option>
+ </select>
+ </div>
+ <div class="setting-row">
+ <span>Show Count HUD</span>
+ <input type="checkbox" id="opt-hud" checked>
+ </div>
+ <div class="setting-row">
+ <span>Show Hi-Lo Card Tags</span>
+ <input type="checkbox" id="opt-tags">
+ </div>
+ <div class="setting-row">
+ <span>Live Strategy Coach</span>
+ <input type="checkbox" id="opt-coach" checked>
+ </div>
+ <div class="setting-row">
+ <span>Auto Count Quiz</span>
+ <select id="opt-quiz-int">
+ <option value="0" selected>Off</option>
+ <option value="5">Every 5 hands</option>
+ <option value="10">Every 10 hands</option>
+ <option value="15">Every 15 hands</option>
+ </select>
+ </div>
+
+ <div class="seed-box">
+ <div class="row between" style="margin-bottom:4px;">
+ <span style="color:var(--muted);">Active Shoe Seed (CSPRNG):</span>
+ <span class="seed-code" id="ui-shoe-seed">--</span>
+ </div>
+ <div class="row" style="gap:6px; margin-top:6px;">
+ <input type="text" id="inp-custom-seed" placeholder="Optional custom seed..." style="flex:1;">
+ <button class="btn btn-sm" id="btn-apply-seed">Shuffle Seed</button>
+ </div>
+ </div>
+
+ <div class="ins-grid" style="margin-top:10px;">
+ <button class="btn" id="btn-new-shoe">New Random Shoe</button>
+ <button class="btn" id="btn-reset-bank">Reset $1,000</button>
+ </div>
+ </div>
+</div>
+
+<!-- Count Quiz Modal -->
+<div class="modal-backdrop" id="quiz-modal">
+ <div class="modal">
+ <h3>Count Check!</h3>
+ <p style="font-size:0.84rem; color:var(--muted); margin-top:0;">Enter the current Running Count and True Count (truncated or rounded integer).</p>
+ <div style="display:flex; flex-direction:column; gap:10px; margin:10px 0;">
+ <label style="font-size:0.84rem;">Running Count:
+ <input type="number" id="quiz-rc" inputmode="numeric" style="width:100%; margin-top:4px;">
+ </label>
+ <label style="font-size:0.84rem;">True Count (integer):
+ <input type="number" id="quiz-tc" inputmode="numeric" style="width:100%; margin-top:4px;">
+ </label>
+ </div>
+ <div id="quiz-result" class="feedback-bar" style="display:none; margin-bottom:10px;"></div>
+ <div class="ins-grid">
+ <button class="btn" id="quiz-close">Close</button>
+ <button class="btn btn-gold" id="quiz-submit">Check</button>
+ </div>
+ </div>
+</div>
+
+<script>
+(() => {
+ /* ==================== CRYPTOGRAPHICALLY-SEEDED RNG & SHUFFLER ==================== */
+ let shuffleCounter = 0;
+
+ function cryptoRandomUint32() {
+ if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+ const buf = new Uint32Array(1);
+ crypto.getRandomValues(buf);
+ return buf[0] >>> 0;
+ }
+ return ((Math.random() * 0x100000000) ^ Date.now() ^ (++shuffleCounter * 2654435761)) >>> 0;
+ }
+
+ function generateRandomSeedString() {
+ const words = new Uint32Array(2);
+ if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+ crypto.getRandomValues(words);
+ } else {
+ words[0] = cryptoRandomUint32();
+ words[1] = cryptoRandomUint32();
+ }
+ const t = Math.floor((typeof performance !== 'undefined' ? performance.now() : Date.now()) * 1000) >>> 0;
+ words[0] = (words[0] ^ t ^ (++shuffleCounter * 0x9e3779b9)) >>> 0;
+ return words[0].toString(16).padStart(8, '0').toUpperCase() + '-' +
+ words[1].toString(16).padStart(8, '0').toUpperCase();
+ }
+
+ function hashSeedTo4Uint32(seedStr) {
+ let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+ for (let i = 0; i < seedStr.length; i++) {
+ const k = seedStr.charCodeAt(i);
+ h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+ h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+ h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+ h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+ }
+ h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+ h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+ h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+ h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+ return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
+ }
+
+ function createSeededRng(seedStr) {
+ let [a, b, c, d] = hashSeedTo4Uint32(seedStr);
+ function nextUint32() {
+ a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+ let t = (a + b) | 0;
+ a = b ^ (b >>> 9);
+ b = (c + (c << 3)) | 0;
+ c = (c << 21) | (c >>> 11);
+ d = (d + 1) | 0;
+ t = (t + d) | 0;
+ c = (c + t) | 0;
+ return t >>> 0;
+ }
+ for (let i = 0; i < 15; i++) nextUint32();
+
+ function randInt(max) {
+ if (max <= 1) return 0;
+ const limit = Math.floor(0x100000000 / max) * max;
+ let r;
+ do { r = nextUint32(); } while (r >= limit);
+ return r % max;
+ }
+ return { nextUint32, randInt };
+ }
+
+ const drillRng = createSeededRng(generateRandomSeedString());
+
+ function fisherYatesShuffle(arr, rng) {
+ for (let i = arr.length - 1; i > 0; i--) {
+ const j = rng.randInt(i + 1);
+ [arr[i], arr[j]] = [arr[j], arr[i]];
+ }
+ return arr;
+ }
+
+ /* ==================== CORE DATA & STORAGE ==================== */
+ const STORAGE_KEY = 'bj_trainer_v4';
+ const SUITS = ['♠', '♥', '♦', '♣'];
+ const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+ const TEN_RANKS = ['10', 'J', 'Q', 'K'];
+ const UP_COLS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'A'];
+
+ const defaultState = {
+ bankroll: 1000,
+ bet: 25,
+ lastBet: 25,
+ decks: 6,
+ s17: true,
+ das: true,
+ ls: true,
+ devCoach: 'i18',
+ betStrat: 'auto',
+ showHud: true,
+ showTags: false,
+ coach: true,
+ quizInterval: 0,
+ handsPlayed: 0,
+ playCorrect: 0,
+ playTotal: 0,
+ sdCorrect: 0,
+ sdTotal: 0,
+ sdStreak: 0,
+ sdBest: 0,
+ speedBestCps: 0
+ };
+
+ let state = { ...defaultState };
+ try {
+ const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+ if (saved) state = { ...state, ...saved };
+ } catch (e) {}
+
+ function saveState() {
+ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+ }
+
+ function roundMoney(v) { return Math.round(v * 100) / 100; }
+
+ function formatMoney(v) {
+ const clean = roundMoney(v);
+ const hasCents = Math.abs(clean % 1) > 0.001;
+ return '$' + clean.toLocaleString(undefined, {
+ minimumFractionDigits: hasCents ? 2 : 0,
+ maximumFractionDigits: 2
+ });
+ }
+
+ function getPenetrationForDecks(decks) {
+ if (decks === 1) return 0.65;
+ if (decks === 2) return 0.70;
+ if (decks === 8) return 0.80;
+ return 0.75; // 4D, 6D
+ }
+
+ function getInsuranceIndex(decks) {
+ if (decks === 1) return 1.5;
+ if (decks === 2) return 2.5;
+ return 3.0; // 4D, 6D, 8D
+ }
+
+ /* ==================== CARD & HAND HELPERS ==================== */
+ function hiLoValue(rank) {
+ if (['2','3','4','5','6'].includes(rank)) return 1;
+ if (['7','8','9'].includes(rank)) return 0;
+ return -1;
+ }
+
+ function cardNumeric(rank) {
+ if (rank === 'A') return 11;
+ if (['10','J','Q','K'].includes(rank)) return 10;
+ return parseInt(rank, 10);
+ }
+
+ function normalizeRank(rank) {
+ if (['J','Q','K'].includes(rank)) return '10';
+ return rank;
+ }
+
+ function evalHand(cards) {
+ let total = 0;
+ let aces = 0;
+ for (const c of cards) {
+ if (c.rank === 'A') { aces++; total += 11; }
+ else total += cardNumeric(c.rank);
+ }
+ while (total > 21 && aces > 0) {
+ total -= 10;
+ aces--;
+ }
+ const isSoft = aces > 0 && total <= 21;
+ const isBlackjack = cards.length === 2 && total === 21;
+ return { total, isSoft, isBust: total > 21, isBlackjack };
+ }
+
+ function createCardEl(card, opts = {}) {
+ const { hidden = false, showTag = false, large = false } = opts;
+ const el = document.createElement('div');
+ if (hidden) {
+ el.className = 'card back' + (large ? ' large' : '');
+ return el;
+ }
+ const isRed = card.suit === '♥' || card.suit === '♦';
+ el.className = `card ${isRed ? 'red' : 'black'}${large ? ' large' : ''}`;
+ el.innerHTML = `
+ <div class="card-top">${card.rank}${card.suit}</div>
+ <div class="card-center">${card.suit}</div>
+ <div class="card-bot">${card.rank}${card.suit}</div>
+ `;
+ if (showTag) {
+ const v = hiLoValue(card.rank);
+ const tag = document.createElement('span');
+ tag.className = 'hi-lo-tag ' + (v > 0 ? 'tag-plus' : v < 0 ? 'tag-minus' : 'tag-zero');
+ tag.textContent = v > 0 ? '+1' : v < 0 ? '-1' : '0';
+ el.appendChild(tag);
+ }
+ return el;
+ }
+
+ /* ==================== DECK-ACCURATE BASIC STRATEGY + DEVIATIONS ENGINE ==================== */
+ // Exact Wizard of Odds total-dependent Basic Strategy across 1D, 2D (Double Deck), 4D, 6D, and 8D
+ function getChartCode(type, key, upRank, decks, s17, das, ls = true) {
+ const up = upRank === 'A' ? 11 : cardNumeric(upRank);
+
+ if (type === 'pair') {
+ switch (key) {
+ case 'A': return 'P';
+ case '10': return 'S';
+ case '9': return (up === 7 || up === 10 || up === 11) ? 'S' : 'P';
+ case '8':
+ // 4D/6D/8D H17 with Late Surrender: Surrender 8,8 vs Ace (else Split)
+ if (ls && !s17 && decks >= 4 && up === 11) return 'Rp';
+ return 'P';
+ case '7':
+ if (decks === 1) {
+ if (up <= 7) return 'P';
+ if (up === 8 && das) return 'P';
+ if (up === 10) return ls ? 'R' : 'S';
+ return 'H';
+ }
+ if (decks === 2) {
+ if (up <= 7) return 'P';
+ if (up === 8 && das) return 'P';
+ return 'H';
+ }
+ return up <= 7 ? 'P' : 'H';
+ case '6':
+ if (decks <= 2) {
+ if (up <= 6) return 'P';
+ if (up === 7 && das) return 'P';
+ return 'H';
+ }
+ return (up <= 6 && (up >= 3 || das)) ? 'P' : 'H';
+ case '5': return up <= 9 ? 'D' : 'H';
+ case '4':
+ if (decks === 1) {
+ if (das && up >= 4 && up <= 6) return 'P';
+ if (!das && (up === 5 || up === 6)) return 'D';
+ return 'H';
+ }
+ return (das && (up === 5 || up === 6)) ? 'P' : 'H';
+ case '3':
+ return (up <= 7 && (up >= 4 || das)) ? 'P' : 'H';
+ case '2':
+ if (decks <= 2) return (up <= 7 && (up >= 3 || das)) ? 'P' : 'H';
+ return (up <= 7 && (up >= 4 || das)) ? 'P' : 'H';
+ }
+ }
+
+ if (type === 'soft') {
+ switch (key) {
+ case 20: return 'S';
+ case 19: return (!s17 && up === 6) ? 'Ds' : 'S';
+ case 18:
+ if (up >= 3 && up <= 6) return 'Ds';
+ if (up === 2) return (decks === 1 || s17) ? 'S' : 'Ds';
+ if (up === 7 || up === 8) return 'S';
+ if (up === 11 && decks === 1 && s17) return 'S';
+ return 'H';
+ case 17:
+ if (decks === 1) return (up >= 2 && up <= 6) ? 'D' : 'H';
+ return (up >= 3 && up <= 6) ? 'D' : 'H';
+ case 16:
+ case 15:
+ return (up >= 4 && up <= 6) ? 'D' : 'H';
+ case 14:
+ case 13:
+ if (decks === 1) return (up >= 4 && up <= 6) ? 'D' : 'H';
+ return (up === 5 || up === 6) ? 'D' : 'H';
+ }
+ }
+
+ // Hard Totals (with deck & S17/H17-accurate Late Surrender)
+ if (ls) {
+ if (key === 17 && !s17 && decks >= 2 && up === 11) return 'Rs';
+ if (key === 16) {
+ if (up === 10 || up === 11) return 'R';
+ if (up === 9 && (decks >= 4 || !s17)) return 'R';
+ }
+ if (key === 15) {
+ if (up === 10 && (decks >= 2 || !s17)) return 'R';
+ if (up === 11 && !s17 && decks >= 2) return 'R';
+ }
+ }
+
+ if (key >= 17) return 'S';
+ if (key >= 13 && key <= 16) return up <= 6 ? 'S' : 'H';
+ if (key === 12) return (up >= 4 && up <= 6) ? 'S' : 'H';
+ if (key === 11) {
+ if (decks <= 2) return 'D'; // 1D & 2D always Double 11 vs A (S17 & H17)
+ return (up === 11 && s17) ? 'H' : 'D';
+ }
+ if (key === 10) return up <= 9 ? 'D' : 'H';
+ if (key === 9) {
+ if (decks <= 2) return (up >= 2 && up <= 6) ? 'D' : 'H'; // 1D & 2D Double 9 vs 2
+ return (up >= 3 && up <= 6) ? 'D' : 'H';
+ }
+ if (key === 8 && decks === 1) return (up === 5 || up === 6) ? 'D' : 'H';
+ return 'H';
+ }
+
+ function getOptimalDecision(cards, dealerUpRank, opts = {}) {
+ const {
+ canDouble = true,
+ canSplit = false,
+ canSurrender = false,
+ useDeviations = false,
+ tc = 0,
+ rc = null,
+ decks = state.decks
+ } = opts;
+
+ const upStr = normalizeRank(dealerUpRank);
+ const up = upStr === 'A' ? 11 : cardNumeric(upStr);
+ const ev = evalHand(cards);
+ const isPair = canSplit && cards.length === 2 && normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
+ const pairKey = isPair ? normalizeRank(cards[0].rank) : null;
+ const effectiveRc = rc !== null ? rc : tc;
+
+ // 1. Check Deck-Aware Fab 4 & Illustrious 18 Deviations
+ if (useDeviations) {
+ // Fab 4 Late Surrender (includes 7,7 vs 10 as Hard 14)
+ if (canSurrender && !ev.isSoft) {
+ if (ev.total === 14 && up === 10 && tc >= 3) return { action: 'R', note: 'Fab 4: Surrender 14 vs 10 at TC ≥ +3' };
+ if (ev.total === 15 && up === 10) {
+ if (tc >= 0) return { action: 'R', note: 'Fab 4: Surrender 15 vs 10 at TC ≥ 0' };
+ return { action: 'H', note: 'Fab 4: Hit 15 vs 10 (no Surrender) at TC < 0' };
+ }
+ if (ev.total === 15 && up === 9 && tc >= 2) return { action: 'R', note: 'Fab 4: Surrender 15 vs 9 at TC ≥ +2' };
+ if (ev.total === 15 && up === 11) {
+ const idx = state.s17 ? 1 : -1;
+ if (tc >= idx) return { action: 'R', note: `Fab 4: Surrender 15 vs A at TC ≥ ${idx >= 0 ? '+' + idx : idx}` };
+ if (!state.s17 && decks >= 2) return { action: 'H', note: 'Fab 4: Hit 15 vs A at TC < -1' };
+ }
+ }
+
+ // Pair of 10s Splits (I18 #4 & #5)
+ if (isPair && pairKey === '10') {
+ if (up === 5 && tc >= 5) return { action: 'P', note: 'I18 #4: Split 10,10 vs 5 at TC ≥ +5' };
+ if (up === 6 && tc >= 4) return { action: 'P', note: 'I18 #5: Split 10,10 vs 6 at TC ≥ +4' };
+ }
+
+ // Hard Total Deviations (exclude 8,8 which follows pair rule)
+ if (!ev.isSoft && !(isPair && pairKey === '8')) {
+ if (ev.total === 16 && up === 10 && !canSurrender && effectiveRc > 0) return { action: 'S', note: 'I18 #2: Stand 16 vs 10 when RC > 0' };
+ if (ev.total === 15 && up === 10 && !canSurrender && tc >= 4) return { action: 'S', note: 'I18 #3: Stand 15 vs 10 at TC ≥ +4' };
+ if (ev.total === 16 && up === 9 && !canSurrender && tc >= 5) return { action: 'S', note: 'I18 #13: Stand 16 vs 9 at TC ≥ +5' };
+ if (ev.total === 10 && up === 10 && canDouble && tc >= 4) return { action: 'D', note: 'I18 #6: Double 10 vs 10 at TC ≥ +4' };
+
+ // 10 vs A: +3 in 2D or H17, +4 in 4D/6D/8D S17
+ const idx10A = (decks <= 2 || !state.s17) ? 3 : 4;
+ if (ev.total === 10 && up === 11 && canDouble && tc >= idx10A) return { action: 'D', note: `I18 #11: Double 10 vs A at TC ≥ +${idx10A}` };
+
+ // 11 vs A: 2D/H17 basic is Double (Hit at TC <= -1); 4D-8D S17 basic is Hit (Double at TC >= +1)
+ if (ev.total === 11 && up === 11 && canDouble) {
+ if (decks >= 4 && state.s17 && tc >= 1) return { action: 'D', note: 'I18 #9: Double 11 vs A (S17) at TC ≥ +1' };
+ if ((decks <= 2 || !state.s17) && tc <= -1) return { action: 'H', note: 'I18 #9: Hit 11 vs A (reverse) at TC ≤ -1' };
+ }
+
+ // 9 vs 2: 2D basic is Double (Hit at TC < 0); 4D-8D basic is Hit (Double at TC >= +1)
+ if (ev.total === 9 && up === 2 && canDouble) {
+ if (decks >= 4 && tc >= 1) return { action: 'D', note: 'I18 #10: Double 9 vs 2 at TC ≥ +1' };
+ if (decks <= 2 && effectiveRc < 0) return { action: 'H', note: 'I18 #10 (2D): Hit 9 vs 2 when RC < 0' };
+ }
+
+ if (ev.total === 9 && up === 7 && canDouble && tc >= 3) return { action: 'D', note: 'I18 #12: Double 9 vs 7 at TC ≥ +3' };
+ if (ev.total === 12 && up === 3 && tc >= 2) return { action: 'S', note: 'I18 #7: Stand 12 vs 3 at TC ≥ +2' };
+ if (ev.total === 12 && up === 2 && tc >= 3) return { action: 'S', note: 'I18 #8: Stand 12 vs 2 at TC ≥ +3' };
+ if (ev.total === 13 && up === 2 && tc <= -1) return { action: 'H', note: 'I18 #14: Hit 13 vs 2 at TC ≤ -1' };
+ if (ev.total === 12 && up === 4 && effectiveRc < 0) return { action: 'H', note: 'I18 #15: Hit 12 vs 4 when RC < 0' };
+ if (ev.total === 12 && up === 5 && tc <= -2) return { action: 'H', note: 'I18 #16: Hit 12 vs 5 at TC ≤ -2' };
+ if (ev.total === 12 && up === 6 && tc <= -1) return { action: 'H', note: 'I18 #17: Hit 12 vs 6 at TC ≤ -1' };
+ if (ev.total === 13 && up === 3 && tc <= -2) return { action: 'H', note: 'I18 #18: Hit 13 vs 3 at TC ≤ -2' };
+ }
+ }
+
+ // 2. Standard Deck-Accurate Basic Strategy
+ let code = 'H';
+ if (isPair) {
+ code = getChartCode('pair', pairKey, upStr, decks, state.s17, state.das, canSurrender);
+ if (code === 'Rp') return { action: canSurrender ? 'R' : 'P', note: null };
+ if (code === 'P') return { action: 'P', note: null };
+ }
+
+ if (ev.isSoft && ev.total >= 13 && ev.total <= 20) {
+ code = getChartCode('soft', ev.total, upStr, decks, state.s17, state.das, canSurrender);
+ } else {
+ code = getChartCode('hard', ev.total, upStr, decks, state.s17, state.das, canSurrender);
+ }
+
+ if (code === 'R') return { action: canSurrender ? 'R' : 'H', note: null };
+ if (code === 'Rs') return { action: canSurrender ? 'R' : 'S', note: null };
+ if (code === 'D') return { action: canDouble ? 'D' : 'H', note: null };
+ if (code === 'Ds') return { action: canDouble ? 'D' : 'S', note: null };
+ return { action: code, note: null };
+ }
+
+ function actionName(code) {
+ return { H: 'Hit', S: 'Stand', D: 'Double', P: 'Split', R: 'Surrender' }[code] || code;
+ }
+
+ /* ==================== MODE DROPDOWN & SETTINGS MODAL ==================== */
+ let activeTab = 'play';
+ const modeSelect = document.getElementById('mode-select');
+ const quizBtn = document.getElementById('btn-check-count');
+
+ modeSelect.addEventListener('change', () => {
+ if (activeTab === 'speed' && modeSelect.value !== 'speed') {
+ spStopTimers();
+ spRunning = false;
+ }
+ activeTab = modeSelect.value;
+ document.querySelectorAll('.tab-view').forEach(v => v.classList.toggle('active', v.id === 'tab-' + activeTab));
+ quizBtn.style.display = activeTab === 'play' ? 'inline-flex' : 'none';
+ if (activeTab === 'charts') renderCharts();
+ if (activeTab === 'strat') { updateStratRulesLabel(); sdNextHand(); }
+ });
+
+ const settingsModal = document.getElementById('settings-modal');
+ document.getElementById('btn-open-settings').addEventListener('click', () => settingsModal.classList.add('open'));
+ document.getElementById('btn-close-settings').addEventListener('click', () => settingsModal.classList.remove('open'));
+ settingsModal.addEventListener('click', (e) => {
+ if (e.target === settingsModal) settingsModal.classList.remove('open');
+ });
+
+ /* ==================== TAB 1: TABLE PLAY ENGINE ==================== */
+ let shoe = [];
+ let currentShoeSeed = '';
+ let cutCardIndex = 0;
+ let runningCount = 0;
+ let cardsDealtCount = 0;
+ let burnCardCount = 0;
+ let needsReshuffle = false;
+
+ let phase = 'betting';
+ let dealerHand = [];
+ let holeHidden = true;
+ let playerHands = [];
+ let activeHandIdx = 0;
+ let insuranceBet = 0;
+ let isEvenMoneyOffer = false;
+ let handsSinceQuiz = 0;
+ let lastSuggestedAmount = 25;
+
+ function refundInFlightBetsIfAny() {
+ if (phase === 'playing' || phase === 'insurance') {
+ let refund = insuranceBet;
+ playerHands.forEach(h => { if (!h.surrendered) refund = roundMoney(refund + h.bet); });
+ state.bankroll = roundMoney(state.bankroll + refund);
+ saveState();
+ }
+ }
+
+ function resetTableAndBuildShoe(customSeed = '', msg = '') {
+ refundInFlightBetsIfAny();
+ dealerHand = [];
+ playerHands = [];
+ phase = 'betting';
+ insuranceBet = 0;
+ isEvenMoneyOffer = false;
+ holeHidden = true;
+ buildShoe(customSeed);
+ if (msg) setFeedback(msg, 'info');
+ renderTable();
+ }
+
+ function buildShoe(customSeed = '') {
+ currentShoeSeed = (customSeed && customSeed.trim()) ? customSeed.trim() : generateRandomSeedString();
+ const shoeRng = createSeededRng(currentShoeSeed);
+
+ shoe = [];
+ for (let d = 0; d < state.decks; d++) {
+ for (const s of SUITS) {
+ for (const r of RANKS) shoe.push({ rank: r, suit: s });
+ }
+ }
+ fisherYatesShuffle(shoe, shoeRng);
+
+ // Casino realism: burn 1 card face-down after shuffle
+ shoe.pop();
+ burnCardCount = 1;
+
+ const pen = getPenetrationForDecks(state.decks);
+ cutCardIndex = Math.floor((state.decks * 52) * pen);
+ const cutMark = document.getElementById('shoe-cut-mark');
+ if (cutMark) cutMark.style.left = Math.round(pen * 100) + '%';
+
+ runningCount = 0;
+ cardsDealtCount = 0;
+ needsReshuffle = false;
+
+ const seedEl = document.getElementById('ui-shoe-seed');
+ if (seedEl) seedEl.textContent = currentShoeSeed;
+ updateHud();
+ }
+
+ function drawCard(countImmediately = true) {
+ if (shoe.length === 0) buildShoe();
+ const card = shoe.pop();
+ cardsDealtCount++;
+ if (cardsDealtCount + burnCardCount >= cutCardIndex) needsReshuffle = true;
+ if (countImmediately) runningCount += hiLoValue(card.rank);
+ updateHud();
+ return card;
+ }
+
+ function getDecksRemaining() {
+ const unseen = shoe.length + (holeHidden && dealerHand.length >= 2 ? 1 : 0) + burnCardCount;
+ return Math.max(0.25, unseen / 52);
+ }
+
+ function getTrueCount() {
+ return runningCount / getDecksRemaining();
+ }
+
+ function getEstimatedEdge(tc) {
+ // Exact Wizard of Odds base benchmarks for 3:2 BJ, DAS
+ const s17Base = { 1: 0.0017, 2: -0.0019, 4: -0.0035, 6: -0.0041, 8: -0.0043 };
+ const h17Base = { 1: -0.0002, 2: -0.0039, 4: -0.0056, 6: -0.0062, 8: -0.0065 };
+ const table = state.s17 ? s17Base : h17Base;
+ let base = table[state.decks] !== undefined ? table[state.decks] : (state.s17 ? -0.0041 : -0.0062);
+ if (!state.das) base -= 0.0014;
+ if (state.ls) base += 0.0008;
+ return base + tc * 0.005;
+ }
+
+ function getSuggestedBet(tc, edge) {
+ const unit = 25;
+ if (tc <= -2) {
+ lastSuggestedAmount = unit;
+ return { text: 'WONG', cls: 'neg', label: 'Sit Out' };
+ }
+
+ const activeStrat = state.betStrat === 'auto'
+ ? (state.decks <= 2 ? 'spread8' : 'spread12')
+ : state.betStrat;
+
+ if (activeStrat === 'kelly') {
+ if (edge <= 0.001) {
+ lastSuggestedAmount = unit;
+ return { text: formatMoney(unit), cls: 'gold', label: '½-Kelly' };
+ }
+ const kellyFrac = 0.5 * (edge / 1.33);
+ let amt = Math.round((state.bankroll * kellyFrac) / 5) * 5;
+ amt = Math.max(unit, Math.min(amt, unit * 16, Math.floor(state.bankroll / 5) * 5));
+ lastSuggestedAmount = amt;
+ return { text: formatMoney(amt), cls: 'pos', label: '½-Kelly' };
+ }
+
+ let units = 1;
+ if (activeStrat === 'spread8') {
+ if (tc >= 4) units = 8;
+ else if (tc >= 3) units = 6;
+ else if (tc >= 2) units = 4;
+ else if (tc >= 1) units = 2;
+ } else {
+ if (tc >= 5) units = 12;
+ else if (tc >= 4) units = 8;
+ else if (tc >= 3) units = 6;
+ else if (tc >= 2) units = 4;
+ else if (tc >= 1) units = 2;
+ }
+ const amt = units * unit;
+ lastSuggestedAmount = amt;
+ return { text: formatMoney(amt), cls: units > 1 ? 'pos' : 'gold', label: `${units}u Bet` };
+ }
+
+ function updateHud() {
+ const totalCards = state.decks * 52;
+ const decksLeft = getDecksRemaining();
+ const tc = getTrueCount();
+ const edge = getEstimatedEdge(tc);
+ const sug = getSuggestedBet(tc, edge);
+
+ const rcEl = document.getElementById('hud-rc');
+ rcEl.textContent = (runningCount > 0 ? '+' : '') + runningCount;
+ rcEl.className = 'val ' + (runningCount > 0 ? 'pos' : runningCount < 0 ? 'neg' : '');
+
+ document.getElementById('hud-decks').textContent = decksLeft.toFixed(1);
+
+ const tcEl = document.getElementById('hud-tc');
+ tcEl.textContent = (tc > 0 ? '+' : '') + tc.toFixed(1);
+ tcEl.className = 'val ' + (tc >= 1 ? 'pos' : tc <= -1 ? 'neg' : '');
+
+ const edgeEl = document.getElementById('hud-edge');
+ edgeEl.textContent = (edge >= 0 ? '+' : '') + (edge * 100).toFixed(1) + '%';
+ edgeEl.className = 'val ' + (edge > 0.001 ? 'pos' : edge < -0.008 ? 'neg' : '');
+
+ document.getElementById('hud-bet-label').textContent = sug.label;
+ const betEl = document.getElementById('hud-bet');
+ betEl.textContent = sug.text;
+ betEl.className = 'val ' + sug.cls;
+
+ const pct = Math.min(100, ((cardsDealtCount + burnCardCount) / totalCards) * 100);
+ document.getElementById('shoe-bar-fill').style.width = pct.toFixed(1) + '%';
+ document.getElementById('count-hud').style.display = state.showHud ? 'block' : 'none';
+ }
+
+ function updateTopStats() {
+ document.getElementById('ui-bankroll').textContent = formatMoney(state.bankroll);
+ document.getElementById('ui-bet').textContent = formatMoney(state.bet);
+ document.getElementById('ui-game-tag').textContent = `${state.decks}D · ${state.s17 ? 'S17' : 'H17'}`;
+ document.getElementById('ui-hands-played').textContent = state.handsPlayed + ' h';
+ document.getElementById('ui-play-acc').textContent = state.playTotal > 0
+ ? Math.round((state.playCorrect / state.playTotal) * 100) + '%'
+ : '--';
+
+ const isBroke = state.bankroll < 5 && (phase === 'betting' || phase === 'done');
+ document.getElementById('chips-row').style.display = isBroke ? 'none' : 'flex';
+ document.getElementById('bet-actions-row').style.display = isBroke ? 'none' : 'grid';
+ document.getElementById('btn-quick-reload').style.display = isBroke ? 'block' : 'none';
+ }
+
+ function setFeedback(msg, cls = '') {
+ const el = document.getElementById('play-feedback');
+ el.textContent = msg;
+ el.className = 'feedback-bar ' + cls;
+ }
+
+ function renderTable() {
+ const dContainer = document.getElementById('dealer-cards');
+ dContainer.innerHTML = '';
+ dealerHand.forEach((c, idx) => {
+ const hidden = holeHidden && idx === 1;
+ dContainer.appendChild(createCardEl(c, { hidden, showTag: state.showTags }));
+ });
+ const dScoreEl = document.getElementById('dealer-score');
+ if (dealerHand.length === 0) {
+ dScoreEl.textContent = '--';
+ dScoreEl.className = 'hand-score';
+ } else if (holeHidden) {
+ dScoreEl.textContent = cardNumeric(dealerHand[0].rank);
+ dScoreEl.className = 'hand-score';
+ } else {
+ const ev = evalHand(dealerHand);
+ dScoreEl.textContent = ev.isBlackjack ? 'BJ!' : (ev.isBust ? `BUST ${ev.total}` : (ev.isSoft ? `S${ev.total}` : ev.total));
+ dScoreEl.className = 'hand-score' + (ev.isBust ? ' bust' : ev.isBlackjack ? ' bj' : '');
+ }
+
+ const pContainer = document.getElementById('player-hands');
+ pContainer.innerHTML = '';
+ playerHands.forEach((h, idx) => {
+ const box = document.createElement('div');
+ box.className = 'player-hand-box' + (phase === 'playing' && idx === activeHandIdx ? ' active-hand' : '');
+
+ const ev = evalHand(h.cards);
+ const scoreLabel = h.surrendered ? 'SURR' : (ev.isBlackjack && !h.fromSplit ? 'BJ!' : (ev.isBust ? `BUST ${ev.total}` : (ev.isSoft ? `Soft ${ev.total}` : ev.total)));
+ const scoreCls = 'hand-score' + (ev.isBust ? ' bust' : (ev.isBlackjack && !h.fromSplit) ? ' bj' : '');
+
+ const header = document.createElement('div');
+ header.className = 'zone-title';
+ header.innerHTML = `<span>${playerHands.length > 1 ? 'H' + (idx + 1) : 'You'} · ${formatMoney(h.bet)}</span><span class="${scoreCls}">${scoreLabel}</span>`;
+ box.appendChild(header);
+
+ const row = document.createElement('div');
+ row.className = 'cards-row overlap';
+ h.cards.forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
+ box.appendChild(row);
+
+ if (h.resultText) {
+ const res = document.createElement('div');
+ res.className = 'hand-result ' + h.result;
+ res.textContent = h.resultText;
+ box.appendChild(res);
+ }
+ pContainer.appendChild(box);
+ });
+
+ document.getElementById('bet-controls').style.display = (phase === 'betting' || phase === 'done') ? 'flex' : 'none';
+ document.getElementById('insurance-controls').style.display = phase === 'insurance' ? 'block' : 'none';
+ document.getElementById('play-controls').style.display = phase === 'playing' ? 'block' : 'none';
+
+ if (phase === 'insurance') {
+ document.getElementById('ins-prompt-text').textContent = isEvenMoneyOffer
+ ? 'Blackjack vs Dealer Ace! Take Even Money? (1:1)'
+ : `Dealer shows Ace. Take Insurance? (${formatMoney(roundMoney(state.bet / 2))} pays 2:1)`;
+ document.getElementById('btn-ins-yes').textContent = isEvenMoneyOffer ? 'Take Even Money' : 'Take Insurance';
+ document.getElementById('btn-ins-no').textContent = isEvenMoneyOffer ? 'Decline (3:2)' : 'No Insurance';
+ }
+
+ const surrBtn = document.getElementById('btn-surrender');
+ const grid = document.getElementById('play-action-grid');
+ surrBtn.style.display = state.ls ? 'block' : 'none';
+ grid.className = state.ls ? 'action-grid cols-5' : 'action-grid';
+
+ if (phase === 'playing') {
+ const h = playerHands[activeHandIdx];
+ const canDouble = h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
+ const canSplit = h.cards.length === 2 &&
+ playerHands.length < 4 &&
+ state.bankroll >= h.bet &&
+ normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const canSurr = state.ls && h.cards.length === 2 && !h.fromSplit && playerHands.length === 1;
+
+ document.getElementById('btn-double').disabled = !canDouble;
+ document.getElementById('btn-split').disabled = !canSplit;
+ surrBtn.disabled = !canSurr;
+ }
+
+ updateTopStats();
+ updateHud();
+ }
+
+ function startDeal() {
+ if (state.bet <= 0) { setFeedback('Add chips to place a bet first.', 'warn'); return; }
+ if (state.bet > state.bankroll) { setFeedback('Not enough bankroll for that bet.', 'warn'); return; }
+
+ if (needsReshuffle) {
+ buildShoe();
+ setFeedback(`Cut card reached — fresh ${state.decks}D shoe shuffled (1 burned). RC = 0.`, 'info');
+ } else {
+ setFeedback('Your turn.', '');
+ }
+
+ state.lastBet = state.bet;
+ state.bankroll = roundMoney(state.bankroll - state.bet);
+ insuranceBet = 0;
+ isEvenMoneyOffer = false;
+ holeHidden = true;
+
+ const p1 = drawCard(true);
+ const d1 = drawCard(true);
+ const p2 = drawCard(true);
+ const d2 = drawCard(false);
+
+ dealerHand = [d1, d2];
+ playerHands = [{ cards: [p1, p2], bet: state.bet, doubled: false, fromSplit: false, surrendered: false, finished: false, result: '', resultText: '' }];
+ activeHandIdx = 0;
+
+ if (d1.rank === 'A') {
+ const pHasBj = evalHand(playerHands[0].cards).isBlackjack;
+ if (pHasBj) {
+ isEvenMoneyOffer = true;
+ phase = 'insurance';
+ renderTable();
+ return;
+ } else if (state.bankroll >= roundMoney(state.bet / 2)) {
+ isEvenMoneyOffer = false;
+ phase = 'insurance';
+ renderTable();
+ return;
+ }
+ }
+
+ checkInitialBlackjacks();
+ }
+
+ function revealHoleCard() {
+ if (holeHidden && dealerHand.length >= 2) {
+ holeHidden = false;
+ runningCount += hiLoValue(dealerHand[1].rank);
+ updateHud();
+ }
+ }
+
+ function checkInitialBlackjacks() {
+ const pEv = evalHand(playerHands[0].cards);
+ const dEv = evalHand(dealerHand);
+
+ if (pEv.isBlackjack || dEv.isBlackjack) {
+ revealHoleCard();
+ phase = 'done';
+ if (insuranceBet > 0 && dEv.isBlackjack) {
+ state.bankroll = roundMoney(state.bankroll + insuranceBet * 3);
+ }
+ if (pEv.isBlackjack && dEv.isBlackjack) {
+ state.bankroll = roundMoney(state.bankroll + playerHands[0].bet);
+ playerHands[0].result = 'res-push';
+ playerHands[0].resultText = 'PUSH (Both BJ)';
+ setFeedback('Push — both have Blackjack.', 'info');
+ } else if (pEv.isBlackjack) {
+ const profit = roundMoney(playerHands[0].bet * 1.5);
+ state.bankroll = roundMoney(state.bankroll + playerHands[0].bet + profit);
+ playerHands[0].result = 'res-bj';
+ playerHands[0].resultText = `BJ! +${formatMoney(profit)}`;
+ setFeedback('Blackjack! Paid 3:2.', 'good');
+ } else {
+ playerHands[0].result = 'res-lose';
+ playerHands[0].resultText = 'DEALER BJ';
+ setFeedback(insuranceBet > 0 ? 'Dealer Blackjack — Insurance paid 2:1!' : 'Dealer has Blackjack.', insuranceBet > 0 ? 'info' : 'warn');
+ }
+ finishRound();
+ } else {
+ phase = 'playing';
+ renderTable();
+ }
+ }
+
+ function evaluateCoach(action) {
+ const h = playerHands[activeHandIdx];
+ const canDouble = h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
+ const canSplit = h.cards.length === 2 && playerHands.length < 4 && state.bankroll >= h.bet &&
+ normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const canSurrender = state.ls && h.cards.length === 2 && !h.fromSplit && playerHands.length === 1;
+
+ const dec = getOptimalDecision(h.cards, dealerHand[0].rank, {
+ canDouble,
+ canSplit,
+ canSurrender,
+ useDeviations: state.devCoach === 'i18',
+ tc: getTrueCount(),
+ rc: runningCount,
+ decks: state.decks
+ });
+
+ state.playTotal++;
+ const isCorrect = action === dec.action;
+ if (isCorrect) state.playCorrect++;
+ saveState();
+
+ if (state.coach) {
+ if (isCorrect) {
+ const extra = dec.note ? ` (${dec.note})` : '';
+ setFeedback(`✓ Good play! ${actionName(action)}${extra}`, 'good');
+ } else {
+ const reason = dec.note ? dec.note : `${state.decks}D Basic Strategy: ${actionName(dec.action)}`;
+ setFeedback(`✗ Coach: ${reason} (you chose ${actionName(action)}).`, 'warn');
+ }
+ }
+ }
+
+ function advanceHandOrDealer() {
+ while (activeHandIdx < playerHands.length && playerHands[activeHandIdx].finished) activeHandIdx++;
+ if (activeHandIdx >= playerHands.length) runDealerTurn();
+ else renderTable();
+ }
+
+ function playerHit() {
+ if (phase !== 'playing') return;
+ evaluateCoach('H');
+ const h = playerHands[activeHandIdx];
+ h.cards.push(drawCard(true));
+ const ev = evalHand(h.cards);
+ if (ev.isBust || ev.total === 21) {
+ h.finished = true;
+ if (ev.isBust) {
+ h.result = 'res-lose';
+ h.resultText = `BUST (-${formatMoney(h.bet)})`;
+ }
+ advanceHandOrDealer();
+ } else {
+ renderTable();
+ }
+ }
+
+ function playerStand() {
+ if (phase !== 'playing') return;
+ evaluateCoach('S');
+ playerHands[activeHandIdx].finished = true;
+ advanceHandOrDealer();
+ }
+
+ function playerDouble() {
+ if (phase !== 'playing') return;
+ const h = playerHands[activeHandIdx];
+ if (h.cards.length !== 2 || state.bankroll < h.bet || (h.fromSplit && !state.das)) return;
+ evaluateCoach('D');
+ state.bankroll = roundMoney(state.bankroll - h.bet);
+ h.bet = roundMoney(h.bet * 2);
+ h.doubled = true;
+ h.cards.push(drawCard(true));
+ h.finished = true;
+ const ev = evalHand(h.cards);
+ if (ev.isBust) {
+ h.result = 'res-lose';
+ h.resultText = `BUST (-${formatMoney(h.bet)})`;
+ }
+ advanceHandOrDealer();
+ }
+
+ function playerSplit() {
+ if (phase !== 'playing') return;
+ const h = playerHands[activeHandIdx];
+ if (h.cards.length !== 2 || playerHands.length >= 4 || state.bankroll < h.bet) return;
+ if (normalizeRank(h.cards[0].rank) !== normalizeRank(h.cards[1].rank)) return;
+ evaluateCoach('P');
+
+ state.bankroll = roundMoney(state.bankroll - h.bet);
+ const c1 = h.cards[0];
+ const c2 = h.cards[1];
+ const isAces = c1.rank === 'A';
+
+ const cards1 = [c1, drawCard(true)];
+ const cards2 = [c2, drawCard(true)];
+ const hand1 = { cards: cards1, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: isAces || evalHand(cards1).total === 21, result: '', resultText: '' };
+ const hand2 = { cards: cards2, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: isAces || evalHand(cards2).total === 21, result: '', resultText: '' };
+
+ playerHands.splice(activeHandIdx, 1, hand1, hand2);
+ advanceHandOrDealer();
+ }
+
+ function playerSurrender() {
+ if (phase !== 'playing' || !state.ls) return;
+ const h = playerHands[activeHandIdx];
+ if (h.cards.length !== 2 || h.fromSplit || playerHands.length > 1) return;
+ evaluateCoach('R');
+ const refund = roundMoney(h.bet / 2);
+ state.bankroll = roundMoney(state.bankroll + refund);
+ h.surrendered = true;
+ h.finished = true;
+ h.result = 'res-push';
+ h.resultText = `SURR (-${formatMoney(roundMoney(h.bet - refund))})`;
+ advanceHandOrDealer();
+ }
+
+ function runDealerTurn() {
+ phase = 'dealer';
+ revealHoleCard();
+
+ const anyLive = playerHands.some(h => !h.surrendered && !evalHand(h.cards).isBust);
+ if (anyLive) {
+ let dEv = evalHand(dealerHand);
+ while (dEv.total < 17 || (dEv.total === 17 && dEv.isSoft && !state.s17)) {
+ dealerHand.push(drawCard(true));
+ dEv = evalHand(dealerHand);
+ }
+ }
+
+ const dEv = evalHand(dealerHand);
+ let netSummary = 0;
+
+ playerHands.forEach(h => {
+ if (h.surrendered) { netSummary = roundMoney(netSummary - h.bet / 2); return; }
+ const pEv = evalHand(h.cards);
+ if (pEv.isBust) {
+ netSummary = roundMoney(netSummary - h.bet);
+ } else if (dEv.isBust || pEv.total > dEv.total) {
+ state.bankroll = roundMoney(state.bankroll + h.bet * 2);
+ h.result = 'res-win';
+ h.resultText = `WIN (+${formatMoney(h.bet)})`;
+ netSummary = roundMoney(netSummary + h.bet);
+ } else if (pEv.total < dEv.total) {
+ h.result = 'res-lose';
+ h.resultText = `LOSE (-${formatMoney(h.bet)})`;
+ netSummary = roundMoney(netSummary - h.bet);
+ } else {
+ state.bankroll = roundMoney(state.bankroll + h.bet);
+ h.result = 'res-push';
+ h.resultText = 'PUSH';
+ }
+ });
+
+ phase = 'done';
+ if (!state.coach || playerHands.length > 1) {
+ if (netSummary > 0) setFeedback(`Round won (+${formatMoney(netSummary)}).`, 'good');
+ else if (netSummary < 0) setFeedback(`Dealer wins (-${formatMoney(Math.abs(netSummary))}).`, 'warn');
+ else setFeedback('Round pushed.', 'info');
+ }
+ finishRound();
+ }
+
+ function finishRound() {
+ state.handsPlayed++;
+ handsSinceQuiz++;
+ if (state.bankroll < 5) {
+ state.bet = 0;
+ setFeedback('Bankroll depleted — tap Reload $1,000 below to keep practicing.', 'info');
+ } else if (state.bet > state.bankroll) {
+ state.bet = Math.floor(state.bankroll / 5) * 5;
+ }
+ saveState();
+ renderTable();
+
+ if (state.quizInterval > 0 && handsSinceQuiz >= state.quizInterval) {
+ handsSinceQuiz = 0;
+ openCountQuiz();
+ }
+ }
+
+ /* ==================== COUNT QUIZ MODAL ==================== */
+ const quizModal = document.getElementById('quiz-modal');
+ function openCountQuiz() {
+ document.getElementById('quiz-rc').value = '';
+ document.getElementById('quiz-tc').value = '';
+ document.getElementById('quiz-result').style.display = 'none';
+ quizModal.classList.add('open');
+ document.getElementById('quiz-rc').focus();
+ }
+
+ function submitCountQuiz() {
+ const gRc = parseInt(document.getElementById('quiz-rc').value, 10);
+ const gTc = parseInt(document.getElementById('quiz-tc').value, 10);
+ const exactTc = getTrueCount();
+ const truncTc = Math.trunc(exactTc);
+ const roundTc = Math.round(exactTc);
+ const res = document.getElementById('quiz-result');
+ res.style.display = 'flex';
+ const tcOk = (gTc === truncTc || gTc === roundTc);
+ if (gRc === runningCount && tcOk) {
+ res.className = 'feedback-bar good';
+ res.textContent = `Spot on! RC = ${runningCount}, TC = ${exactTc.toFixed(2)} (${truncTc} trunc / ${roundTc} round).`;
+ } else {
+ res.className = 'feedback-bar warn';
+ res.textContent = `Actual: RC = ${runningCount}, TC = ${exactTc.toFixed(2)} (${truncTc} trunc / ${roundTc} round).`;
+ }
+ }
+
+ quizBtn.addEventListener('click', openCountQuiz);
+ document.getElementById('quiz-close').addEventListener('click', () => quizModal.classList.remove('open'));
+ quizModal.addEventListener('click', (e) => { if (e.target === quizModal) quizModal.classList.remove('open'); });
+ document.getElementById('quiz-submit').addEventListener('click', submitCountQuiz);
+ ['quiz-rc', 'quiz-tc'].forEach(id => {
+ document.getElementById(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') submitCountQuiz(); });
+ });
+
+ /* ==================== TABLE PLAY EVENT BINDINGS ==================== */
+ document.querySelectorAll('.chip').forEach(btn => {
+ btn.addEventListener('click', () => {
+ if (phase !== 'betting' && phase !== 'done') return;
+ const val = parseInt(btn.dataset.chip, 10);
+ if (roundMoney(state.bet + val) <= state.bankroll) {
+ state.bet = roundMoney(state.bet + val);
+ updateTopStats();
+ saveState();
+ } else {
+ setFeedback('Bet cannot exceed your bankroll.', 'warn');
+ }
+ });
+ });
+
+ // Tappable Suggested Bet pill
+ document.getElementById('hud-bet-cell').addEventListener('click', () => {
+ if (phase !== 'betting' && phase !== 'done') return;
+ if (state.bankroll < 5) return;
+ const capped = Math.min(lastSuggestedAmount, Math.floor(state.bankroll / 5) * 5);
+ if (capped >= 5) {
+ state.bet = capped;
+ updateTopStats();
+ saveState();
+ setFeedback(`Bet set to ${formatMoney(capped)}.`, 'info');
+ }
+ });
+
+ document.getElementById('btn-clear-bet').addEventListener('click', () => { state.bet = 0; updateTopStats(); });
+ document.getElementById('btn-rebet').addEventListener('click', () => {
+ state.bet = Math.min(state.lastBet || 25, Math.floor(state.bankroll / 5) * 5);
+ updateTopStats();
+ });
+ document.getElementById('btn-quick-reload').addEventListener('click', () => {
+ state.bankroll = 1000;
+ state.bet = 25;
+ saveState();
+ setFeedback('Bankroll reloaded to $1,000.', 'info');
+ renderTable();
+ });
+
+ document.getElementById('btn-deal').addEventListener('click', startDeal);
+ document.getElementById('btn-hit').addEventListener('click', playerHit);
+ document.getElementById('btn-stand').addEventListener('click', playerStand);
+ document.getElementById('btn-double').addEventListener('click', playerDouble);
+ document.getElementById('btn-split').addEventListener('click', playerSplit);
+ document.getElementById('btn-surrender').addEventListener('click', playerSurrender);
+
+ function gradeInsurance(tookIt) {
+ const tc = getTrueCount();
+ const idx = getInsuranceIndex(state.decks);
+ const shouldTake = state.devCoach === 'i18' && tc >= idx;
+ const isCorrect = tookIt === shouldTake;
+ state.playTotal++;
+ if (isCorrect) state.playCorrect++;
+ saveState();
+ return { isCorrect, idx, shouldTake };
+ }
+
+ document.getElementById('btn-ins-yes').addEventListener('click', () => {
+ if (phase !== 'insurance') return;
+ const { isCorrect, idx } = gradeInsurance(true);
+ if (isEvenMoneyOffer) {
+ revealHoleCard();
+ phase = 'done';
+ state.bankroll = roundMoney(state.bankroll + playerHands[0].bet * 2);
+ playerHands[0].result = 'res-win';
+ playerHands[0].resultText = `EVEN MONEY (+${formatMoney(playerHands[0].bet)})`;
+ if (state.coach) {
+ setFeedback(
+ isCorrect
+ ? `✓ I18 #1 (${state.decks}D): Even Money is +EV at TC ≥ +${idx}!`
+ : `✗ Even Money = Insurance—only take at TC ≥ +${idx} (${state.decks}D).`,
+ isCorrect ? 'good' : 'warn'
+ );
+ } else {
+ setFeedback('Even Money paid 1:1.', 'info');
+ }
+ finishRound();
+ return;
+ }
+
+ insuranceBet = roundMoney(state.bet / 2);
+ state.bankroll = roundMoney(state.bankroll - insuranceBet);
+ if (state.coach) {
+ setFeedback(
+ isCorrect
+ ? `✓ I18 #1 (${state.decks}D): Insurance is +EV at TC ≥ +${idx}!`
+ : `✗ Only take Insurance at TC ≥ +${idx} (${state.decks}D).`,
+ isCorrect ? 'good' : 'warn'
+ );
+ }
+ checkInitialBlackjacks();
+ });
+
+ document.getElementById('btn-ins-no').addEventListener('click', () => {
+ if (phase !== 'insurance') return;
+ const { isCorrect, idx } = gradeInsurance(false);
+ if (state.coach && !isCorrect) {
+ setFeedback(`Note (I18 #1 · ${state.decks}D): At TC ≥ +${idx}, taking ${isEvenMoneyOffer ? 'Even Money' : 'Insurance'} is +EV!`, 'info');
+ }
+ checkInitialBlackjacks();
+ });
+
+ document.getElementById('btn-new-shoe').addEventListener('click', () => {
+ document.getElementById('inp-custom-seed').value = '';
+ resetTableAndBuildShoe('', `Fresh ${state.decks}D shoe shuffled (1 burned).`);
+ settingsModal.classList.remove('open');
+ });
+
+ document.getElementById('btn-apply-seed').addEventListener('click', () => {
+ const custom = document.getElementById('inp-custom-seed').value;
+ resetTableAndBuildShoe(custom, `Shoe shuffled with seed ${custom.trim() || 'random'} (1 burned).`);
+ settingsModal.classList.remove('open');
+ });
+
+ document.getElementById('btn-reset-bank').addEventListener('click', () => {
+ state.bankroll = 1000;
+ state.bet = 25;
+ saveState();
+ updateTopStats();
+ setFeedback('Bankroll reset to $1,000.', 'info');
+ settingsModal.classList.remove('open');
+ });
+
+ /* ==================== SYNCHRONIZED RULE CONTROLS (MODAL + CHARTS) ==================== */
+ const optDecks = document.getElementById('opt-decks');
+ const optS17 = document.getElementById('opt-s17');
+ const optDas = document.getElementById('opt-das');
+ const optLs = document.getElementById('opt-ls');
+ const optDevCoach = document.getElementById('opt-dev-coach');
+ const optBetStrat = document.getElementById('opt-bet-strat');
+ const optHud = document.getElementById('opt-hud');
+ const optTags = document.getElementById('opt-tags');
+ const optCoach = document.getElementById('opt-coach');
+ const optQuizInt = document.getElementById('opt-quiz-int');
+
+ const chartOptDecks = document.getElementById('chart-opt-decks');
+ const chartOptS17 = document.getElementById('chart-opt-s17');
+ const chartOptDas = document.getElementById('chart-opt-das');
+ const chartOptLs = document.getElementById('chart-opt-ls');
+
+ function syncRuleControlsUI() {
+ optDecks.value = String(state.decks);
+ optS17.value = state.s17 ? 'S17' : 'H17';
+ optDas.checked = state.das;
+ optLs.checked = state.ls;
+ optDevCoach.value = state.devCoach;
+ optBetStrat.value = state.betStrat;
+ optHud.checked = state.showHud;
+ optTags.checked = state.showTags;
+ optCoach.checked = state.coach;
+ optQuizInt.value = String(state.quizInterval);
+
+ chartOptDecks.value = String(state.decks);
+ chartOptS17.value = state.s17 ? 'S17' : 'H17';
+ chartOptDas.checked = state.das;
+ chartOptLs.checked = state.ls;
+
+ document.querySelectorAll('.deck-pill').forEach(p => {
+ p.classList.toggle('active', parseInt(p.dataset.chartDecks, 10) === state.decks);
+ });
+ }
+
+ function applyDeckChange(newDecks) {
+ if (state.decks === newDecks) return;
+ state.decks = newDecks;
+ saveState();
+ syncRuleControlsUI();
+ resetTableAndBuildShoe('', `Switched to ${state.decks}-Deck shoe (${Math.round(getPenetrationForDecks(state.decks) * 100)}% pen, 1 burned).`);
+ updateStratRulesLabel();
+ renderCharts();
+ }
+
+ function applyRuleChange() {
+ saveState();
+ syncRuleControlsUI();
+ updateStratRulesLabel();
+ renderCharts();
+ renderTable();
+ }
+
+ optDecks.addEventListener('change', () => applyDeckChange(parseInt(optDecks.value, 10)));
+ chartOptDecks.addEventListener('change', () => applyDeckChange(parseInt(chartOptDecks.value, 10)));
+ document.querySelectorAll('.deck-pill').forEach(p => {
+ p.addEventListener('click', () => applyDeckChange(parseInt(p.dataset.chartDecks, 10)));
+ });
+
+ optS17.addEventListener('change', () => { state.s17 = optS17.value === 'S17'; applyRuleChange(); });
+ chartOptS17.addEventListener('change', () => { state.s17 = chartOptS17.value === 'S17'; applyRuleChange(); });
+
+ optDas.addEventListener('change', () => { state.das = optDas.checked; applyRuleChange(); });
+ chartOptDas.addEventListener('change', () => { state.das = chartOptDas.checked; applyRuleChange(); });
+
+ optLs.addEventListener('change', () => { state.ls = optLs.checked; applyRuleChange(); });
+ chartOptLs.addEventListener('change', () => { state.ls = chartOptLs.checked; applyRuleChange(); });
+
+ optDevCoach.addEventListener('change', () => { state.devCoach = optDevCoach.value; saveState(); });
+ optBetStrat.addEventListener('change', () => { state.betStrat = optBetStrat.value; saveState(); updateHud(); });
+ optHud.addEventListener('change', () => { state.showHud = optHud.checked; saveState(); updateHud(); });
+ optTags.addEventListener('change', () => { state.showTags = optTags.checked; saveState(); renderTable(); });
+ optCoach.addEventListener('change', () => { state.coach = optCoach.checked; saveState(); });
+ optQuizInt.addEventListener('change', () => { state.quizInterval = parseInt(optQuizInt.value, 10); handsSinceQuiz = 0; saveState(); });
+
+ /* ==================== TAB 2: SPEED COUNT DRILL ==================== */
+ let spDeck = [];
+ let spCount = 0;
+ let spSeen = 0;
+ let spStartTime = 0;
+ let spTimerId = null;
+ let spAutoId = null;
+ let spRunning = false;
+
+ function spUpdateStats() {
+ document.getElementById('sp-seen').textContent = `${spSeen}/52`;
+ const elapsed = spStartTime ? (Date.now() - spStartTime) / 1000 : 0;
+ document.getElementById('sp-time').textContent = elapsed.toFixed(1) + 's';
+ const cps = elapsed > 0.2 ? (spSeen / elapsed) : 0;
+ document.getElementById('sp-cps').textContent = cps.toFixed(2) + ' c/s';
+ document.getElementById('sp-best').textContent = state.speedBestCps > 0 ? state.speedBestCps.toFixed(2) + ' c/s' : '--';
+ }
+
+ function spStopTimers() {
+ if (spTimerId) { clearInterval(spTimerId); spTimerId = null; }
+ if (spAutoId) { clearInterval(spAutoId); spAutoId = null; }
+ }
+
+ function spStart() {
+ spStopTimers();
+ spDeck = [];
+ for (const s of SUITS) for (const r of RANKS) spDeck.push({ rank: r, suit: s });
+ fisherYatesShuffle(spDeck, createSeededRng(generateRandomSeedString()));
+
+ spCount = 0;
+ spSeen = 0;
+ spStartTime = Date.now();
+ spRunning = true;
+
+ document.getElementById('sp-answer-box').style.display = 'none';
+ document.getElementById('sp-feedback').className = 'feedback-bar';
+ document.getElementById('sp-feedback').textContent = 'Tap felt (or Space) for next card(s).';
+
+ spTimerId = setInterval(spUpdateStats, 100);
+ spNextStep();
+
+ if (document.getElementById('sp-mode').value === 'auto') {
+ const ms = parseInt(document.getElementById('sp-interval').value, 10);
+ spAutoId = setInterval(() => { if (spRunning) spNextStep(); }, ms);
+ }
+ }
+
+ function spNextStep() {
+ if (!spRunning) return;
+ if (spDeck.length === 0) { spPromptCheck(true); return; }
+ const batch = parseInt(document.getElementById('sp-batch').value, 10);
+ const showTags = document.getElementById('sp-tags').checked;
+ const container = document.getElementById('sp-cards');
+ container.innerHTML = '';
+
+ const n = Math.min(batch, spDeck.length);
+ for (let i = 0; i < n; i++) {
+ const c = spDeck.pop();
+ spCount += hiLoValue(c.rank);
+ spSeen++;
+ container.appendChild(createCardEl(c, { large: true, showTag: showTags }));
+ }
+ spUpdateStats();
+
+ if (spDeck.length === 0) {
+ spStopTimers();
+ spRunning = false;
+ spPromptCheck(true);
+ }
+ }
+
+ function spPromptCheck(deckDone = false) {
+ spStopTimers();
+ spRunning = false;
+ const fb = document.getElementById('sp-feedback');
+ fb.className = 'feedback-bar info';
+ fb.textContent = deckDone ? 'Deck finished! Enter final Running Count:' : 'Paused — current Running Count?';
+ document.getElementById('sp-answer-box').style.display = 'flex';
+ const inp = document.getElementById('sp-guess');
+ inp.value = '';
+ inp.focus();
+ }
+
+ function spSubmitGuess() {
+ const guess = parseInt(document.getElementById('sp-guess').value, 10);
+ const fb = document.getElementById('sp-feedback');
+ const elapsed = (Date.now() - spStartTime) / 1000;
+ const cps = elapsed > 0 ? spSeen / elapsed : 0;
+
+ if (guess === spCount) {
+ fb.className = 'feedback-bar good';
+ fb.textContent = `✓ Correct! RC = ${spCount} (${spSeen} cards in ${elapsed.toFixed(1)}s = ${cps.toFixed(2)} c/s).`;
+ if (spSeen === 52 && cps > state.speedBestCps) {
+ state.speedBestCps = cps;
+ saveState();
+ spUpdateStats();
+ }
+ } else {
+ fb.className = 'feedback-bar warn';
+ fb.textContent = `✗ Entered ${isNaN(guess) ? '?' : guess}, actual Running Count was ${spCount}.`;
+ }
+ document.getElementById('sp-answer-box').style.display = 'none';
+ }
+
+ document.getElementById('sp-start').addEventListener('click', spStart);
+ document.getElementById('sp-check').addEventListener('click', () => { if (spSeen > 0) spPromptCheck(spDeck.length === 0); });
+ document.getElementById('sp-stage').addEventListener('click', (e) => {
+ if (e.target.closest('#sp-answer-box')) return;
+ if (spRunning && document.getElementById('sp-mode').value === 'manual') spNextStep();
+ });
+ document.getElementById('sp-submit-guess').addEventListener('click', spSubmitGuess);
+ document.getElementById('sp-guess').addEventListener('keydown', (e) => { if (e.key === 'Enter') spSubmitGuess(); });
+ document.getElementById('sp-mode').addEventListener('change', () => { if (spRunning) spStart(); });
+ document.getElementById('sp-interval').addEventListener('change', () => { if (spRunning && document.getElementById('sp-mode').value === 'auto') spStart(); });
+
+ /* ==================== TAB 3: STRATEGY & DEVIATIONS DRILL ==================== */
+ let sdCurrent = null;
+
+ const DEV_SCENARIOS = [
+ { p: ['10','6'], u: '10', surr: false, tcRange: [-2, 3], skipZero: true }, // 16 vs 10 (I18 #2)
+ { p: ['10','5'], u: '10', surr: false, tcRange: [1, 6] }, // 15 vs 10 (I18 #3)
+ { p: ['10','10'], u: '5', surr: false, tcRange: [2, 7] }, // 10,10 vs 5 (I18 #4)
+ { p: ['10','10'], u: '6', surr: false, tcRange: [2, 6] }, // 10,10 vs 6 (I18 #5)
+ { p: ['6','4'], u: '10', surr: false, tcRange: [2, 6] }, // 10 vs 10 (I18 #6)
+ { p: ['10','2'], u: '3', surr: false, tcRange: [0, 4] }, // 12 vs 3 (I18 #7)
+ { p: ['10','2'], u: '2', surr: false, tcRange: [1, 5] }, // 12 vs 2 (I18 #8)
+ { p: ['8','3'], u: 'A', surr: false, tcRange: [-2, 3] }, // 11 vs A (I18 #9 — deck/rule aware)
+ { p: ['5','4'], u: '2', surr: false, tcRange: [-2, 3], skipZero: true }, // 9 vs 2 (I18 #10 — deck aware)
+ { p: ['6','4'], u: 'A', surr: false, tcRange: [1, 6] }, // 10 vs A (I18 #11 — deck/rule aware)
+ { p: ['6','3'], u: '7', surr: false, tcRange: [1, 5] }, // 9 vs 7 (I18 #12)
+ { p: ['10','6'], u: '9', surr: false, tcRange: [3, 7] }, // 16 vs 9 (I18 #13)
+ { p: ['10','3'], u: '2', surr: false, tcRange: [-3, 1] }, // 13 vs 2 (I18 #14)
+ { p: ['10','2'], u: '4', surr: false, tcRange: [-2, 2], skipZero: true }, // 12 vs 4 (I18 #15)
+ { p: ['10','2'], u: '5', surr: false, tcRange: [-4, 0] }, // 12 vs 5 (I18 #16)
+ { p: ['10','2'], u: '6', surr: false, tcRange: [-3, 1] }, // 12 vs 6 (I18 #17)
+ { p: ['10','3'], u: '3', surr: false, tcRange: [-4, 0] }, // 13 vs 3 (I18 #18)
+ { p: ['10','4'], u: '10', surr: true, tcRange: [1, 5] }, // 14 vs 10 (Fab 4)
+ { p: ['7','7'], u: '10', surr: true, tcRange: [1, 5] }, // 7,7 vs 10 (Fab 4)
+ { p: ['10','5'], u: '10', surr: true, tcRange: [-2, 2] }, // 15 vs 10 (Fab 4)
+ { p: ['10','5'], u: '9', surr: true, tcRange: [0, 4] }, // 15 vs 9 (Fab 4)
+ { p: ['10','5'], u: 'A', surr: true, tcRange: [-2, 3] } // 15 vs A (Fab 4)
+ ];
+
+ function updateStratRulesLabel() {
+ const txt = `${state.decks}D · ${state.s17 ? 'S17' : 'H17'} · ${state.das ? 'DAS' : 'No DAS'}${state.ls ? ' · LS' : ''}`;
+ document.getElementById('sd-rules-label').textContent = txt;
+ document.getElementById('chart-rules-label').textContent = txt;
+ document.getElementById('dev-rules-label').textContent = `${state.decks}D · ${state.s17 ? 'S17' : 'H17'}`;
+ }
+
+ function randSuit() { return SUITS[drillRng.randInt(SUITS.length)]; }
+ function randTenFace() { return TEN_RANKS[drillRng.randInt(TEN_RANKS.length)]; }
+ function realizeRank(r) { return r === '10' ? randTenFace() : r; }
+ function randUpcard() { return { rank: RANKS[drillRng.randInt(RANKS.length)], suit: randSuit() }; }
+
+ function sdNextHand() {
+ const filter = document.getElementById('sd-filter').value;
+ const isDevMode = filter === 'deviations';
+ const tcBadge = document.getElementById('sd-tc-badge');
+ let cards = [];
+ let dealerUp = null;
+ let tc = 0;
+ let allowSurr = state.ls;
+
+ if (isDevMode) {
+ const sc = DEV_SCENARIOS[drillRng.randInt(DEV_SCENARIOS.length)];
+ cards = [
+ { rank: realizeRank(sc.p[0]), suit: randSuit() },
+ { rank: realizeRank(sc.p[1]), suit: randSuit() }
+ ];
+ dealerUp = { rank: realizeRank(sc.u), suit: randSuit() };
+ const [lo, hi] = sc.tcRange;
+ do {
+ tc = lo + drillRng.randInt(hi - lo + 1);
+ } while (sc.skipZero && tc === 0);
+
+ allowSurr = sc.surr;
+ tcBadge.style.display = 'inline-block';
+ tcBadge.textContent = `TC: ${tc >= 0 ? '+' : ''}${tc}`;
+ tcBadge.className = 'tc-badge ' + (tc >= 1 ? 'pos' : tc <= -1 ? 'neg' : '');
+ } else {
+ tcBadge.style.display = 'none';
+ let type = filter;
+ if (filter === 'all') {
+ const r = drillRng.randInt(100);
+ type = r < 50 ? 'hard' : r < 78 ? 'soft' : 'pair';
+ }
+ if (type === 'pair') {
+ const pairRanks = ['2','3','4','5','6','7','8','9','10','A'];
+ const pr = pairRanks[drillRng.randInt(pairRanks.length)];
+ cards = [{ rank: realizeRank(pr), suit: randSuit() }, { rank: realizeRank(pr), suit: randSuit() }];
+ } else if (type === 'soft') {
+ const other = ['2','3','4','5','6','7','8','9'][drillRng.randInt(8)];
+ cards = [{ rank: 'A', suit: randSuit() }, { rank: other, suit: randSuit() }];
+ } else {
+ const target = 8 + drillRng.randInt(10); // 8..17
+ let c1, c2;
+ do {
+ c1 = 2 + drillRng.randInt(9);
+ c2 = target - c1;
+ } while (c2 < 2 || c2 > 10 || c1 === c2);
+ cards = [{ rank: realizeRank(String(c1)), suit: randSuit() }, { rank: realizeRank(String(c2)), suit: randSuit() }];
+ }
+ dealerUp = randUpcard();
+ }
+
+ const canSplit = normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
+ const dec = getOptimalDecision(cards, dealerUp.rank, {
+ canDouble: true,
+ canSplit,
+ canSurrender: allowSurr,
+ useDeviations: isDevMode,
+ tc,
+ rc: tc,
+ decks: state.decks
+ });
+
+ sdCurrent = { cards, dealerUp, optimal: dec.action, note: dec.note, canSplit, allowSurr, tc, isDevMode };
+
+ const dBox = document.getElementById('sd-dealer-card');
+ dBox.innerHTML = '';
+ dBox.appendChild(createCardEl(dealerUp, { large: true }));
+
+ const pBox = document.getElementById('sd-player-cards');
+ pBox.innerHTML = '';
+ cards.forEach(c => pBox.appendChild(createCardEl(c, { large: true })));
+
+ const ev = evalHand(cards);
+ const lbl = canSplit ? `Pair ${normalizeRank(cards[0].rank)}s` : (ev.isSoft ? `Soft ${ev.total}` : `Hard ${ev.total}`);
+ document.getElementById('sd-hand-label').textContent = lbl;
+ document.getElementById('sd-btn-split').disabled = !canSplit;
+
+ const surrBtn = document.getElementById('sd-btn-surr');
+ const grid = document.getElementById('sd-action-grid');
+ surrBtn.style.display = allowSurr ? 'block' : 'none';
+ grid.className = allowSurr ? 'action-grid cols-5' : 'action-grid';
+
+ sdUpdateStats();
+ }
+
+ function sdUpdateStats() {
+ document.getElementById('sd-acc').textContent = state.sdTotal > 0 ? Math.round((state.sdCorrect / state.sdTotal) * 100) + '%' : '--';
+ document.getElementById('sd-streak').textContent = state.sdStreak;
+ document.getElementById('sd-best').textContent = state.sdBest;
+ document.getElementById('sd-total').textContent = state.sdTotal;
+ }
+
+ function sdAnswer(act) {
+ if (!sdCurrent) return;
+ if (act === 'P' && !sdCurrent.canSplit) return;
+ if (act === 'R' && !sdCurrent.allowSurr) return;
+
+ const fb = document.getElementById('sd-feedback');
+ state.sdTotal++;
+ const tcTxt = sdCurrent.isDevMode ? ` at TC ${sdCurrent.tc >= 0 ? '+' : ''}${sdCurrent.tc}` : '';
+ const extra = sdCurrent.note ? ` (${sdCurrent.note})` : '';
+
+ if (act === sdCurrent.optimal) {
+ state.sdCorrect++;
+ state.sdStreak++;
+ if (state.sdStreak > state.sdBest) state.sdBest = state.sdStreak;
+ fb.className = 'feedback-bar good';
+ fb.textContent = `✓ Correct! ${actionName(act)} vs ${normalizeRank(sdCurrent.dealerUp.rank)}${tcTxt}${extra}`;
+ } else {
+ state.sdStreak = 0;
+ fb.className = 'feedback-bar warn';
+ fb.textContent = `✗ Optimal (${state.decks}D) was ${actionName(sdCurrent.optimal)}${tcTxt}${extra} (picked ${actionName(act)}).`;
+ }
+ saveState();
+ sdNextHand();
+ }
+
+ document.querySelectorAll('[data-sd-act]').forEach(btn => {
+ btn.addEventListener('click', () => sdAnswer(btn.dataset.sdAct));
+ });
+ document.getElementById('sd-filter').addEventListener('change', sdNextHand);
+ document.getElementById('sd-reset').addEventListener('click', () => {
+ state.sdCorrect = 0; state.sdTotal = 0; state.sdStreak = 0; state.sdBest = 0;
+ saveState();
+ sdUpdateStats();
+ });
+
+ /* ==================== TAB 4: DYNAMIC DECK-ACCURATE CHARTS & DEVIATIONS ==================== */
+ function buildChartTable(type, rows) {
+ let html = '<table class="strat-table"><thead><tr><th>Hand</th>';
+ UP_COLS.forEach(c => html += `<th>${c}</th>`);
+ html += '</tr></thead><tbody>';
+ rows.forEach(r => {
+ html += `<tr><th>${r.label}</th>`;
+ UP_COLS.forEach(u => {
+ const code = getChartCode(type, r.key, u, state.decks, state.s17, state.das, state.ls);
+ html += `<td class="c-${code}">${code}</td>`;
+ });
+ html += '</tr>';
+ });
+ html += '</tbody></table>';
+ return html;
+ }
+
+ function renderDeckCallout() {
+ const edgePct = (getEstimatedEdge(0) * 100).toFixed(2);
+ const insIdx = getInsuranceIndex(state.decks);
+ const penPct = Math.round(getPenetrationForDecks(state.decks) * 100);
+ let diffs = '';
+ if (state.decks === 1) {
+ diffs = '1D key plays: Double 8 vs 5–6, Double 9 vs 2, Double 11 vs A, Double A,2–A,3 vs 4–6 & A,6 vs 2, Stand A,7 vs A (S17), Split 6,6 vs 7 & 7,7 vs 8 (DAS).';
+ } else if (state.decks === 2) {
+ diffs = 'Double Deck (2D) vs 6D/8D: Double 9 vs 2, Double 11 vs A (even S17), Split 6,6 vs 7 & 7,7 vs 8 (DAS), Split 2,2 vs 3 (No DAS). Insurance +EV at TC ≥ +2.5.';
+ } else if (state.decks === 6) {
+ diffs = '6-Deck Shoe: Standard multi-deck chart. Hit 9 vs 2, ' + (state.s17 ? 'Hit 11 vs A (S17)' : 'Double 11 vs A (H17), Surrender 17 & 8,8 vs A if LS') + '. Insurance +EV at TC ≥ +3.';
+ } else if (state.decks === 8) {
+ diffs = '8-Deck Shoe: Same optimal Basic Strategy cells as 6D, with slightly higher house edge (-0.02% vs 6D) and deeper 80% shoe penetration. Insurance +EV at TC ≥ +3.';
+ } else {
+ diffs = '4-Deck Shoe: Multi-deck Basic Strategy with slightly lower house edge than 6D/8D. Insurance +EV at TC ≥ +3.';
+ }
+ document.getElementById('chart-deck-callout').innerHTML =
+ `<strong>${state.decks}-Deck Profile (${state.s17 ? 'S17' : 'H17'}, ${state.das ? 'DAS' : 'No DAS'}, ${state.ls ? 'LS' : 'No LS'}):</strong> Base Edge <strong>${edgePct}%</strong> · Pen <strong>${penPct}%</strong> · Ins Index <strong>TC ≥ +${insIdx}</strong><br>${diffs}`;
+ }
+
+ function renderDeviationTables() {
+ const insIdx = getInsuranceIndex(state.decks);
+ const idx10A = (state.decks <= 2 || !state.s17) ? '+3' : '+4';
+ const row11A = (state.decks <= 2 || !state.s17)
+ ? ['9', '11 vs A', 'TC ≤ -1', 'Hit', 'H', 'Double', 'D']
+ : ['9', '11 vs A', 'TC ≥ +1', 'Double', 'D', 'Hit', 'H'];
+ const row92 = (state.decks <= 2)
+ ? ['10', '9 vs 2', 'RC < 0', 'Hit', 'H', 'Double', 'D']
+ : ['10', '9 vs 2', 'TC ≥ +1', 'Double', 'D', 'Hit', 'H'];
+
+ const i18Rows = [
+ ['1', 'Insurance / Even $', `TC ≥ +${insIdx}`, 'Take Ins', 'D', 'No', ''],
+ ['2', '16 vs 10', 'RC > 0', 'Stand', 'S', 'Hit', 'H'],
+ ['3', '15 vs 10', 'TC ≥ +4', 'Stand', 'S', 'Hit', 'H'],
+ ['4', '10,10 vs 5', 'TC ≥ +5', 'Split', 'P', 'Stand', 'S'],
+ ['5', '10,10 vs 6', 'TC ≥ +4', 'Split', 'P', 'Stand', 'S'],
+ ['6', '10 vs 10', 'TC ≥ +4', 'Double', 'D', 'Hit', 'H'],
+ ['7', '12 vs 3', 'TC ≥ +2', 'Stand', 'S', 'Hit', 'H'],
+ ['8', '12 vs 2', 'TC ≥ +3', 'Stand', 'S', 'Hit', 'H'],
+ row11A,
+ row92,
+ ['11', '10 vs A', `TC ≥ ${idx10A}`, 'Double', 'D', 'Hit', 'H'],
+ ['12', '9 vs 7', 'TC ≥ +3', 'Double', 'D', 'Hit', 'H'],
+ ['13', '16 vs 9', 'TC ≥ +5', 'Stand', 'S', 'Hit', 'H'],
+ ['14', '13 vs 2', 'TC ≤ -1', 'Hit', 'H', 'Stand', 'S'],
+ ['15', '12 vs 4', 'RC < 0', 'Hit', 'H', 'Stand', 'S'],
+ ['16', '12 vs 5', 'TC ≤ -2', 'Hit', 'H', 'Stand', 'S'],
+ ['17', '12 vs 6', 'TC ≤ -1', 'Hit', 'H', 'Stand', 'S'],
+ ['18', '13 vs 3', 'TC ≤ -2', 'Hit', 'H', 'Stand', 'S']
+ ];
+
+ let h1 = '<table class="strat-table dev-table"><thead><tr><th>#</th><th>Matchup</th><th>Index</th><th>Play</th><th>Basic</th></tr></thead><tbody>';
+ i18Rows.forEach(r => {
+ h1 += `<tr><td>${r[0]}</td><td class="left">${r[1]}</td><td>${r[2]}</td><td class="c-${r[4]}">${r[3]}</td><td class="${r[6] ? 'c-' + r[6] : ''}">${r[5]}</td></tr>`;
+ });
+ h1 += '</tbody></table>';
+ document.getElementById('dev-i18-wrap').innerHTML = h1;
+
+ const idx15A = state.s17 ? 'TC ≥ +1' : 'TC ≥ -1';
+ const h2 = `<table class="strat-table dev-table"><thead><tr><th>Matchup</th><th>Index</th><th>Play</th><th>Otherwise</th></tr></thead><tbody>
+ <tr><td class="left">14 vs 10 (incl. 7,7)</td><td>TC ≥ +3</td><td class="c-R">Surrender</td><td class="c-H">Hit</td></tr>
+ <tr><td class="left">15 vs 10</td><td>TC ≥ 0</td><td class="c-R">Surrender</td><td class="c-H">Hit</td></tr>
+ <tr><td class="left">15 vs 9</td><td>TC ≥ +2</td><td class="c-R">Surrender</td><td class="c-H">Hit</td></tr>
+ <tr><td class="left">15 vs A (${state.s17 ? 'S17' : 'H17'})</td><td>${idx15A}</td><td class="c-R">Surrender</td><td class="c-H">Hit</td></tr>
+ </tbody></table>`;
+ document.getElementById('dev-fab4-wrap').innerHTML = h2;
+ }
+
+ function renderCharts() {
+ syncRuleControlsUI();
+ updateStratRulesLabel();
+ renderDeckCallout();
+
+ const hardRows = [];
+ for (let t = 18; t >= 8; t--) {
+ if (t === 18) hardRows.push({ label: '18+', key: 18 });
+ else if (t === 8) hardRows.push({ label: '8−', key: 8 });
+ else hardRows.push({ label: String(t), key: t });
+ }
+ document.getElementById('chart-hard').innerHTML = buildChartTable('hard', hardRows);
+
+ const softRows = [];
+ for (let t = 20; t >= 13; t--) softRows.push({ label: `A,${t - 11}`, key: t });
+ document.getElementById('chart-soft').innerHTML = buildChartTable('soft', softRows);
+
+ const pairKeys = ['A','10','9','8','7','6','5','4','3','2'];
+ const pairRows = pairKeys.map(k => ({ label: `${k},${k}`, key: k }));
+ document.getElementById('chart-pairs').innerHTML = buildChartTable('pair', pairRows);
+
+ renderDeviationTables();
+ }
+
+ /* ==================== KEYBOARD SHORTCUTS ==================== */
+ document.addEventListener('keydown', (e) => {
+ if (quizModal.classList.contains('open') || settingsModal.classList.contains('open')) {
+ if (e.key === 'Escape') {
+ quizModal.classList.remove('open');
+ settingsModal.classList.remove('open');
+ }
+ return;
+ }
+ if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+ const k = e.key.toLowerCase();
+
+ if (activeTab === 'play') {
+ if (phase === 'playing') {
+ if (k === 'h') playerHit();
+ else if (k === 's') playerStand();
+ else if (k === 'd') playerDouble();
+ else if (k === 'p') playerSplit();
+ else if (k === 'r') playerSurrender();
+ } else if ((phase === 'betting' || phase === 'done') && (k === ' ' || k === 'enter')) {
+ e.preventDefault();
+ startDeal();
+ }
+ } else if (activeTab === 'speed') {
+ if (k === ' ' && spRunning && document.getElementById('sp-mode').value === 'manual') {
+ e.preventDefault();
+ spNextStep();
+ }
+ } else if (activeTab === 'strat') {
+ if (k === 'h') sdAnswer('H');
+ else if (k === 's') sdAnswer('S');
+ else if (k === 'd') sdAnswer('D');
+ else if (k === 'p') sdAnswer('P');
+ else if (k === 'r') sdAnswer('R');
+ }
+ });
+
+ /* ==================== INITIALIZE ==================== */
+ syncRuleControlsUI();
+ buildShoe();
+ updateTopStats();
+ renderTable();
+ spUpdateStats();
+ updateStratRulesLabel();
+ sdNextHand();
+ renderCharts();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
