@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v10</title>
+<title>Blackjack & Card Counting Trainer Pro v11</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -168,6 +168,91 @@
  gap: 6px;
  }
  .tab-view.active { display: flex; }
+ #tab-history.tab-view.active {
+ display: flex;
+ flex: 1 1 auto;
+ min-height: 0;
+ overflow-y: auto;
+ overflow-x: hidden;
+ -webkit-overflow-scrolling: touch;
+ }
+ .history-quick {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 8px;
+ width: 100%;
+ margin: 0;
+ padding: 8px 10px;
+ min-height: 44px;
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ background: var(--panel);
+ color: var(--text);
+ font-size: 0.8rem;
+ font-weight: 700;
+ text-align: left;
+ cursor: pointer;
+ touch-action: manipulation;
+ }
+ .history-quick:hover { border-color: var(--gold-dim); color: var(--gold); }
+ .history-toolbar {
+ display: flex;
+ flex-wrap: wrap;
+ align-items: center;
+ gap: 8px 10px;
+ padding: 4px 0 8px;
+ }
+ .history-toolbar h2 {
+ margin: 0;
+ color: var(--gold);
+ font-size: 1.02rem;
+ flex: 1 1 12rem;
+ }
+ .history-filter {
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ min-height: 44px;
+ font-size: 0.84rem;
+ }
+ .history-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; }
+ .history-empty { color: var(--muted); font-size: 0.88rem; padding: 12px 4px; }
+ .history-card {
+ background: var(--panel);
+ border: 1px solid var(--panel-border);
+ border-radius: 10px;
+ padding: 10px;
+ font-size: 0.8rem;
+ overflow-wrap: anywhere;
+ }
+ .history-card.has-mistake { border-color: rgba(220, 80, 80, 0.55); }
+ .history-card-head {
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: space-between;
+ gap: 4px 10px;
+ margin-bottom: 6px;
+ font-weight: 700;
+ }
+ .history-card-head .round { color: var(--gold); }
+ .history-card-head .net.pos { color: var(--green); }
+ .history-card-head .net.neg { color: var(--red); }
+ .history-meta, .history-line { margin: 3px 0; color: var(--text); }
+ .history-actions { margin: 4px 0 0; padding-left: 1.1rem; }
+ .history-actions li { margin: 2px 0; }
+ .history-actions .miss { color: var(--red); font-weight: 700; }
+ .history-actions .ok { color: var(--green); }
+ .history-badge {
+ display: inline-block;
+ margin-left: 6px;
+ padding: 1px 6px;
+ border-radius: 99px;
+ background: var(--red);
+ color: #fff;
+ font-size: 0.68rem;
+ font-weight: 800;
+ }
 
  /* CRITICAL FIX: Charts & Guide uses block layout inside scroll container so flex never crushes accordions */
  #tab-charts.tab-view.active {
@@ -700,23 +785,37 @@
  .modal h3 { margin: 0 0 10px; color: var(--gold); font-size: 1.02rem; }
 
  .setting-row {
- display: flex;
+ display: grid;
+ grid-template-columns: minmax(0, 1fr) auto;
  align-items: center;
  justify-content: space-between;
- flex-wrap: wrap;
  padding: 7px 0;
  border-bottom: 1px solid rgba(36,70,56,0.6);
  font-size: 0.84rem;
  gap: 8px 10px;
  }
+ /* Select, number, and compound controls sit under the label so a wrapping
+    caption is never painted over (v10-1). */
+ .setting-row:has(select),
+ .setting-row:has(input[type="number"]),
+ .setting-row:has(.row) {
+ grid-template-columns: minmax(0, 1fr);
+ align-items: stretch;
+ }
+ .setting-row > span,
+ .setting-row > .lbl {
+ min-width: 0;
+ overflow-wrap: anywhere;
+ }
  #settings-modal select,
- .modal select {
- flex: 1 1 18rem;
- min-width: min(100%, 18rem);
+ .modal select,
+ .setting-row select {
+ width: 100%;
  max-width: 100%;
- width: auto;
+ min-width: 0;
  box-sizing: border-box;
  padding-right: 2.25rem;
+ justify-self: stretch;
  }
  .score-hidden {
  cursor: pointer;
@@ -1322,7 +1421,7 @@
  .est-note { font-size: 0.72rem; color: var(--muted); margin-top: 8px; }
  .sd-timer { height: 6px; background: rgba(0,0,0,0.35); border-radius: 99px; overflow: hidden; margin: 6px 0; display: none; }
  .sd-timer > span { display: block; height: 100%; width: 100%; background: var(--gold); transform-origin: left center; }
- .setting-row .lbl { flex: 1; min-width: 0; }
+ .setting-row .lbl { min-width: 0; }
  #bet-rec-line { font-size: 0.78rem; color: var(--gold); text-align: center; min-height: 20px; margin: 4px 0; }
  #bet-rec-line.has-bet-grade { color: #f3dc9b; }
 </style>
@@ -1339,6 +1438,7 @@
  <option value="charts">Charts</option>
  <option value="stats">Stats</option>
  <option value="risk">Risk Tools</option>
+ <option value="history">Hand History (this shoe)</option>
  <option value="guide">How It Works</option>
  </select>
  </div>
@@ -1413,6 +1513,11 @@
  </div>
  </div>
  </div>
+
+ <button type="button" class="history-quick" id="btn-open-history" aria-label="Open hand history for this shoe">
+ <span>Hand history (this shoe)</span>
+ <span id="ui-history-count">0 hands</span>
+ </button>
 
  <div class="controls-bar">
  <!-- Betting Controls -->
@@ -1591,6 +1696,7 @@
  </select>
  <label><input type="checkbox" id="chart-opt-das" checked> DAS</label>
  <label><input type="checkbox" id="chart-opt-ls" checked> LS</label>
+ <label><input type="checkbox" id="chart-opt-split-aces-one" checked> Split aces: 1 card</label>
  </div>
 
  <div class="deck-callout" id="chart-deck-callout"></div>
@@ -1747,6 +1853,16 @@
  </section>
 
  <!-- ==================== TAB 7: HOW IT WORKS ==================== -->
+ <section id="tab-history" class="tab-view">
+ <div class="history-toolbar">
+ <h2>Hand History (this shoe)</h2>
+ <label class="history-filter"><input type="checkbox" id="history-mistakes-only"> Mistakes only</label>
+ <button type="button" class="btn btn-sm" id="btn-clear-history">Clear history</button>
+ <p class="est-note" id="history-shoe-meta" style="flex:1 1 100%; margin:0;">No hands recorded in this shoe yet.</p>
+ </div>
+ <div id="history-list" class="history-list"></div>
+ </section>
+
  <section id="tab-guide" class="tab-view">
  <div class="table-felt" style="justify-content:flex-start; align-items:stretch; overflow:auto; gap:8px; padding:12px;">
  <h2 style="margin:0 0 4px; color:var(--gold); font-size:1.1rem;">How It Works</h2>
@@ -1769,7 +1885,8 @@
  <summary>Basic strategy</summary>
  <div class="guide-block-body">
  <p>Basic strategy is the play that loses the least (or wins the most) in the long run for your rules, without using the count. This app follows Wizard of Odds total-dependent charts for 1, 2, 4, 6, and 8 decks, including S17 vs H17, DAS, and late surrender.</p>
- <p>Natural blackjack pays <strong>3:2</strong>. The dealer peeks for blackjack (American style). Split aces get one card each and cannot be resplit. A two-card 21 after a split is not paid as blackjack.</p>
+ <p>Natural blackjack pays <strong>3:2</strong>. The dealer peeks for blackjack (American style). A two-card 21 after a split is not paid as blackjack. Re-splitting aces (RSA) is not offered.</p>
+ <p><strong>Split aces receive one card only</strong> (Rules, on by default — the usual casino rule): each split ace is dealt exactly one card and the hand stands. You cannot hit, double, or resplit those aces. A 10 on a split ace is a regular 21, not a blackjack. Turn the rule off and split aces play like any other split hand (hit or double after split if DAS is on), still with no RSA.</p>
  </div>
  </details>
 
@@ -1851,9 +1968,17 @@
  </details>
 
  <details class="guide-block">
+ <summary>Hand History (this shoe)</summary>
+ <div class="guide-block-body">
+ <p>Open <strong>Hand History (this shoe)</strong> from the mode menu, or use the link under the table. It lists every completed round of the <em>current shoe only</em>: round number, time, bet and units, each of your hands (splits and doubles included), dealer cards, totals, the actions you took versus basic strategy or the deviation, insurance or even money, the outcome and net, and — when the count HUD or live shoe was on — the running count, true count, and decks remaining at bet time. Mistakes are marked. Use <strong>Mistakes only</strong> to filter, and <strong>Clear history</strong> (with a confirm) to wipe the list.</p>
+ <p>A new shuffle or a new shoe resets the list. Reloading the page mid-round does not add a half-finished hand; completed hands from this shoe come back, and play continues in the same shoe. History is saved on this device with your other trainer settings.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
  <summary>What each toggle does</summary>
  <div class="guide-block-body">
- <p>Open <strong>Rules → Features</strong>. Turning a toggle off hides that tool’s screens and stops its logic. The core table, basic strategy, and charts remain. How It Works and Table Play always stay in the mode list. Each Settings → Features control:</p>
+ <p>Open <strong>Rules → Features</strong>. Turning a toggle off hides that tool’s screens and stops its logic. The core table, basic strategy, and charts remain. How It Works, Table Play, and Hand History (this shoe) always stay in the mode list. Split-ace one-card is a Rules setting, not a Features toggle (on by default). Each Settings → Features control:</p>
  <ul>
  <li><strong>Illustrious 18</strong> — coach and drills use the I18 indexes. Off: those plays follow basic strategy.</li>
  <li><strong>Fab 4</strong> — late-surrender deviations (14/15 vs 9, 10, Ace). Off: those plays follow basic strategy.</li>
@@ -1911,6 +2036,10 @@
  <div class="setting-row">
  <span>Late Surrender (LS)</span>
  <input type="checkbox" id="opt-ls" checked>
+ </div>
+ <div class="setting-row">
+ <span>Split aces receive one card only</span>
+ <input type="checkbox" id="opt-split-aces-one" checked aria-label="Split aces receive one card only">
  </div>
  <div class="setting-row">
  <span>Betting Strategy (HUD)</span>
@@ -2163,6 +2292,7 @@
  s17: true,
  das: true,
  ls: true,
+ splitAcesOneCard: true,
  devCoach: 'i18',
  betStrat: 'auto',
  showHud: true,
@@ -2178,7 +2308,7 @@
  sdBest: 0,
  speedBestCps: 0,
  speedBestMs: 0,
- schemaVersion: 8,
+ schemaVersion: 9,
  featI18: true,
  featFab4: true,
  featIns: true,
@@ -2203,6 +2333,9 @@
  spreadMax: 12,
  decisionSec: 5,
  otherSeats: 0,
+ handHistory: [],
+ historyShoeId: 0,
+ committedShoe: null,
  stats: { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} }
  };
 
@@ -2212,11 +2345,15 @@
  if (saved.featI18 === undefined && saved.devCoach === 'basic') {
  s.featI18 = false; s.featFab4 = false; s.featIns = false;
  }
- s.schemaVersion = 8;
+ s.schemaVersion = 9;
  if (saved.featLiveTray === undefined) s.featLiveTray = true;
  if (saved.featShowExactDecks === undefined) s.featShowExactDecks = false;
  if (saved.featShowTotals === undefined) s.featShowTotals = true;
  if (saved.deckEstInterval === undefined) s.deckEstInterval = 0;
+ if (saved.splitAcesOneCard === undefined) s.splitAcesOneCard = true;
+ if (!Array.isArray(s.handHistory)) s.handHistory = [];
+ if (!s.historyShoeId) s.historyShoeId = 0;
+ if (!s.committedShoe || typeof s.committedShoe !== 'object') s.committedShoe = null;
  if (!s.stats || s.stats.v !== 1) {
  s.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} };
  } else {
@@ -2350,6 +2487,66 @@
  return { total, inShoe, used, unseen, decksRemaining, shoePct, discardPct, cutPct };
  }
 
+ function makeUnshuffledShoe(decks) {
+ const n = Math.max(1, decks | 0);
+ const out = [];
+ for (let d = 0; d < n; d++) {
+ for (let i = 0; i < SUITS.length; i++) {
+ for (let j = 0; j < RANKS.length; j++) out.push({ rank: RANKS[j], suit: SUITS[i] });
+ }
+ }
+ return out;
+ }
+ function countShoeComposition(cards) {
+ const byRank = {};
+ const bySuitRank = {};
+ for (let j = 0; j < RANKS.length; j++) byRank[RANKS[j]] = 0;
+ for (const c of cards || []) {
+ const r = c.rank;
+ byRank[r] = (byRank[r] || 0) + 1;
+ const k = String(r) + String(c.suit);
+ bySuitRank[k] = (bySuitRank[k] || 0) + 1;
+ }
+ return { total: (cards || []).length, byRank, bySuitRank };
+ }
+ function expectedShoeComposition(decks) {
+ const n = Math.max(1, decks | 0);
+ const byRank = {};
+ const bySuitRank = {};
+ for (let j = 0; j < RANKS.length; j++) byRank[RANKS[j]] = 4 * n;
+ for (let i = 0; i < SUITS.length; i++) {
+ for (let j = 0; j < RANKS.length; j++) bySuitRank[RANKS[j] + SUITS[i]] = n;
+ }
+ return { total: 52 * n, byRank, bySuitRank };
+ }
+ function compositionIssues(cards, decks) {
+ const got = countShoeComposition(cards);
+ const exp = expectedShoeComposition(decks);
+ const issues = [];
+ if (got.total !== exp.total) issues.push('total ' + got.total + ' != ' + exp.total);
+ for (let j = 0; j < RANKS.length; j++) {
+ const r = RANKS[j];
+ if (got.byRank[r] !== exp.byRank[r]) issues.push(r + '=' + got.byRank[r] + ' != ' + exp.byRank[r]);
+ }
+ for (const k of Object.keys(exp.bySuitRank)) {
+ if ((got.bySuitRank[k] || 0) !== exp.bySuitRank[k]) issues.push(k + '=' + (got.bySuitRank[k] || 0) + ' != ' + exp.bySuitRank[k]);
+ }
+ return issues;
+ }
+ function hiLoSum(cards) {
+ let s = 0;
+ for (const c of cards || []) s += hiLoValue(c.rank);
+ return s;
+ }
+ function chiSquare(observed, expected) {
+ let s = 0;
+ for (let i = 0; i < observed.length; i++) {
+ const e = expected[i];
+ if (e > 0) s += (observed[i] - e) * (observed[i] - e) / e;
+ }
+ return s;
+ }
+
  /** True after `handsSince` completed hands when interval is every N hands (N > 0). */
  /** Hand-total pill text. When showTotals is false, busts and blackjacks are still announced without the numeric total. */
  function formatHandScoreLabel(ev, opts) {
@@ -2374,6 +2571,43 @@
  s = s.replace(/\bBUST\s+\d+\b/gi, 'BUST');
  s = s.replace(/\s{2,}/g, ' ').replace(/\s+([.,);:])/g, '$1').trim();
  return s;
+ }
+
+ /** Default ON: casino standard — split aces receive exactly one card and stand. */
+ function splitAcesOneCardEnabled(flag) {
+ return flag !== false;
+ }
+ function isSplitAceHand(cards, fromSplit) {
+ return !!fromSplit && cards && cards.length > 0 && normalizeRank(cards[0].rank) === 'A';
+ }
+ /** When the one-card rule is on, a split ace may not be hit, doubled, or resplit. */
+ function splitAceMustStand(cards, fromSplit, splitAcesOneCard) {
+ return splitAcesOneCardEnabled(splitAcesOneCard) && isSplitAceHand(cards, fromSplit);
+ }
+ /** Pair split is allowed only when both cards match, under 4 hands, and never as RSA. */
+ function canSplitPair(cards, fromSplit, handCount) {
+ if (!cards || cards.length !== 2 || handCount >= 4) return false;
+ if (normalizeRank(cards[0].rank) !== normalizeRank(cards[1].rank)) return false;
+ if (fromSplit && normalizeRank(cards[0].rank) === 'A') return false; // no RSA
+ return true;
+ }
+ function formatHistoryCard(c) {
+ if (!c) return '?';
+ const suit = ({ hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠', h: '♥', d: '♦', c: '♣', s: '♠' })[String(c.suit || '').toLowerCase()] || (c.suit || '');
+ return String(c.rank) + suit;
+ }
+ function formatHistoryCards(cards) {
+ return (cards || []).map(formatHistoryCard).join(' ');
+ }
+ function summarizeHistoryHand(cards) {
+ const ev = evalHand(cards || []);
+ if (ev.isBlackjack) return 'BJ';
+ if (ev.isBust) return 'BUST ' + ev.total;
+ if (ev.isSoft) return 'Soft ' + ev.total;
+ return String(ev.total);
+ }
+ function resetHandHistoryState() {
+ return { handHistory: [], historyOpenRound: null };
  }
 
  function isPeriodicPromptDue(handsSince, interval) {
@@ -2592,6 +2826,7 @@
  const useFab4 = !!o.useFab4;
  const useIns = !!o.useIns;
  const rounding = o.rounding || 'exact';
+ const splitAcesOneCard = o.splitAcesOneCard !== false;
  const rng = createSeededRng(o.seed || 'SOAK-v7');
  const prevRules = { s17: state.s17, das: state.das, ls: state.ls, decks: state.decks };
  state.s17 = s17; state.das = das; state.ls = ls; state.decks = decks;
@@ -2601,21 +2836,30 @@
  const total = decks * 52;
  const cut = Math.floor(total * pen);
  let exceptions = 0, rcMismatches = 0, midShuffles = 0, rounds = 0;
+ let compositionErrors = 0, compositionChecks = 0;
  let shoe = [], rc = 0, dealt = 0, shoeId = 0, seen = [];
+ let shoeBurn = null, shoeDealtCards = [];
+
+ function auditShoeNow() {
+ const all = shoeDealtCards.concat(shoe);
+ if (shoeBurn) all.push(shoeBurn);
+ compositionChecks++;
+ const issues = compositionIssues(all, decks);
+ if (issues.length) compositionErrors++;
+ if (hiLoSum(all) !== 0) compositionErrors++;
+ }
 
  function newShoe() {
- shoe = [];
+ if (shoeId > 0) auditShoeNow();
+ shoe = makeUnshuffledShoe(decks).map(c => ({ rank: c.rank, suit: c.suit, shoeId: shoeId + 1 }));
  shoeId++;
- for (let d = 0; d < decks; d++) {
- for (let i = 0; i < SUITS.length; i++) {
- for (let j = 0; j < RANKS.length; j++) shoe.push({ rank: RANKS[j], suit: SUITS[i], shoeId });
- }
- }
  fisherYatesShuffle(shoe, rng);
- shoe.pop(); // burn, uncounted
+ shoeBurn = shoe.pop(); // burn, uncounted
+ shoeDealtCards = [];
  dealt = 1;
  rc = 0;
  seen = [];
+ auditShoeNow(); // post-reshuffle / fresh shoe: remaining + burn = full pack
  }
 
  function draw(count) {
@@ -2625,6 +2869,7 @@
  }
  const c = shoe.pop();
  dealt++;
+ shoeDealtCards.push(c);
  if (count) {
  rc += hiLoValue(c.rank);
  seen.push(c);
@@ -2655,12 +2900,13 @@
  const ev = evalHand(h.cards);
  if (ev.isBlackjack && !h.fromSplit) { h.finished = true; break; }
  if (ev.isBust) { h.finished = true; break; }
- const canDouble = h.cards.length === 2 && !h.doubled;
- const canSplit = h.cards.length === 2 && hands.length < 4 &&
- normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const canDouble = h.cards.length === 2 && !h.doubled && (!h.fromSplit || das) && !splitAceMustStand(h.cards, h.fromSplit, splitAcesOneCard);
+ const canSplit = canSplitPair(h.cards, h.fromSplit, hands.length);
  const canSurr = ls && h.cards.length === 2 && !h.fromSplit && hands.length === 1;
  const dec = getOptimalDecision(h.cards, up.rank, {
  canDouble, canSplit, canSurrender: canSurr,
+ fromSplit: !!h.fromSplit,
+ splitAcesOneCard,
  useI18: useI18 && !h.fromSplit ? useI18 : useI18,
  useFab4: useFab4,
  useDeviations: useI18 || useFab4,
@@ -2673,6 +2919,8 @@
  const sibling = { cards: [c0, draw(true)], bet: h.bet, fromSplit: true, surrendered: false, doubled: false, finished: false };
  h.cards.push(draw(true));
  h.fromSplit = true;
+ if (splitAceMustStand(h.cards, true, splitAcesOneCard)) h.finished = true;
+ if (splitAceMustStand(sibling.cards, true, splitAcesOneCard)) sibling.finished = true;
  hands.splice(i + 1, 0, sibling);
  continue;
  }
@@ -2686,7 +2934,7 @@
  if (act === 'H') {
  h.cards.push(draw(true));
  if (evalHand(h.cards).isBust) { h.finished = true; break; }
- if (h.fromSplit && normalizeRank(h.cards[0].rank) === 'A') { h.finished = true; break; }
+ if (splitAceMustStand(h.cards, h.fromSplit, splitAcesOneCard)) { h.finished = true; break; }
  continue;
  }
  h.finished = true; // stand or fallback
@@ -2795,9 +3043,10 @@
  exceptions++;
  }
  }
+ if (shoeId > 0) auditShoeNow();
  state.s17 = prevRules.s17; state.das = prevRules.das; state.ls = prevRules.ls; state.decks = prevRules.decks;
  return {
- rounds, exceptions, rcMismatches, midShuffles,
+ rounds, exceptions, rcMismatches, midShuffles, compositionChecks, compositionErrors,
  startBank, bankroll, net: roundMoney(bankroll - startBank),
  otherSeats, decks
  };
@@ -2994,6 +3243,11 @@
  const upStr = normalizeRank(dealerUpRank);
  const up = upStr === 'A' ? 11 : cardNumeric(upStr);
  const ev = evalHand(cards);
+ const fromSplit = !!opts.fromSplit;
+ const splitAcesOneCard = opts.splitAcesOneCard !== undefined ? !!opts.splitAcesOneCard : (typeof state !== 'undefined' && state && state.splitAcesOneCard !== false);
+ if (splitAceMustStand(cards, fromSplit, splitAcesOneCard)) {
+ return { action: 'S', note: 'Split aces receive one card only (stands; 21 is not a blackjack).' };
+ }
  const isPair = canSplit && cards.length === 2 && normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
  const pairKey = isPair ? normalizeRank(cards[0].rank) : null;
  const effectiveRc = rc !== null ? rc : tc;
@@ -3099,6 +3353,7 @@
  if (activeTab === 'strat') { updateStratRulesLabel(); sdNextHand(); }
  if (activeTab === 'stats') renderStatsTab();
  if (activeTab === 'risk') renderRiskTab();
+ if (activeTab === 'history') renderHistory();
  if (activeTab === 'speed') syncDeckEstButton();
  });
 
@@ -3118,6 +3373,9 @@
  let burnCardCount = 0;
  let needsReshuffle = false;
  let currentShoeId = 0;
+ let currentRoundLog = null;
+ let burnCard = null;
+ let dealtThisShoe = [];
  let holeCardShoeId = 0;
  let midHandShuffle = false;
 
@@ -3173,8 +3431,9 @@
  fisherYatesShuffle(shoe, shoeRng);
 
  // Casino realism: burn 1 card face-down after shuffle
- shoe.pop();
+ burnCard = shoe.pop();
  burnCardCount = 1;
+ dealtThisShoe = [];
 
  const pen = getPenetrationForDecks(state.decks);
  cutCardIndex = Math.floor((state.decks * 52) * pen);
@@ -3187,7 +3446,212 @@
 
  const seedEl = document.getElementById('ui-shoe-seed');
  if (seedEl) seedEl.textContent = currentShoeSeed;
+ state.handHistory = [];
+ state.historyShoeId = currentShoeId;
+ currentRoundLog = null;
+ if (typeof snapshotCommittedShoe === 'function') snapshotCommittedShoe();
+ if (typeof updateHistoryCount === 'function') updateHistoryCount();
+ if (typeof renderHistory === 'function' && activeTab === 'history') renderHistory();
  updateHud();
+ if (typeof saveState === 'function') saveState();
+ }
+
+ function snapshotCommittedShoe() {
+ state.committedShoe = {
+ id: currentShoeId,
+ seed: currentShoeSeed,
+ shoe: (shoe || []).map(c => ({ rank: c.rank, suit: c.suit, shoeId: c.shoeId })),
+ runningCount,
+ cardsDealtCount,
+ burnCardCount,
+ cutCardIndex,
+ needsReshuffle: !!needsReshuffle
+ };
+ state.historyShoeId = currentShoeId;
+ }
+ function restoreCommittedShoe() {
+ const s = state.committedShoe;
+ if (!s || !Array.isArray(s.shoe) || !s.shoe.length) return false;
+ currentShoeId = s.id || 1;
+ currentShoeSeed = s.seed || '';
+ shoe = s.shoe.map(c => ({ rank: c.rank, suit: c.suit, shoeId: c.shoeId || currentShoeId }));
+ runningCount = s.runningCount || 0;
+ cardsDealtCount = s.cardsDealtCount || 0;
+ burnCardCount = s.burnCardCount != null ? s.burnCardCount : 1;
+ cutCardIndex = s.cutCardIndex || Math.floor((state.decks * 52) * getPenetrationForDecks(state.decks));
+ needsReshuffle = !!s.needsReshuffle;
+ const seedEl = document.getElementById('ui-shoe-seed');
+ if (seedEl) seedEl.textContent = currentShoeSeed || '--';
+ if (!Array.isArray(state.handHistory)) state.handHistory = [];
+ // Drop any stray entries from a previous shoe
+ if (state.historyShoeId && state.historyShoeId !== currentShoeId) state.handHistory = [];
+ state.historyShoeId = currentShoeId;
+ currentRoundLog = null; // never restore a mid-round log
+ phase = 'betting';
+ dealerHand = [];
+ playerHands = [];
+ holeHidden = true;
+ insuranceBet = 0;
+ return true;
+ }
+ function beginRoundLog() {
+ const tc = (typeof getTrueCount === 'function') ? getTrueCount() : 0;
+ const decks = (typeof getDecksRemaining === 'function') ? getDecksRemaining() : state.decks;
+ const unit = state.unitSize || 25;
+ currentRoundLog = {
+ shoeId: currentShoeId,
+ seed: currentShoeSeed,
+ n: (state.handHistory && state.handHistory.length ? state.handHistory.length : 0) + 1,
+ t: Date.now(),
+ bet: state.bet,
+ unitSize: unit,
+ units: unit > 0 ? Math.round((state.bet / unit) * 100) / 100 : 0,
+ betTime: {
+ rc: runningCount,
+ tc,
+ decks,
+ hudOn: !!state.showHud,
+ trayOn: !!state.featLiveTray
+ },
+ actions: [],
+ insurance: null,
+ midHandShuffle: false,
+ complete: false
+ };
+ }
+ function logRoundAction(action, dec, correct, handIdx) {
+ if (!currentRoundLog) return;
+ const h = playerHands[handIdx != null ? handIdx : activeHandIdx];
+ currentRoundLog.actions.push({
+ hand: (handIdx != null ? handIdx : activeHandIdx) + 1,
+ action,
+ optimal: dec && dec.action,
+ correct: !!correct,
+ note: (dec && dec.note) || '',
+ cards: (h && h.cards) ? h.cards.map(c => ({ rank: c.rank, suit: c.suit })) : []
+ });
+ if (!correct) currentRoundLog.hasMistake = true;
+ }
+ function finalizeRoundLog(handNet) {
+ if (!currentRoundLog) return;
+ currentRoundLog.complete = true;
+ currentRoundLog.net = roundMoney(handNet || 0);
+ if (insuranceBet) {
+ const dEv = dealerHand.length ? evalHand(dealerHand) : { isBlackjack: false };
+ currentRoundLog.net = roundMoney(currentRoundLog.net + insuranceProfit(insuranceBet, dEv.isBlackjack));
+ }
+ currentRoundLog.outcome = currentRoundLog.net > 0 ? 'WIN' : currentRoundLog.net < 0 ? 'LOSE' : 'PUSH';
+ currentRoundLog.dealer = {
+ cards: dealerHand.map(c => ({ rank: c.rank, suit: c.suit })),
+ total: dealerHand.length ? evalHand(dealerHand).total : 0,
+ bj: !!(dealerHand.length && evalHand(dealerHand).isBlackjack),
+ bust: !!(dealerHand.length && evalHand(dealerHand).isBust)
+ };
+ currentRoundLog.hands = playerHands.map((h, i) => {
+ const ev = evalHand(h.cards);
+ return {
+ i: i + 1,
+ cards: h.cards.map(c => ({ rank: c.rank, suit: c.suit })),
+ bet: h.bet,
+ fromSplit: !!h.fromSplit,
+ doubled: !!h.doubled,
+ surrendered: !!h.surrendered,
+ total: ev.total,
+ soft: !!ev.isSoft,
+ bust: !!ev.isBust,
+ bj: !!(ev.isBlackjack && !h.fromSplit),
+ result: h.result || '',
+ resultText: h.resultText || '',
+ actions: (currentRoundLog.actions || []).filter(a => a.hand === i + 1)
+ };
+ });
+ currentRoundLog.hasMistake = !!(currentRoundLog.hasMistake || currentRoundLog.actions.some(a => a.correct === false) || (currentRoundLog.insurance && currentRoundLog.insurance.correct === false));
+ currentRoundLog.midHandShuffle = !!midHandShuffle;
+ if (currentRoundLog.shoeId !== currentShoeId) currentRoundLog.shoeId = currentRoundLog.shoeId; // keep origin
+ if (!Array.isArray(state.handHistory)) state.handHistory = [];
+ state.handHistory.push(currentRoundLog);
+ state.historyShoeId = currentShoeId;
+ currentRoundLog = null;
+ snapshotCommittedShoe();
+ if (typeof updateHistoryCount === 'function') updateHistoryCount();
+ if (typeof renderHistory === 'function' && activeTab === 'history') renderHistory();
+ }
+ function updateHistoryCount() {
+ const n = (state.handHistory && state.handHistory.length) || 0;
+ const el = document.getElementById('ui-history-count');
+ if (el) el.textContent = n + (n === 1 ? ' hand' : ' hands');
+ }
+ function escapeHtml(s) {
+ return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+ }
+ function formatHistoryTime(ts) {
+ try {
+ return new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+ } catch (e) { return ''; }
+ }
+ function renderHistory() {
+ const list = document.getElementById('history-list');
+ const meta = document.getElementById('history-shoe-meta');
+ if (!list) return;
+ const onlyMiss = !!(document.getElementById('history-mistakes-only') && document.getElementById('history-mistakes-only').checked);
+ const rows = (state.handHistory || []).filter(e => e && e.complete !== false && (!onlyMiss || e.hasMistake));
+ if (meta) {
+ const seed = currentShoeSeed || (state.committedShoe && state.committedShoe.seed) || '';
+ const total = (state.handHistory || []).length;
+ meta.textContent = total
+ ? (total + (total === 1 ? ' hand' : ' hands') + ' in this shoe' + (seed ? ' · seed ' + seed : '') + (onlyMiss ? ' · showing mistakes' : ''))
+ : ('No hands recorded in this shoe yet' + (seed ? ' · seed ' + seed : '') + '.');
+ }
+ if (!rows.length) {
+ list.innerHTML = '<p class="history-empty">' + (onlyMiss ? 'No mistakes in this shoe.' : 'Play a round on the table and it will show up here. A new shoe clears this list.') + '</p>';
+ return;
+ }
+ list.innerHTML = rows.map(e => {
+ const netCls = e.net > 0 ? 'pos' : e.net < 0 ? 'neg' : '';
+ const netTxt = (e.net > 0 ? '+' : '') + formatMoney(e.net);
+ const miss = e.hasMistake ? '<span class="history-badge">MISTAKE</span>' : '';
+ const betTxt = formatMoney(e.bet) + (e.units ? ' · ' + e.units + 'u' : '');
+ const bt = e.betTime || {};
+ const countBits = [];
+ if (bt.hudOn || state.showHud) {
+ const rc = bt.rc;
+ const tc = bt.tc;
+ if (rc != null) countBits.push('RC ' + (rc > 0 ? '+' : '') + rc);
+ if (tc != null && Number.isFinite(tc)) countBits.push('TC ' + ((tc > 0 ? '+' : '') + (Number.isInteger(tc) ? tc : Number(tc).toFixed(1))));
+ }
+ if ((bt.trayOn || bt.hudOn) && bt.decks != null) countBits.push(Number(bt.decks).toFixed(1) + ' decks');
+ const countLine = countBits.length ? '<div class="history-meta">At bet: ' + escapeHtml(countBits.join(' · ')) + '</div>' : '';
+ const ins = e.insurance;
+ let insLine = '';
+ if (ins && (ins.offered || ins.taken)) {
+ const kind = ins.evenMoney ? 'Even money' : 'Insurance';
+ const took = ins.taken ? 'taken' : 'declined';
+ const mark = ins.correct == null ? '' : (ins.correct ? ' ✓' : ' ✗');
+ insLine = '<div class="history-line">' + kind + ' ' + took + (ins.amount ? ' (' + formatMoney(ins.amount) + ')' : '') + mark + '</div>';
+ }
+ const dealerTxt = e.dealer ? (formatHistoryCards(e.dealer.cards) + ' (' + (e.dealer.bj ? 'BJ' : e.dealer.bust ? ('BUST ' + e.dealer.total) : e.dealer.total) + ')') : '—';
+ const handsHtml = (e.hands || []).map(h => {
+ const acts = (h.actions || []).map(a => {
+ const label = (typeof actionName === 'function' ? actionName(a.action) : a.action) +
+ (a.correct ? '' : (' (should ' + (typeof actionName === 'function' ? actionName(a.optimal) : a.optimal) + ')'));
+ return '<li class="' + (a.correct ? 'ok' : 'miss') + '">' + escapeHtml(label) + (a.correct ? ' ✓' : ' ✗') + '</li>';
+ }).join('');
+ const title = (e.hands && e.hands.length > 1 ? ('H' + h.i + ' · ') : 'You · ') + formatMoney(h.bet) +
+ (h.doubled ? ' doubled' : '') + (h.surrendered ? ' surrender' : '') + (h.fromSplit ? ' split' : '');
+ return '<div class="history-line"><strong>' + escapeHtml(title) + '</strong> · ' +
+ escapeHtml(formatHistoryCards(h.cards)) + ' (' + escapeHtml(h.bj ? 'BJ' : h.bust ? ('BUST ' + h.total) : (h.soft ? ('Soft ' + h.total) : String(h.total))) + ')' +
+ (h.resultText ? ' · ' + escapeHtml(h.resultText) : '') +
+ (acts ? '<ul class="history-actions">' + acts + '</ul>' : '') + '</div>';
+ }).join('');
+ const mid = e.midHandShuffle ? '<div class="history-meta">New shoe shuffled mid-hand to finish this round.</div>' : '';
+ return '<article class="history-card' + (e.hasMistake ? ' has-mistake' : '') + '">' +
+ '<div class="history-card-head"><span class="round">Round ' + e.n + miss + '</span><span>' + escapeHtml(formatHistoryTime(e.t)) + '</span><span class="net ' + netCls + '">' + escapeHtml(e.outcome || '') + ' ' + netTxt + '</span></div>' +
+ '<div class="history-meta">Bet ' + escapeHtml(betTxt) + '</div>' +
+ handsHtml +
+ '<div class="history-line"><strong>Dealer</strong> · ' + escapeHtml(dealerTxt) + '</div>' +
+ insLine + countLine + mid +
+ '</article>';
+ }).join('');
  }
 
  function drawCard(countImmediately = true) {
@@ -3198,10 +3662,14 @@
  // count resets for the new shoe; cards already on the table (including a hidden
  // hole card from the previous shoe) are not carried into the new count.
  buildShoe();
- if (midHand) midHandShuffle = true;
+ if (midHand) {
+ midHandShuffle = true;
+ if (currentRoundLog) currentRoundLog.midHandShuffle = true;
+ }
  }
  const card = shoe.pop();
  cardsDealtCount++;
+ dealtThisShoe.push(card);
  if (cardsDealtCount + burnCardCount >= cutCardIndex) needsReshuffle = true;
  if (countImmediately) runningCount += hiLoValue(card.rank);
  updateHud();
@@ -3472,15 +3940,15 @@
 
  if (phase === 'playing') {
  const h = playerHands[activeHandIdx];
- const canDouble = h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
- const canSplit = h.cards.length === 2 &&
- playerHands.length < 4 &&
- state.bankroll >= h.bet &&
- normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const aceStand = splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard);
+ const canDouble = !aceStand && h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
+ const canSplit = canSplitPair(h.cards, h.fromSplit, playerHands.length) && state.bankroll >= h.bet;
  const canSurr = state.ls && h.cards.length === 2 && !h.fromSplit && playerHands.length === 1;
+ const canHit = !aceStand;
 
  document.getElementById('btn-double').disabled = !canDouble;
  document.getElementById('btn-split').disabled = !canSplit;
+ document.getElementById('btn-hit').disabled = !canHit;
  surrBtn.disabled = !canSurr;
  }
 
@@ -3502,6 +3970,7 @@
 
  maybeShowHeat(state.lastBet, state.bet);
  maybeGradeBet();
+ beginRoundLog();
  state.lastBet = state.bet;
  state.bankroll = roundMoney(state.bankroll - state.bet);
  insuranceBet = 0;
@@ -3584,6 +4053,7 @@
  const prefix = [keepPrior ? prior : '', headline].filter(Boolean).map(s => s.replace(/[. ]+$/, '')).join('. ');
  const banner = composeRoundBanner(handNet, insuranceBet, dEv.isBlackjack, prefix);
  setFeedback(banner.text, banner.cls);
+ if (typeof finalizeRoundLog === 'function') finalizeRoundLog(handNet);
  finishRound();
  } else {
  playOtherSeats();
@@ -3594,15 +4064,17 @@
 
  function evaluateCoach(action) {
  const h = playerHands[activeHandIdx];
- const canDouble = h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
- const canSplit = h.cards.length === 2 && playerHands.length < 4 && state.bankroll >= h.bet &&
- normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const aceStand = splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard);
+ const canDouble = !aceStand && h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
+ const canSplit = canSplitPair(h.cards, h.fromSplit, playerHands.length) && state.bankroll >= h.bet;
  const canSurrender = state.ls && h.cards.length === 2 && !h.fromSplit && playerHands.length === 1;
 
  const dec = getOptimalDecision(h.cards, dealerHand[0].rank, {
  canDouble,
  canSplit,
  canSurrender,
+ fromSplit: !!h.fromSplit,
+ splitAcesOneCard: state.splitAcesOneCard !== false,
  useDeviations: !!(state.featI18 || state.featFab4),
  useI18: !!state.featI18,
  useFab4: !!state.featFab4,
@@ -3615,6 +4087,7 @@
  const isCorrect = action === dec.action;
  if (isCorrect) state.playCorrect++;
  if (state.featStats) recordPlayOutcome(h.cards, dealerHand[0] && dealerHand[0].rank, isCorrect, dec);
+ if (typeof logRoundAction === 'function') logRoundAction(action, dec, isCorrect, activeHandIdx);
  saveState();
 
  if (state.coach) {
@@ -3636,6 +4109,8 @@
 
  function playerHit() {
  if (phase !== 'playing') return;
+ const cur = playerHands[activeHandIdx];
+ if (splitAceMustStand(cur.cards, cur.fromSplit, state.splitAcesOneCard)) return;
  evaluateCoach('H');
  const h = playerHands[activeHandIdx];
  h.cards.push(drawCard(true));
@@ -3662,6 +4137,7 @@
  function playerDouble() {
  if (phase !== 'playing') return;
  const h = playerHands[activeHandIdx];
+ if (splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard)) return;
  if (h.cards.length !== 2 || state.bankroll < h.bet || (h.fromSplit && !state.das)) return;
  evaluateCoach('D');
  state.bankroll = roundMoney(state.bankroll - h.bet);
@@ -3680,19 +4156,19 @@
  function playerSplit() {
  if (phase !== 'playing') return;
  const h = playerHands[activeHandIdx];
- if (h.cards.length !== 2 || playerHands.length >= 4 || state.bankroll < h.bet) return;
- if (normalizeRank(h.cards[0].rank) !== normalizeRank(h.cards[1].rank)) return;
+ if (!canSplitPair(h.cards, h.fromSplit, playerHands.length) || state.bankroll < h.bet) return;
  evaluateCoach('P');
 
  state.bankroll = roundMoney(state.bankroll - h.bet);
  const c1 = h.cards[0];
  const c2 = h.cards[1];
- const isAces = c1.rank === 'A';
+ const isAces = normalizeRank(c1.rank) === 'A';
 
  const cards1 = [c1, drawCard(true)];
  const cards2 = [c2, drawCard(true)];
- const hand1 = { cards: cards1, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: isAces || evalHand(cards1).total === 21, result: '', resultText: '' };
- const hand2 = { cards: cards2, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: isAces || evalHand(cards2).total === 21, result: '', resultText: '' };
+ const aceOne = isAces && state.splitAcesOneCard !== false;
+ const hand1 = { cards: cards1, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: aceOne || evalHand(cards1).total >= 21, result: '', resultText: '' };
+ const hand2 = { cards: cards2, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: aceOne || evalHand(cards2).total >= 21, result: '', resultText: '' };
 
  playerHands.splice(activeHandIdx, 1, hand1, hand2);
  advanceHandOrDealer();
@@ -3761,6 +4237,7 @@
  midHandShuffle = false;
  }
  setFeedback(combined, prior ? priorCls : banner.cls);
+ if (typeof finalizeRoundLog === 'function') finalizeRoundLog(handNet);
  finishRound();
  }
 
@@ -3911,12 +4388,19 @@
  const prefix = [prior, 'Even Money paid 1:1'].filter(Boolean).map(s => s.replace(/[. ]+$/, '')).join('. ');
  const banner = composeRoundBanner(playerHands[0].bet, 0, false, prefix);
  setFeedback(banner.text, (state.coach && state.featIns) ? (isCorrect ? 'good' : 'warn') : banner.cls);
+ if (currentRoundLog) {
+ currentRoundLog.insurance = { offered: true, evenMoney: true, taken: true, amount: 0, correct: state.featIns ? !!isCorrect : null, index: idx };
+ }
+ if (typeof finalizeRoundLog === 'function') finalizeRoundLog(playerHands[0].bet);
  finishRound();
  return;
  }
 
  insuranceBet = roundMoney(state.bet / 2);
  state.bankroll = roundMoney(state.bankroll - insuranceBet);
+ if (currentRoundLog) {
+ currentRoundLog.insurance = { offered: true, evenMoney: false, taken: true, amount: insuranceBet, correct: state.featIns ? !!isCorrect : null, index: idx };
+ }
  if (state.coach && state.featIns) {
  setFeedback(
  isCorrect
@@ -3931,6 +4415,9 @@
  document.getElementById('btn-ins-no').addEventListener('click', () => {
  if (phase !== 'insurance') return;
  const { isCorrect, idx } = gradeInsurance(false);
+ if (currentRoundLog) {
+ currentRoundLog.insurance = { offered: true, evenMoney: !!isEvenMoneyOffer, taken: false, amount: 0, correct: state.featIns ? !!isCorrect : null, index: idx };
+ }
  if (state.coach && state.featIns && !isCorrect) {
  setFeedback(`Note (I18 #1 · ${state.decks}D): At TC ≥ +${idx}, taking ${isEvenMoneyOffer ? 'Even Money' : 'Insurance'} is +EV!`, 'info');
  }
@@ -3963,6 +4450,7 @@
  const optS17 = document.getElementById('opt-s17');
  const optDas = document.getElementById('opt-das');
  const optLs = document.getElementById('opt-ls');
+ const optSplitAcesOne = document.getElementById('opt-split-aces-one');
  const optBetStrat = document.getElementById('opt-bet-strat');
  const optHud = document.getElementById('opt-hud');
  const optTags = document.getElementById('opt-tags');
@@ -3973,12 +4461,14 @@
  const chartOptS17 = document.getElementById('chart-opt-s17');
  const chartOptDas = document.getElementById('chart-opt-das');
  const chartOptLs = document.getElementById('chart-opt-ls');
+ const chartOptSplitAcesOne = document.getElementById('chart-opt-split-aces-one');
 
  function syncRuleControlsUI() {
  optDecks.value = String(state.decks);
  optS17.value = state.s17 ? 'S17' : 'H17';
  optDas.checked = state.das;
  optLs.checked = state.ls;
+ if (optSplitAcesOne) optSplitAcesOne.checked = state.splitAcesOneCard !== false;
  optBetStrat.value = state.betStrat;
  optHud.checked = state.showHud;
  optTags.checked = state.showTags;
@@ -3990,6 +4480,7 @@
  chartOptS17.value = state.s17 ? 'S17' : 'H17';
  chartOptDas.checked = state.das;
  chartOptLs.checked = state.ls;
+ if (chartOptSplitAcesOne) chartOptSplitAcesOne.checked = state.splitAcesOneCard !== false;
 
  document.querySelectorAll('.deck-pill').forEach(p => {
  p.classList.toggle('active', parseInt(p.dataset.chartDecks, 10) === state.decks);
@@ -4028,6 +4519,9 @@
 
  optLs.addEventListener('change', () => { state.ls = optLs.checked; applyRuleChange(); });
  chartOptLs.addEventListener('change', () => { state.ls = chartOptLs.checked; applyRuleChange(); });
+
+ if (optSplitAcesOne) optSplitAcesOne.addEventListener('change', () => { state.splitAcesOneCard = optSplitAcesOne.checked; applyRuleChange(); });
+ if (chartOptSplitAcesOne) chartOptSplitAcesOne.addEventListener('change', () => { state.splitAcesOneCard = chartOptSplitAcesOne.checked; applyRuleChange(); });
 
  optBetStrat.addEventListener('change', () => { state.betStrat = optBetStrat.value; saveState(); updateHud(); });
  optHud.addEventListener('change', () => { state.showHud = optHud.checked; saveState(); updateHud(); });
@@ -4397,7 +4891,7 @@
  diffs = '4-Deck Shoe: Multi-deck Basic Strategy with slightly lower house edge than 6D/8D. Insurance +EV at TC ≥ +3.';
  }
  document.getElementById('chart-deck-callout').innerHTML =
- `<strong>${state.decks}-Deck Profile (${state.s17 ? 'S17' : 'H17'}, ${state.das ? 'DAS' : 'No DAS'}, ${state.ls ? 'LS' : 'No LS'}):</strong> Base Edge <strong>${edgePct}%</strong> · Pen <strong>${penPct}%</strong> · Ins Index <strong>TC ≥ +${insIdx}</strong><br>${diffs}`;
+ `<strong>${state.decks}-Deck Profile (${state.s17 ? 'S17' : 'H17'}, ${state.das ? 'DAS' : 'No DAS'}, ${state.ls ? 'LS' : 'No LS'}, ${state.splitAcesOneCard !== false ? 'split aces 1 card' : 'hit split aces'}):</strong> Base Edge <strong>${edgePct}%</strong> · Pen <strong>${penPct}%</strong> · Ins Index <strong>TC ≥ +${insIdx}</strong><br>${diffs}`;
  }
 
  function renderDeviationTables() {
@@ -4532,7 +5026,7 @@
  function updateModeOptions() {
  const sel = document.getElementById('mode-select');
  if (!sel) return;
- const show = { play: true, guide: true, charts: true, speed: !!state.featSpeed, strat: !!state.featStrat, stats: !!state.featStats, risk: !!state.featRisk };
+ const show = { play: true, guide: true, history: true, charts: true, speed: !!state.featSpeed, strat: !!state.featStrat, stats: !!state.featStats, risk: !!state.featRisk };
  [...sel.options].forEach(opt => { opt.hidden = show[opt.value] === false; });
  if (show[sel.value] === false) {
  sel.value = 'play';
@@ -4721,29 +5215,34 @@
  while (guard++ < 16) {
  const ev = evalHand(h.cards);
  if (ev.isBust || ev.isBlackjack) break;
- const canSplit = h.cards.length === 2 && hands.length < 4 &&
- normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const canSplit = canSplitPair(h.cards, h.fromSplit, hands.length);
+ const oneCard = splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard);
  const dec = getOptimalDecision(h.cards, dealerHand[0].rank, {
- canDouble: h.cards.length === 2,
+ canDouble: h.cards.length === 2 && (!h.fromSplit || state.das) && !oneCard,
  canSplit,
  canSurrender: state.ls && h.cards.length === 2 && !h.fromSplit && hands.length === 1,
+ fromSplit: !!h.fromSplit,
+ splitAcesOneCard: state.splitAcesOneCard !== false,
  useI18: false, useFab4: false, useDeviations: false,
  tc: getTrueCount(), rc: runningCount, decks: state.decks
  });
+ if (oneCard) break;
  if (dec.action === 'R') break;
  if (dec.action === 'P' && canSplit) {
  const c1 = h.cards.pop();
  h.cards.push(drawCard(true));
  h.fromSplit = true;
- hands.splice(i + 1, 0, { cards: [c1, drawCard(true)], fromSplit: true });
- if (normalizeRank(h.cards[0].rank) === 'A') break;
+ const sib = { cards: [c1, drawCard(true)], fromSplit: true };
+ hands.splice(i + 1, 0, sib);
+ if (splitAceMustStand(h.cards, true, state.splitAcesOneCard)) break;
  continue;
  }
- if (dec.action === 'D' && h.cards.length === 2) { h.cards.push(drawCard(true)); break; }
+ if (dec.action === 'D' && h.cards.length === 2 && (!h.fromSplit || state.das) && !oneCard) { h.cards.push(drawCard(true)); break; }
  if (dec.action === 'H') {
+ if (oneCard) break;
  h.cards.push(drawCard(true));
  if (evalHand(h.cards).isBust) break;
- if (h.fromSplit && normalizeRank(h.cards[0].rank) === 'A') break;
+ if (splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard)) break;
  continue;
  }
  break;
@@ -5083,12 +5582,60 @@
 
 
  /* ==================== INITIALIZE ==================== */
+ if (typeof window !== 'undefined') {
+ window.BJ_QA = {
+ shoeComposition() {
+ const parts = [];
+ if (burnCard) parts.push(burnCard);
+ if (dealtThisShoe && dealtThisShoe.length) parts.push.apply(parts, dealtThisShoe);
+ if (shoe && shoe.length) parts.push.apply(parts, shoe);
+ const got = countShoeComposition(parts);
+ const exp = expectedShoeComposition(state.decks);
+ const issues = compositionIssues(parts, state.decks);
+ const rcAll = hiLoSum(parts);
+ return {
+ decks: state.decks,
+ total: got.total,
+ expectedTotal: exp.total,
+ byRank: got.byRank,
+ expectedByRank: exp.byRank,
+ bySuitRank: got.bySuitRank,
+ remaining: shoe.length,
+ dealt: dealtThisShoe.length,
+ burned: burnCard ? (burnCard.rank + burnCard.suit) : null,
+ hiLoSum: rcAll,
+ issues,
+ ok: issues.length === 0 && rcAll === 0
+ };
+ }
+ };
+ }
+
  bindFeatureToggles();
  syncRuleControlsUI();
  updateModeOptions();
- buildShoe();
+ if (!restoreCommittedShoe()) buildShoe();
+ else { updateHud(); updateHistoryCount(); }
  updateTopStats();
  renderTable();
+ updateHistoryCount();
+
+ const histBtn = document.getElementById('btn-open-history');
+ if (histBtn) histBtn.addEventListener('click', () => {
+ const sel = document.getElementById('mode-select');
+ if (sel) { sel.value = 'history'; sel.dispatchEvent(new Event('change')); }
+ });
+ const missOnly = document.getElementById('history-mistakes-only');
+ if (missOnly) missOnly.addEventListener('change', renderHistory);
+ const clearBtn = document.getElementById('btn-clear-history');
+ if (clearBtn) clearBtn.addEventListener('click', () => {
+ if (!(state.handHistory && state.handHistory.length)) return;
+ if (!window.confirm('Clear this shoe’s hand history? This cannot be undone.')) return;
+ state.handHistory = [];
+ saveState();
+ renderHistory();
+ updateHistoryCount();
+ });
  spUpdateStats();
  updateStratRulesLabel();
  sdNextHand();
@@ -5110,14 +5657,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v10')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v11')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v10', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v11', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v10'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v11'); } catch (e) {} }, 2500);
   });
 }
 </script>

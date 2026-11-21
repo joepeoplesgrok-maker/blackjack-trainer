@@ -17,9 +17,13 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - American peek for dealer blackjack (Ace or 10-up). Insurance / Even Money are offered only when the dealer shows an Ace.
 - Natural blackjack pays **3:2** (no 6:5 option).
 - Late surrender, when enabled, is on the first two cards of a single unsplit hand.
-- Split aces receive one card each and cannot be hit, doubled, or resplit (no RSA).
+- Split aces receive one card each by default (Rules toggle, casino standard) and cannot be resplit (no RSA). Turn the rule off to hit or double split aces (DAS still applies). A 10 on a split ace is a regular 21, not a blackjack.
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
+
+## Feature guide (v11)
+
+v11 adds **Hand History (this shoe)** — a review of every completed round in the current shoe (bet, cards, actions vs basic/deviations, insurance, net, and the count at bet time). The list resets on a new shuffle and survives a reload in the same shoe. A Rules toggle, **Split aces receive one card only**, is on by default; turn it off to play split aces like other split hands. Settings rows no longer let a dropdown paint over its label (v10-1).
 
 ## Feature guide (v10)
 
@@ -51,6 +55,12 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v11
+- **Hand History (this shoe)** in the mode menu, plus a quick link under the table. Each entry has round #, time, bet and units, player hands (splits/doubles), dealer cards, totals, actions vs the correct basic or deviation play (mistakes marked), insurance, outcome and net, and RC/TC/decks at bet time when those tools were on. Completes only when a round ends (a mid-round reload does not write a partial hand). The list is this shoe only and clears on a shuffle; it is saved so a reload in the same shoe keeps it. Filter to mistakes, or Clear with a confirm.
+- **Split aces receive one card only** (Rules, on by default). On: each split ace gets one card and stands — no hit, double, or resplit. A 10 on a split ace is 21, not blackjack. Off: split aces play normally (hit / DAS), still with no RSA. Table play, other seats, the coach, charts callout, and the soak sim all follow the toggle.
+- v10-1: in Rules / Settings / Features, a wrapping label no longer sits under its `<select>` or number field — the control starts on the line below at full width.
+- Service worker cache bumped to `bj-trainer-v11`.
 
 ### v10
 - Rules / Settings `<select>` labels are fully visible on every viewport. The Betting Strategy option is now **Auto by deck (1–8 / 1–12)** and the dropdown wraps to a full row when space is tight, so text is no longer clipped before the arrow.
