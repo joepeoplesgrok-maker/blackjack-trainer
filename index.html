@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v9</title>
+<title>Blackjack & Card Counting Trainer Pro v10</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -711,12 +711,21 @@
  }
  #settings-modal select,
  .modal select {
- flex: 1 1 14rem;
- min-width: min(100%, 14rem);
+ flex: 1 1 18rem;
+ min-width: min(100%, 18rem);
  max-width: 100%;
  width: auto;
  box-sizing: border-box;
- padding-right: 36px;
+ padding-right: 2.25rem;
+ }
+ .score-hidden {
+ cursor: pointer;
+ letter-spacing: 0.12em;
+ user-select: none;
+ }
+ .score-hidden:focus-visible {
+ outline: 2px solid var(--gold);
+ outline-offset: 2px;
  }
  .setting-row:last-of-type { border-bottom: none; }
  .setting-row input[type="checkbox"] {
@@ -1862,6 +1871,7 @@
  <li><strong>Stats</strong> and <strong>Risk Tools</strong> — show or hide those modes and (for Stats) stop logging.</li>
  <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count.</li>
  <li><strong>Heat hints</strong> — an educational warning when a bet jumps more than 2× or leaps from a small wager to the top of the spread.</li>
+ <li><strong>Show card totals</strong> (on by default) — the total pills next to the dealer, your hand, every split hand, and other seats. Turn it off to practice adding the cards yourself. Busts and blackjacks are still announced; the coach will not name the total. Tap a hidden total to peek at it for the rest of the round.</li>
  </ul>
  </div>
  </details>
@@ -1905,7 +1915,7 @@
  <div class="setting-row">
  <span>Betting Strategy (HUD)</span>
  <select id="opt-bet-strat">
- <option value="auto" selected>Auto by Deck (2D: 1–8 / 6–8D: 1–12)</option>
+ <option value="auto" selected>Auto by deck (1–8 / 1–12)</option>
  <option value="spread12">1–12 Unit Spread</option>
  <option value="spread8">1–8 Unit Spread</option>
  <option value="kelly">Half-Kelly (Dynamic)</option>
@@ -1963,6 +1973,7 @@
  </div>
  <div class="setting-row"><span class="lbl">Live shoe &amp; discard bars</span><input type="checkbox" id="feat-live-tray" checked aria-label="Show live shoe and discard bars on the table"></div>
  <div class="setting-row"><span class="lbl">Show exact decks remaining</span><input type="checkbox" id="feat-exact-decks" aria-label="Show exact decks remaining on the live bars"></div>
+ <div class="setting-row"><span class="lbl">Show card totals</span><input type="checkbox" id="feat-show-totals" checked aria-label="Show hand totals on the table"></div>
  <div class="setting-row"><span class="lbl">Deck-estimate prompt</span>
  <select id="opt-deckest-int" aria-label="Auto deck-estimate prompt frequency">
  <option value="0" selected>Off</option>
@@ -2176,6 +2187,7 @@
  featQuiz: false,
  featLiveTray: true,
  featShowExactDecks: false,
+ featShowTotals: true,
  deckEstInterval: 0,
  featDeckEst: false,
  featSpeed: true,
@@ -2203,6 +2215,7 @@
  s.schemaVersion = 8;
  if (saved.featLiveTray === undefined) s.featLiveTray = true;
  if (saved.featShowExactDecks === undefined) s.featShowExactDecks = false;
+ if (saved.featShowTotals === undefined) s.featShowTotals = true;
  if (saved.deckEstInterval === undefined) s.deckEstInterval = 0;
  if (!s.stats || s.stats.v !== 1) {
  s.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} };
@@ -2338,6 +2351,31 @@
  }
 
  /** True after `handsSince` completed hands when interval is every N hands (N > 0). */
+ /** Hand-total pill text. When showTotals is false, busts and blackjacks are still announced without the numeric total. */
+ function formatHandScoreLabel(ev, opts) {
+ opts = opts || {};
+ const show = opts.showTotals !== false;
+ if (opts.surrendered) return 'SURR';
+ if (ev && ev.isBlackjack && !opts.fromSplit) return 'BJ!';
+ if (ev && ev.isBust) return show ? ('BUST ' + ev.total) : 'BUST';
+ if (!ev) return show ? '--' : '';
+ if (!show) return ev.isSoft ? 'SOFT' : '· · ·';
+ if (ev.isSoft) return (opts.longSoft ? 'Soft ' : 'S') + ev.total;
+ return String(ev.total);
+ }
+
+ /** Strip player-total mentions from coach / drill copy when totals are hidden. */
+ function hideTotalsInText(text) {
+ if (text == null) return text;
+ let s = String(text);
+ s = s.replace(/\b(Hit|Stand|Double|Split|Surrender)\s+(?:Soft\s+|Hard\s+)?(?:A,A|10,10|[2-9],[2-9]|\d+)\s+vs\s+(?:A|10|[2-9])/gi, '$1');
+ s = s.replace(/\b(?:Soft\s+|Hard\s+)?(?:\d{1,2}|A,A|10s?|[2-9]s?)\s+vs\s+(?:A|10|[2-9])\b/gi, 'this hand');
+ s = s.replace(/\b(?:Soft|Hard)\s+\d+\b/g, '');
+ s = s.replace(/\bBUST\s+\d+\b/gi, 'BUST');
+ s = s.replace(/\s{2,}/g, ' ').replace(/\s+([.,);:])/g, '$1').trim();
+ return s;
+ }
+
  function isPeriodicPromptDue(handsSince, interval) {
  const n = parseInt(interval, 10) || 0;
  return n > 0 && handsSince >= n;
@@ -3093,6 +3131,10 @@
  let handsSinceQuiz = 0;
  let handsSinceDeckEst = 0;
  let lastBetGrade = '';
+ let revealedTotals = Object.create(null);
+ function clearRevealedTotals() { revealedTotals = Object.create(null); }
+ function totalsVisible() { return state.featShowTotals !== false; }
+ function formatCoachNote(text) { return totalsVisible() ? text : hideTotalsInText(text); }
  let lastSuggestedAmount = 25;
 
  function refundInFlightBetsIfAny() {
@@ -3280,9 +3322,47 @@
 
  function setFeedback(msg, cls = '') {
  const el = document.getElementById('play-feedback');
- el.textContent = msg;
+ const text = (state && state.featShowTotals === false) ? hideTotalsInText(msg) : msg;
+ el.textContent = text;
  el.className = 'feedback-bar ' + cls;
  }
+
+ function applyScorePill(el, fullLabel, cls, key, ev, opts) {
+ if (!el) return;
+ opts = opts || {};
+ const show = totalsVisible() || !!(key && revealedTotals[key]);
+ const label = ev ? formatHandScoreLabel(ev, Object.assign({ showTotals: show }, opts)) : (show ? (fullLabel || '--') : (fullLabel === '--' ? '' : '· · ·'));
+ el.hidden = !label;
+ el.textContent = label || '';
+ el.className = (cls || 'hand-score') + ((!show && ev && !ev.isBlackjack && !ev.isBust && !opts.surrendered) ? ' score-hidden' : '');
+ if (!show && ev && !ev.isBlackjack && !ev.isBust && !opts.surrendered) {
+ el.dataset.scoreKey = key;
+ el.title = 'Tap to reveal total';
+ el.setAttribute('role', 'button');
+ el.tabIndex = 0;
+ } else {
+ el.removeAttribute('data-score-key');
+ el.removeAttribute('title');
+ el.removeAttribute('role');
+ el.removeAttribute('tabindex');
+ }
+ }
+ function revealScoreFromEvent(e) {
+ const el = e.target && e.target.closest && e.target.closest('.score-hidden');
+ if (!el) return;
+ const key = el.dataset.scoreKey;
+ if (!key) return;
+ if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+ e.preventDefault();
+ revealedTotals[key] = true;
+ if (key === 'sd' && typeof sdCurrent !== 'undefined' && sdCurrent && typeof sdRenderCurrent === 'function') {
+ sdRenderCurrent(sdCurrent.cards, sdCurrent.dealerUp, sdCurrent.canSplit, sdCurrent.allowSurr);
+ } else if (typeof renderTable === 'function') {
+ renderTable();
+ }
+ }
+ document.addEventListener('click', revealScoreFromEvent);
+ document.addEventListener('keydown', revealScoreFromEvent);
 
  function updateHandScrollHints() {
  document.querySelectorAll('#player-hands .player-hand-shell').forEach(shell => {
@@ -3307,15 +3387,24 @@
  });
  const dScoreEl = document.getElementById('dealer-score');
  if (dealerHand.length === 0) {
- dScoreEl.textContent = '--';
- dScoreEl.className = 'hand-score';
+ applyScorePill(dScoreEl, '--', 'hand-score', 'dealer', null);
  } else if (holeHidden) {
- dScoreEl.textContent = cardNumeric(dealerHand[0].rank);
+ const upVal = cardNumeric(dealerHand[0].rank);
+ if (totalsVisible() || revealedTotals.dealer) {
+ dScoreEl.hidden = false;
+ dScoreEl.textContent = upVal;
  dScoreEl.className = 'hand-score';
+ dScoreEl.removeAttribute('data-score-key');
+ dScoreEl.removeAttribute('role');
+ dScoreEl.removeAttribute('tabindex');
+ dScoreEl.removeAttribute('title');
+ } else {
+ applyScorePill(dScoreEl, '· · ·', 'hand-score', 'dealer', { isSoft: false, isBust: false, isBlackjack: false, total: upVal });
+ }
  } else {
  const ev = evalHand(dealerHand);
- dScoreEl.textContent = ev.isBlackjack ? 'BJ!' : (ev.isBust ? `BUST ${ev.total}` : (ev.isSoft ? `S${ev.total}` : ev.total));
- dScoreEl.className = 'hand-score' + (ev.isBust ? ' bust' : ev.isBlackjack ? ' bj' : '');
+ const cls = 'hand-score' + (ev.isBust ? ' bust' : ev.isBlackjack ? ' bj' : '');
+ applyScorePill(dScoreEl, null, cls, 'dealer', ev, {});
  }
 
  const pContainer = document.getElementById('player-hands');
@@ -3325,12 +3414,16 @@
  box.className = 'player-hand-box' + (phase === 'playing' && idx === activeHandIdx ? ' active-hand' : '');
 
  const ev = evalHand(h.cards);
- const scoreLabel = h.surrendered ? 'SURR' : (ev.isBlackjack && !h.fromSplit ? 'BJ!' : (ev.isBust ? `BUST ${ev.total}` : (ev.isSoft ? `Soft ${ev.total}` : ev.total)));
  const scoreCls = 'hand-score' + (ev.isBust ? ' bust' : (ev.isBlackjack && !h.fromSplit) ? ' bj' : '');
 
  const header = document.createElement('div');
  header.className = 'zone-title';
- header.innerHTML = `<span>${playerHands.length > 1 ? 'H' + (idx + 1) : 'You'} · ${formatMoney(h.bet)}</span><span class="${scoreCls}">${scoreLabel}</span>`;
+ const nameEl = document.createElement('span');
+ nameEl.textContent = (playerHands.length > 1 ? 'H' + (idx + 1) : 'You') + ' · ' + formatMoney(h.bet);
+ const scoreEl = document.createElement('span');
+ header.appendChild(nameEl);
+ header.appendChild(scoreEl);
+ applyScorePill(scoreEl, null, scoreCls, 'p' + idx, ev, { fromSplit: !!h.fromSplit, surrendered: !!h.surrendered, longSoft: true });
  if (h.resultText) {
  const res = document.createElement('span');
  res.className = 'hand-result ' + h.result;
@@ -3396,6 +3489,7 @@
  }
 
  function startDeal() {
+ if (typeof clearRevealedTotals === 'function') clearRevealedTotals();
  if (state.bet <= 0) { setFeedback('Add chips to place a bet first.', 'warn'); return; }
  if (state.bet > state.bankroll) { setFeedback('Not enough bankroll for that bet.', 'warn'); return; }
 
@@ -4116,8 +4210,17 @@
  pBox.innerHTML = '';
  cards.forEach(c => pBox.appendChild(createCardEl(c, { large: true })));
  const ev = evalHand(cards);
- const lbl = canSplit ? ('Pair ' + normalizeRank(cards[0].rank) + 's') : (ev.isSoft ? ('Soft ' + ev.total) : ('Hard ' + ev.total));
- document.getElementById('sd-hand-label').textContent = lbl;
+ const sdEl = document.getElementById('sd-hand-label');
+ if (canSplit) {
+ sdEl.className = 'hand-score';
+ sdEl.textContent = 'Pair ' + normalizeRank(cards[0].rank) + 's';
+ sdEl.hidden = false;
+ sdEl.removeAttribute('data-score-key');
+ } else {
+ const full = ev.isSoft ? ('Soft ' + ev.total) : ('Hard ' + ev.total);
+ applyScorePill(sdEl, full, 'hand-score', 'sd', ev, { longSoft: true, showHardPrefix: true });
+ if (totalsVisible() || revealedTotals.sd) sdEl.textContent = full;
+ }
  document.getElementById('sd-btn-split').disabled = !canSplit;
  const surrBtn = document.getElementById('sd-btn-surr');
  const grid = document.getElementById('sd-action-grid');
@@ -4145,7 +4248,7 @@
  sdCurrent = { cards, dealerUp, optimal: dec.action, note: dec.note || m.key, canSplit, allowSurr, tc, isDevMode: !!dec.note };
  sdRenderCurrent(cards, dealerUp, canSplit, allowSurr);
  const fb = document.getElementById('sd-feedback');
- if (fb) { fb.className = 'feedback-bar info'; fb.textContent = 'Review: ' + (m.key || 'missed hand') + ' (' + reviewQueue.length + ' left).'; }
+ if (fb) { fb.className = 'feedback-bar info'; fb.textContent = 'Review: ' + formatCoachNote(m.key || 'missed hand') + ' (' + reviewQueue.length + ' left).'; }
  return;
  }
  const filter = document.getElementById('sd-filter').value;
@@ -4231,7 +4334,7 @@
  const fb = document.getElementById('sd-feedback');
  state.sdTotal++;
  const tcTxt = sdCurrent.isDevMode ? (' at TC ' + (sdCurrent.tc >= 0 ? '+' : '') + sdCurrent.tc) : '';
- const extra = sdCurrent.note ? (' (' + sdCurrent.note + ')') : '';
+ const extra = sdCurrent.note ? (' (' + formatCoachNote(sdCurrent.note) + ')') : '';
  const correct = act === sdCurrent.optimal;
  if (state.featStats) recordPlayOutcome(sdCurrent.cards, sdCurrent.dealerUp.rank, correct, { action: sdCurrent.optimal, note: sdCurrent.note });
  if (correct) {
@@ -4451,7 +4554,7 @@
  'feat-i18': 'featI18', 'feat-fab4': 'featFab4', 'feat-ins': 'featIns',
  'feat-bet-ramp': 'featBetRamp', 'feat-bet-grade': 'featBetGrade',
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
- 'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks',
+ 'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
  'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
  };
@@ -4474,7 +4577,7 @@
  'feat-i18': 'featI18', 'feat-fab4': 'featFab4', 'feat-ins': 'featIns',
  'feat-bet-ramp': 'featBetRamp', 'feat-bet-grade': 'featBetGrade',
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
- 'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks',
+ 'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
  'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
  };
@@ -4495,10 +4598,14 @@
  if (os) os.value = '2';
  }
  if (id === 'feat-seats' && !el.checked) { /* keep otherSeats but logic off */ }
+ if (id === 'feat-show-totals') { if (typeof clearRevealedTotals === 'function') clearRevealedTotals(); }
  saveState();
  updateModeOptions();
  updateHud();
  renderTable();
+ if (typeof sdCurrent !== 'undefined' && sdCurrent && typeof sdRenderCurrent === 'function') {
+ try { sdRenderCurrent(sdCurrent.cards, sdCurrent.dealerUp, sdCurrent.canSplit, sdCurrent.allowSurr); } catch (e) {}
+ }
  syncDeckEstButton();
  });
  });
@@ -4663,7 +4770,16 @@
  const lab = document.createElement('div');
  lab.className = 'os-label';
  const ev = evalHand(seat.cards);
- lab.textContent = 'Seat ' + (i + 1) + ' · ' + (ev.isBust ? 'Bust ' : '') + ev.total;
+ const show = totalsVisible() || revealedTotals['os' + i];
+ if (show) lab.textContent = 'Seat ' + (i + 1) + ' · ' + (ev.isBust ? 'Bust ' : '') + ev.total;
+ else lab.textContent = 'Seat ' + (i + 1) + (ev.isBust ? ' · BUST' : ev.isBlackjack ? ' · BJ!' : ' · · · ·');
+ if (!show && !ev.isBust && !ev.isBlackjack) {
+ lab.classList.add('score-hidden');
+ lab.dataset.scoreKey = 'os' + i;
+ lab.title = 'Tap to reveal total';
+ lab.setAttribute('role', 'button');
+ lab.tabIndex = 0;
+ }
  box.appendChild(lab);
  const row = document.createElement('div');
  row.className = 'cards-row overlap';
@@ -4994,14 +5110,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v9')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v10')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v9', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v10', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v9'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v10'); } catch (e) {} }, 2500);
   });
 }
 </script>

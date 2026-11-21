@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v10)
+
+v10 fixes the Betting Strategy dropdown so every Rules / Settings label is fully readable (the auto spread reads **Auto by deck (1–8 / 1–12)**). A new Settings → Features toggle, **Show card totals** (on by default), hides the total pills on the dealer, your hand, split hands, and other seats so you can practice adding the cards. Busts and blackjacks are still announced, the coach will not name the total, and you can tap a hidden total to peek for the rest of the round.
+
 ## Feature guide (v9)
 
 v9 keeps the live shoe and discard bars and fixes mid-hand UX: the deck-estimate prompt now fires after every N completed hands (5, 10, or 15), not N+1. Grade bets stays visible next to the recommended bet after Deal. Tight iPhone SE (320×568) portrait keeps the result banner readable and every split card scrollable. Overflowing split hands show a fade and chevron when more cards sit off-screen. Settings dropdowns and short-landscape hand titles stay fully readable. How It Works lists every Settings → Features toggle, including Grade bets, quizzes, timed decisions, other seats, and heat hints.
@@ -47,6 +51,11 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v10
+- Rules / Settings `<select>` labels are fully visible on every viewport. The Betting Strategy option is now **Auto by deck (1–8 / 1–12)** and the dropdown wraps to a full row when space is tight, so text is no longer clipped before the arrow.
+- **Show card totals** (Settings → Features, on by default) can be turned off to practice mental math. Dealer, player, split, and other-seat totals hide; busts and blackjacks are still announced; the coach and Strategy Drill do not name the total. Tap a hidden total to reveal it for the rest of the round. The choice persists.
+- Service worker cache bumped to `bj-trainer-v10`.
 
 ### v9
 - Deck-estimate auto-prompt now fires after N completed hands (every 5 / 10 / 15), not N+1.
