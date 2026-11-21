@@ -19,6 +19,13 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 
 ## Changelog
 
+### v6
+- Hi-Lo count tags sit under each card's own rank/suit index in the visible left strip, so they no longer cover the next overlapping card's corner label.
+- Round-result banner net includes insurance (win or loss) and even money, e.g. a lost $12.50 insurance on a $25 hand reports **-$37.50**.
+- Short phone landscape keeps compact per-hand WIN/LOSE labels in the hand title (needed after a split).
+- Service worker (`bj-trainer-v6`) falls back to `index.html` only for navigation requests; other cache misses surface a network error.
+- All form controls, including the header mode dropdown, use a 16px font so iOS Safari does not zoom on focus.
+
 ### v5
 - Fixed iOS / iPad Safari blank `<select>` labels (explicit dark background, light text, `appearance: none`, custom arrow).
 - Illustrious 18: 16 vs 10 now stands at **TC ≥ 0**; 12 vs 4 now hits at **TC ≤ 0** (same raw-TC comparisons as the other I18 entries).

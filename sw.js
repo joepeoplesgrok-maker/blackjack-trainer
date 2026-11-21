@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bj-trainer-v5';
+const CACHE_NAME = 'bj-trainer-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -45,6 +45,10 @@ self.addEventListener('fetch', (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(event.request).then((r) => r || caches.match('./index.html')))
+      .catch(() => caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          if (event.request.mode === 'navigate') return caches.match('./index.html');
+          return Response.error();
+        }))
   );
 });

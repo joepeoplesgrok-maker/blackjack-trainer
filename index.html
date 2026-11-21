@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v5</title>
+<title>Blackjack & Card Counting Trainer Pro v6</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -107,7 +107,7 @@
  border: 1px solid var(--gold-dim);
  border-radius: 8px;
  padding: 8px 32px 8px 10px;
- font-size: 0.88rem;
+ font-size: 16px;
  font-weight: 700;
  cursor: pointer;
  max-width: 235px;
@@ -327,6 +327,13 @@
  color-scheme: dark;
  }
 
+ /* iOS Safari zooms a focused form control whose computed font-size is under 16px. */
+ select, .mode-select,
+ input[type="text"], input[type="number"], input[type="search"],
+ input[type="email"], input[type="password"], input[type="tel"], textarea {
+ font-size: 16px;
+ }
+
  :focus {
  outline: none;
  }
@@ -381,7 +388,10 @@
  margin-bottom: 5px;
  display: flex;
  align-items: center;
+ justify-content: center;
+ flex-wrap: wrap;
  gap: 6px;
+ max-width: 100%;
  }
 
  .hand-score {
@@ -415,7 +425,12 @@
  flex-wrap: nowrap;
  }
 
- .cards-row.overlap .card + .card { margin-left: -16px; }
+ .cards-row {
+ --card-overlap: 0px;
+ }
+ .cards-row.overlap { --card-overlap: 12px; }
+ .cards-row.overlap .card + .card { margin-left: calc(var(--card-overlap) * -1); }
+ .cards-row { overflow: visible; }
 
  /* Playing Cards */
  .card {
@@ -449,17 +464,28 @@
  .card-bot { font-size: 0.88rem; line-height: 1; text-align: right; transform: rotate(180deg); }
  .card.large .card-bot { font-size: 1.2rem; }
 
+ .card-head {
+ display: flex;
+ flex-direction: column;
+ align-items: flex-start;
+ gap: 1px;
+ max-width: calc(100% - var(--card-overlap, 0px) - 2px);
+ min-width: 0;
+ position: relative;
+ z-index: 2;
+ }
  .hi-lo-tag {
- position: absolute;
- top: -7px;
- right: -6px;
- font-size: 0.66rem;
+ position: static;
+ font-size: 11px;
+ line-height: 1.1;
  font-weight: 800;
- padding: 1px 5px;
+ padding: 1px 4px;
  border-radius: 99px;
  color: #fff;
  box-shadow: 0 2px 4px rgba(0,0,0,0.45);
- z-index: 2;
+ pointer-events: none;
+ max-width: 100%;
+ flex-shrink: 0;
  }
  .tag-plus { background: var(--green); color: #072613; }
  .tag-zero { background: #607d8b; }
@@ -476,7 +502,9 @@
  gap: 8px;
  justify-content: center;
  align-items: stretch;
+ flex-wrap: wrap;
  width: 100%;
+ max-width: 100%;
  overflow-x: auto;
  padding: 2px 0;
  }
@@ -486,11 +514,13 @@
  border: 2px solid transparent;
  border-radius: 10px;
  padding: 6px 8px;
- min-width: 132px;
+ min-width: 0;
+ flex: 1 1 140px;
+ max-width: 100%;
  display: flex;
  flex-direction: column;
  align-items: center;
- flex-shrink: 0;
+ overflow: visible;
  }
  .player-hand-box.active-hand {
  border-color: var(--gold);
@@ -498,13 +528,14 @@
  }
 
  .hand-result {
- margin-top: 4px;
- font-size: 0.74rem;
+ margin-top: 0;
+ font-size: 0.7rem;
  font-weight: 800;
  text-align: center;
- padding: 2px 6px;
+ padding: 1px 5px;
  border-radius: 5px;
  white-space: nowrap;
+ flex-shrink: 0;
  }
  .res-win { background: rgba(46,204,113,0.22); color: #6ef2a4; }
  .res-lose { background: rgba(231,76,60,0.22); color: #ff8c80; }
@@ -846,8 +877,9 @@
  .cards-row { min-height: 56px; }
  .shoe-bar-wrap { height: 3px; margin: 2px 0 0; }
  .zone-title { font-size: 0.62rem; margin-bottom: 2px; }
- /* Badge is redundant with the feedback bar and otherwise collides on 340px-tall phones. */
- .hand-result { display: none; }
+ /* Keep compact per-hand WIN/LOSE in the title row (do not hide after a split). */
+ .hand-result { display: inline-block; font-size: 0.58rem; padding: 0 4px; margin: 0; }
+ .cards-row.overlap { --card-overlap: 8px; }
  #tab-play .player-hands { padding: 0; gap: 4px; }
  #tab-play .player-hand-box { padding: 0 4px; border-width: 1px; min-width: 0; background: transparent; }
  #tab-play .table-felt {
@@ -1476,6 +1508,37 @@
  });
  }
 
+ function insuranceProfit(insuranceBet, dealerHasBj) {
+ const bet = roundMoney(insuranceBet || 0);
+ if (bet <= 0) return 0;
+ return dealerHasBj ? roundMoney(bet * 2) : roundMoney(-bet);
+ }
+
+ function formatNetOutcome(net) {
+ const n = roundMoney(net);
+ if (n > 0) return { msg: `Round won (+${formatMoney(n)}).`, cls: 'good' };
+ if (n < 0) return { msg: `Dealer wins (-${formatMoney(Math.abs(n))}).`, cls: 'warn' };
+ return { msg: 'Round pushed.', cls: 'info' };
+ }
+
+ function formatInsuranceClause(insuranceBet, dealerHasBj) {
+ const bet = roundMoney(insuranceBet || 0);
+ if (bet <= 0) return '';
+ if (dealerHasBj) return `Insurance paid 2:1 (+${formatMoney(roundMoney(bet * 2))}).`;
+ return `Insurance lost (-${formatMoney(bet)}).`;
+ }
+
+ function composeRoundBanner(handNet, insuranceBet, dealerHasBj, prefix) {
+ const net = roundMoney((handNet || 0) + insuranceProfit(insuranceBet, dealerHasBj));
+ const outcome = formatNetOutcome(net);
+ const clause = formatInsuranceClause(insuranceBet, dealerHasBj);
+ const parts = [];
+ if (prefix) parts.push(String(prefix).replace(/[. ]+$/, '') + '.');
+ if (clause) parts.push(clause);
+ parts.push(outcome.msg);
+ return { text: parts.join(' '), net, cls: outcome.cls };
+ }
+
  function getPenetrationForDecks(decks) {
  if (decks === 1) return 0.65;
  if (decks === 2) return 0.70;
@@ -1533,7 +1596,9 @@
  const isRed = card.suit === '♥' || card.suit === '♦';
  el.className = `card ${isRed ? 'red' : 'black'}${large ? ' large' : ''}`;
  el.innerHTML = `
+ <div class="card-head">
  <div class="card-top">${card.rank}${card.suit}</div>
+ </div>
  <div class="card-center">${card.suit}</div>
  <div class="card-bot">${card.rank}${card.suit}</div>
  `;
@@ -1542,7 +1607,7 @@
  const tag = document.createElement('span');
  tag.className = 'hi-lo-tag ' + (v > 0 ? 'tag-plus' : v < 0 ? 'tag-minus' : 'tag-zero');
  tag.textContent = v > 0 ? '+1' : v < 0 ? '-1' : '0';
- el.appendChild(tag);
+ el.querySelector('.card-head').appendChild(tag);
  }
  return el;
  }
@@ -2013,19 +2078,18 @@
  const header = document.createElement('div');
  header.className = 'zone-title';
  header.innerHTML = `<span>${playerHands.length > 1 ? 'H' + (idx + 1) : 'You'} · ${formatMoney(h.bet)}</span><span class="${scoreCls}">${scoreLabel}</span>`;
+ if (h.resultText) {
+ const res = document.createElement('span');
+ res.className = 'hand-result ' + h.result;
+ res.textContent = h.resultText;
+ header.appendChild(res);
+ }
  box.appendChild(header);
 
  const row = document.createElement('div');
  row.className = 'cards-row overlap';
  h.cards.forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
  box.appendChild(row);
-
- if (h.resultText) {
- const res = document.createElement('div');
- res.className = 'hand-result ' + h.result;
- res.textContent = h.resultText;
- box.appendChild(res);
- }
  pContainer.appendChild(box);
  });
 
@@ -2129,22 +2193,33 @@
  if (insuranceBet > 0 && dEv.isBlackjack) {
  state.bankroll = roundMoney(state.bankroll + insuranceBet * 3);
  }
+ let handNet = 0;
+ let headline = '';
  if (pEv.isBlackjack && dEv.isBlackjack) {
  state.bankroll = roundMoney(state.bankroll + playerHands[0].bet);
  playerHands[0].result = 'res-push';
  playerHands[0].resultText = 'PUSH (Both BJ)';
- setFeedback('Push — both have Blackjack.', 'info');
+ handNet = 0;
+ headline = 'Push — both have Blackjack.';
  } else if (pEv.isBlackjack) {
  const profit = roundMoney(playerHands[0].bet * 1.5);
  state.bankroll = roundMoney(state.bankroll + playerHands[0].bet + profit);
  playerHands[0].result = 'res-bj';
  playerHands[0].resultText = `BJ! +${formatMoney(profit)}`;
- setFeedback('Blackjack! Paid 3:2.', 'good');
+ handNet = profit;
+ headline = 'Blackjack! Paid 3:2.';
  } else {
  playerHands[0].result = 'res-lose';
  playerHands[0].resultText = 'DEALER BJ';
- setFeedback(insuranceBet > 0 ? 'Dealer Blackjack — Insurance paid 2:1!' : 'Dealer has Blackjack.', insuranceBet > 0 ? 'info' : 'warn');
+ handNet = roundMoney(-playerHands[0].bet);
+ headline = 'Dealer has Blackjack.';
  }
+ const coachEl = document.getElementById('play-feedback');
+ const prior = (state.coach && coachEl) ? coachEl.textContent.trim() : '';
+ const keepPrior = prior && !/^(Your turn|Tap chips|Add chips|Cut card reached|Shoe shuffled|Fresh |Bankroll)/i.test(prior);
+ const prefix = [keepPrior ? prior : '', headline].filter(Boolean).map(s => s.replace(/[. ]+$/, '')).join('. ');
+ const banner = composeRoundBanner(handNet, insuranceBet, dEv.isBlackjack, prefix);
+ setFeedback(banner.text, banner.cls);
  finishRound();
  } else {
  phase = 'playing';
@@ -2283,22 +2358,22 @@
  }
 
  const dEv = evalHand(dealerHand);
- let netSummary = 0;
+ let handNet = 0;
 
  playerHands.forEach(h => {
- if (h.surrendered) { netSummary = roundMoney(netSummary - h.bet / 2); return; }
+ if (h.surrendered) { handNet = roundMoney(handNet - h.bet / 2); return; }
  const pEv = evalHand(h.cards);
  if (pEv.isBust) {
- netSummary = roundMoney(netSummary - h.bet);
+ handNet = roundMoney(handNet - h.bet);
  } else if (dEv.isBust || pEv.total > dEv.total) {
  state.bankroll = roundMoney(state.bankroll + h.bet * 2);
  h.result = 'res-win';
  h.resultText = `WIN (+${formatMoney(h.bet)})`;
- netSummary = roundMoney(netSummary + h.bet);
+ handNet = roundMoney(handNet + h.bet);
  } else if (pEv.total < dEv.total) {
  h.result = 'res-lose';
  h.resultText = `LOSE (-${formatMoney(h.bet)})`;
- netSummary = roundMoney(netSummary - h.bet);
+ handNet = roundMoney(handNet - h.bet);
  } else {
  state.bankroll = roundMoney(state.bankroll + h.bet);
  h.result = 'res-push';
@@ -2307,21 +2382,17 @@
  });
 
  phase = 'done';
- const outcomeMsg = netSummary > 0
- ? `Round won (+${formatMoney(netSummary)}).`
- : netSummary < 0
- ? `Dealer wins (-${formatMoney(Math.abs(netSummary))}).`
- : 'Round pushed.';
- const outcomeCls = netSummary > 0 ? 'good' : netSummary < 0 ? 'warn' : 'info';
+ // A remaining insuranceBet on this path means the dealer did not have BJ, so insurance lost.
  const coachEl = document.getElementById('play-feedback');
  const prior = (state.coach && playerHands.length === 1 && coachEl) ? coachEl.textContent.trim() : '';
- const priorCls = coachEl && prior ? (coachEl.className.includes('warn') ? 'warn' : coachEl.className.includes('good') ? 'good' : outcomeCls) : outcomeCls;
- let combined = prior ? (prior.replace(/[. ]+$/, '') + '. ' + outcomeMsg) : outcomeMsg;
+ const banner = composeRoundBanner(handNet, insuranceBet, false, prior);
+ let combined = banner.text;
+ const priorCls = coachEl && prior ? (coachEl.className.includes('warn') ? 'warn' : coachEl.className.includes('good') ? 'good' : banner.cls) : banner.cls;
  if (midHandShuffle) {
  combined += ' New shoe shuffled mid-hand to finish dealing; count reset for the fresh shoe.';
  midHandShuffle = false;
  }
- setFeedback(combined, prior ? priorCls : outcomeCls);
+ setFeedback(combined, prior ? priorCls : banner.cls);
  finishRound();
  }
 
@@ -2448,16 +2519,14 @@
  state.bankroll = roundMoney(state.bankroll + playerHands[0].bet * 2);
  playerHands[0].result = 'res-win';
  playerHands[0].resultText = `EVEN MONEY (+${formatMoney(playerHands[0].bet)})`;
- if (state.coach) {
- setFeedback(
- isCorrect
+ const prior = state.coach
+ ? (isCorrect
  ? `✓ I18 #1 (${state.decks}D): Even Money is +EV at TC ≥ +${idx}!`
- : `✗ Even Money = Insurance—only take at TC ≥ +${idx} (${state.decks}D).`,
- isCorrect ? 'good' : 'warn'
- );
- } else {
- setFeedback('Even Money paid 1:1.', 'info');
- }
+ : `✗ Even Money = Insurance—only take at TC ≥ +${idx} (${state.decks}D).`)
+ : '';
+ const prefix = [prior, 'Even Money paid 1:1'].filter(Boolean).map(s => s.replace(/[. ]+$/, '')).join('. ');
+ const banner = composeRoundBanner(playerHands[0].bet, 0, false, prefix);
+ setFeedback(banner.text, state.coach ? (isCorrect ? 'good' : 'warn') : banner.cls);
  finishRound();
  return;
  }
@@ -3037,14 +3106,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v5')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v6')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v5', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v6', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v5'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v6'); } catch (e) {} }, 2500);
   });
 }
 </script>
