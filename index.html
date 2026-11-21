@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v6</title>
+<title>Blackjack & Card Counting Trainer Pro v7</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -110,8 +110,9 @@
  font-size: 16px;
  font-weight: 700;
  cursor: pointer;
- max-width: 235px;
+ max-width: none;
  width: 100%;
+ min-width: 0;
  min-height: 44px;
  touch-action: manipulation;
  color-scheme: dark;
@@ -501,11 +502,11 @@
  display: flex;
  gap: 8px;
  justify-content: center;
- align-items: stretch;
+ align-items: flex-start;
  flex-wrap: wrap;
  width: 100%;
  max-width: 100%;
- overflow-x: auto;
+ overflow: visible;
  padding: 2px 0;
  }
 
@@ -520,7 +521,25 @@
  display: flex;
  flex-direction: column;
  align-items: center;
- overflow: visible;
+ overflow-x: auto;
+ overflow-y: visible;
+ -webkit-overflow-scrolling: touch;
+ overscroll-behavior-x: contain;
+ }
+ .player-hand-box .cards-row {
+ justify-content: flex-start;
+ width: max-content;
+ min-width: min-content;
+ max-width: none;
+ margin-inline: auto;
+ }
+ #dealer-cards {
+ max-width: 100%;
+ overflow-x: auto;
+ justify-content: flex-start;
+ width: max-content;
+ margin-inline: auto;
+ -webkit-overflow-scrolling: touch;
  }
  .player-hand-box.active-hand {
  border-color: var(--gold);
@@ -636,7 +655,7 @@
  border-radius: 14px;
  padding: 16px;
  width: 100%;
- max-width: 420px;
+ max-width: 480px;
  max-height: 88dvh;
  overflow-y: auto;
  -webkit-overflow-scrolling: touch;
@@ -882,26 +901,50 @@
  .cards-row.overlap { --card-overlap: 8px; }
  #tab-play .player-hands { padding: 0; gap: 4px; }
  #tab-play .player-hand-box { padding: 0 4px; border-width: 1px; min-width: 0; background: transparent; }
+ #player-hands .zone-title {
+ flex-wrap: nowrap !important;
+ font-size: 0.55rem;
+ gap: 3px;
+ margin-bottom: 1px;
+ max-width: 100%;
+ overflow: hidden;
+ }
+ #player-hands .zone-title > span,
+ #player-hands .hand-result {
+ white-space: nowrap;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ }
  #tab-play .table-felt {
  position: relative;
  flex-direction: row;
- flex-wrap: nowrap;
- align-items: center;
- justify-content: space-around;
- gap: 8px;
- padding: 4px 6px 28px;
+ flex-wrap: wrap;
+ align-items: flex-start;
+ justify-content: flex-start;
+ gap: 4px 8px;
+ padding: 4px 6px;
  overflow: hidden;
+ flex: 1 0 auto;
+ min-height: min-content;
+ }
+ #tab-play #other-seats:not([hidden]) {
+ max-height: 64px;
+ overflow: auto;
+ flex: 0 0 auto;
  }
  #tab-play .table-felt > .zone {
  flex: 1 1 0;
  min-width: 0;
  width: auto !important;
  }
+ /* Keep the result banner on its own row under the hands so cards never overlap it. */
  #tab-play .table-felt > .feedback-bar {
- position: absolute;
- left: 6px;
- right: 6px;
- bottom: 4px;
+ position: static;
+ flex: 1 0 100%;
+ order: 3;
+ left: auto;
+ right: auto;
+ bottom: auto;
  width: auto;
  max-width: none;
  min-height: 22px;
@@ -925,6 +968,104 @@
  .card.large { width: 96px; height: 136px; }
  .card.large .card-center { font-size: 2.6rem; }
  }
+
+ /* v7 feature UI */
+ details.feat-block, details.guide-block {
+ display: block;
+ margin: 8px 0;
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ background: rgba(0,0,0,0.2);
+ }
+ details.feat-block > summary, details.guide-block > summary {
+ cursor: pointer;
+ list-style: none;
+ padding: 10px 12px;
+ font-weight: 700;
+ color: var(--gold);
+ font-size: 0.88rem;
+ min-height: 44px;
+ display: flex;
+ align-items: center;
+ }
+ details.feat-block > summary::-webkit-details-marker,
+ details.guide-block > summary::-webkit-details-marker { display: none; }
+ details.feat-block > summary::before,
+ details.guide-block > summary::before { content: '▸'; margin-right: 8px; color: var(--gold); }
+ details.feat-block[open] > summary::before,
+ details.guide-block[open] > summary::before { content: '▾'; }
+ .feat-body, .guide-block-body { padding: 4px 12px 10px; font-size: 0.84rem; line-height: 1.45; }
+ .feat-note { color: var(--muted); font-size: 0.75rem; margin: 0 0 6px; }
+ .other-seats {
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: center;
+ gap: 6px;
+ width: 100%;
+ max-width: 100%;
+ padding: 2px 0 4px;
+ }
+ .other-seats[hidden] { display: none !important; }
+ .other-seat {
+ background: rgba(0,0,0,0.25);
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ padding: 3px 5px 4px;
+ min-width: 0;
+ max-width: 100%;
+ overflow-x: auto;
+ }
+ .other-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; }
+ .other-seat .cards-row { margin: 0 auto; }
+ .other-seat .card { width: 36px; height: 50px; padding: 2px 2px; }
+ .other-seat .card-top, .other-seat .card-bot { font-size: 0.58rem; }
+ .other-seat .card-center { font-size: 0.9rem; }
+ .heat-hint {
+ display: none;
+ margin: 0 0 6px;
+ padding: 8px 10px;
+ border-radius: 8px;
+ background: rgba(229,185,76,0.12);
+ border: 1px solid var(--gold-dim);
+ color: #f3dc9b;
+ font-size: 0.78rem;
+ line-height: 1.35;
+ }
+ .heat-hint.show { display: block; }
+ .discard-tray {
+ width: 72px;
+ height: 140px;
+ border: 2px solid var(--gold-dim);
+ border-radius: 6px;
+ background: #0b1914;
+ position: relative;
+ overflow: hidden;
+ margin: 0 auto;
+ }
+ .discard-tray .tray-fill {
+ position: absolute;
+ left: 0; right: 0; bottom: 0;
+ background: linear-gradient(#8b1e1e, #4a0d0d);
+ transition: height 0.3s ease;
+ }
+ @media (prefers-reduced-motion: reduce) {
+ .discard-tray .tray-fill { transition: none; }
+ }
+ .risk-grid {
+ display: grid;
+ grid-template-columns: repeat(2, minmax(0, 1fr));
+ gap: 6px;
+ }
+ .stat-bar { height: 8px; background: rgba(0,0,0,0.35); border-radius: 99px; overflow: hidden; }
+ .stat-bar > span { display: block; height: 100%; background: var(--green); }
+ .miss-list { list-style: none; padding: 0; margin: 0; }
+ .miss-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--panel-border); min-height: 44px; align-items: center; }
+ #stats-chart, #bankroll-chart { width: 100%; height: 160px; background: rgba(0,0,0,0.25); border-radius: 8px; }
+ .est-note { font-size: 0.72rem; color: var(--muted); margin-top: 8px; }
+ .sd-timer { height: 6px; background: rgba(0,0,0,0.35); border-radius: 99px; overflow: hidden; margin: 6px 0; display: none; }
+ .sd-timer > span { display: block; height: 100%; width: 100%; background: var(--gold); transform-origin: left center; }
+ .setting-row .lbl { flex: 1; min-width: 0; }
+ #bet-rec-line { font-size: 0.78rem; color: var(--gold); text-align: center; min-height: 20px; margin: 4px 0; }
 </style>
 </head>
 <body>
@@ -934,13 +1075,16 @@
  <span class="brand-icon">♠</span>
  <select id="mode-select" class="mode-select" aria-label="Select training mode">
  <option value="play">Table Play</option>
- <option value="speed">Speed Count Drill</option>
- <option value="strat">Strategy &amp; Deviations Drill</option>
- <option value="charts">Charts &amp; Counting Guide</option>
+ <option value="speed">Speed Count</option>
+ <option value="strat">Strategy Drill</option>
+ <option value="charts">Charts</option>
+ <option value="stats">Stats</option>
+ <option value="risk">Risk Tools</option>
+ <option value="guide">How It Works</option>
  </select>
  </div>
  <div class="header-actions">
- <button class="icon-btn accent" id="btn-check-count" title="Check Running & True Count">Quiz RC</button>
+ <button class="icon-btn accent" id="btn-check-count" title="Check Running & True Count" style="display:none">Quiz RC</button>
  <button class="icon-btn" id="btn-open-settings" title="Table Rules & Settings">⚙ Rules</button>
  </div>
 </header>
@@ -973,6 +1117,8 @@
  </div>
  </div>
 
+ <div id="heat-hint" class="heat-hint" role="status"></div>
+ <div id="other-seats" class="other-seats" hidden></div>
  <div class="table-felt">
  <div class="zone">
  <div class="zone-title">
@@ -991,6 +1137,7 @@
 
  <div class="controls-bar">
  <!-- Betting Controls -->
+ <div id="bet-rec-line" hidden></div>
  <div id="bet-controls" class="chips-wrap">
  <div class="chips-row" id="chips-row">
  <button class="chip chip-5" data-chip="5">$5</button>
@@ -1078,6 +1225,12 @@
  <button class="btn" id="sp-check">Check Count</button>
  </div>
  <div class="kbd-hint">Keys: Space = Next Card(s) in Manual mode</div>
+ <div id="deck-est-panel" hidden style="margin-top:10px;">
+ <div class="row between" style="gap:8px; align-items:center; flex-wrap:wrap;">
+ <button class="btn btn-gold" id="de-start" type="button">Deck Estimate Drill</button>
+ <span class="feat-note" style="margin:0;">Guess remaining or played decks from the discard tray.</span>
+ </div>
+ </div>
  </div>
  </section>
 
@@ -1090,6 +1243,7 @@
  <div class="stat-cell"><span class="label">Best</span><span class="val pos" id="sd-best">0</span></div>
  <div class="stat-cell"><span class="label">Total</span><span class="val" id="sd-total">0</span></div>
  </div>
+ <div id="sd-timer" class="sd-timer" aria-hidden="true"><span id="sd-timer-bar"></span></div>
  <div class="row between hud-divider" style="gap:6px;">
  <select id="sd-filter" style="flex:1;">
  <option value="all" selected>Basic Strategy: All</option>
@@ -1263,13 +1417,174 @@
  </div>
  </details>
  </section>
+ <!-- ==================== TAB 5: STATS ==================== -->
+ <section id="tab-stats" class="tab-view">
+ <div class="strip">
+ <div class="stats-grid cols-5">
+ <div class="stat-cell"><span class="label">Session Acc</span><span class="val" id="st-sess-acc">--</span></div>
+ <div class="stat-cell"><span class="label">Lifetime Acc</span><span class="val" id="st-life-acc">--</span></div>
+ <div class="stat-cell"><span class="label">Hands</span><span class="val" id="st-hands">0</span></div>
+ <div class="stat-cell"><span class="label">Mistakes</span><span class="val" id="st-mistakes">0</span></div>
+ <div class="stat-cell"><span class="label">Bankroll</span><span class="val gold" id="st-bank">$1,000</span></div>
+ </div>
+ </div>
+ <div class="table-felt" style="justify-content:flex-start; align-items:stretch; overflow:auto; gap:10px; padding:12px;">
+ <h3 style="margin:0; color:var(--gold); font-size:1rem; align-self:flex-start;">Accuracy by category</h3>
+ <div id="st-cats" style="width:100%;"></div>
+ <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Bankroll (this device)</h3>
+ <canvas id="bankroll-chart" width="600" height="160" aria-label="Bankroll history chart"></canvas>
+ <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Most-missed situations</h3>
+ <ul class="miss-list" id="st-missed" style="width:100%;"></ul>
+ <div class="ins-grid" style="width:100%;">
+ <button class="btn btn-gold" id="btn-review-mistakes" type="button">Review mistakes as quizzes</button>
+ <button class="btn" id="btn-reset-stats-tab" type="button">Reset stats &amp; logs</button>
+ </div>
+ <p class="feat-note" id="st-review-status">Turn off “Stats tracking” in Settings to stop recording. Logs are capped and stored only on this device.</p>
+ </div>
+ </section>
+
+ <!-- ==================== TAB 6: RISK TOOLS ==================== -->
+ <section id="tab-risk" class="tab-view">
+ <div class="strip">
+ <div class="stats-grid">
+ <div class="stat-cell"><span class="label">Unit</span><span class="val gold" id="rk-unit">$25</span></div>
+ <div class="stat-cell"><span class="label">Spread</span><span class="val" id="rk-spread">1–12</span></div>
+ <div class="stat-cell"><span class="label">Rules</span><span class="val" id="rk-rules">6D S17</span></div>
+ <div class="stat-cell"><span class="label">Pen</span><span class="val" id="rk-pen">75%</span></div>
+ </div>
+ </div>
+ <div class="table-felt" style="justify-content:flex-start; align-items:stretch; overflow:auto; gap:10px; padding:12px;">
+ <p class="est-note">These figures are <strong>estimates</strong> using a ~0.5% edge change per true count, a base house edge for your rules, ~1.3 units² of variance per unit wagered, and a simulated true-count frequency for this app’s shoe and cut card. They are a study aid, not a prediction of your results.</p>
+ <div class="setting-row"><span class="lbl">Bankroll to model ($)</span>
+ <input type="number" id="rk-bank" min="100" step="50" value="1000" aria-label="Bankroll to model" style="width:120px;">
+ </div>
+ <div class="setting-row"><span class="lbl">Hands per hour</span>
+ <input type="number" id="rk-hph" min="10" max="400" value="80" aria-label="Hands per hour" style="width:120px;">
+ </div>
+ <button class="btn btn-gold" id="rk-compute" type="button" style="min-height:44px;">Compute estimates</button>
+ <div class="risk-grid" id="rk-results" style="width:100%;"></div>
+ <p class="est-note" id="rk-kelly-note"></p>
+ </div>
+ </section>
+
+ <!-- ==================== TAB 7: HOW IT WORKS ==================== -->
+ <section id="tab-guide" class="tab-view">
+ <div class="table-felt" style="justify-content:flex-start; align-items:stretch; overflow:auto; gap:8px; padding:12px;">
+ <h2 style="margin:0 0 4px; color:var(--gold); font-size:1.1rem;">How It Works</h2>
+ <p class="feat-note">A plain-language guide to every strategy and feature in this trainer. Indices and formulas match the code. Open Settings (Rules) to turn any advanced feature on or off.</p>
+
+ <details class="guide-block" open>
+ <summary>The modes</summary>
+ <div class="guide-block-body">
+ <p><strong>Table Play</strong> is a full blackjack table: you bet, play hands, and can use the count HUD, coach, and quizzes.</p>
+ <p><strong>Speed Count</strong> flashes cards from a 52-card deck so you can practice the running count against a timer.</p>
+ <p><strong>Strategy Drill</strong> quizzes you on the next play (hit, stand, double, split, surrender) for a random hand.</p>
+ <p><strong>Charts</strong> shows basic strategy and the deviation tables for your current rules.</p>
+ <p><strong>Stats</strong> tracks accuracy and bankroll and lets you review missed hands.</p>
+ <p><strong>Risk Tools</strong> estimates win rate, risk of ruin, and Kelly bet size for your spread.</p>
+ <p>This <strong>How It Works</strong> page is always available.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Basic strategy</summary>
+ <div class="guide-block-body">
+ <p>Basic strategy is the play that loses the least (or wins the most) in the long run for your rules, without using the count. This app follows Wizard of Odds total-dependent charts for 1, 2, 4, 6, and 8 decks, including S17 vs H17, DAS, and late surrender.</p>
+ <p>Natural blackjack pays <strong>3:2</strong>. The dealer peeks for blackjack (American style). Split aces get one card each and cannot be resplit. A two-card 21 after a split is not paid as blackjack.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Hi-Lo running count, true count, and rounding</summary>
+ <div class="guide-block-body">
+ <p>Low cards 2–6 are <strong>+1</strong>, 7–9 are <strong>0</strong>, and 10s and aces are <strong>−1</strong>. The running count (RC) is the sum of every seen card, including other seats when that feature is on. A burned card after the shuffle is not counted.</p>
+ <p>The true count (TC) is RC divided by remaining decks (unseen cards ÷ 52), including the hidden hole card until it is revealed.</p>
+ <p>In Settings you can apply a rounding convention <strong>everywhere</strong> (HUD, deviations, bets, quizzes):</p>
+ <ul>
+ <li><strong>Exact (default)</strong> — the raw fraction, same as v6. Displayed to one decimal.</li>
+ <li><strong>Floor</strong> — always rounded down (3.9 → 3, −1.1 → −2).</li>
+ <li><strong>Truncate</strong> — toward zero (3.9 → 3, −1.1 → −1).</li>
+ <li><strong>Round</strong> — nearest integer (3.5 → 4, −1.5 → −1 in JavaScript Math.round).</li>
+ </ul>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Illustrious 18 (6-deck style set)</summary>
+ <div class="guide-block-body">
+ <p>When the I18 toggle is on, the coach and drills use these count-based changes. Multi-deck insurance is typically <strong>TC ≥ +3</strong> (1-deck +1.5, 2-deck +2.5). The 2-deck “9 vs 2” deviation is now a <strong>true-count</strong> play: hit when <strong>TC &lt; 0</strong> (it used to use the running count). H17 and double-deck use the usual index shifts already in the charts (11 vs A, 10 vs A).</p>
+ <p>The 18 playing deviations (besides insurance, listed as #1 on the Charts tab): 16 vs 10 stand TC ≥ 0; 15 vs 10 stand TC ≥ +4; split 10s vs 5 at +5 and vs 6 at +4; double 10 vs 10 at +4; 12 vs 3 stand at +2; 12 vs 2 stand at +3; 11 vs A double at +1 (6D S17) or hit at ≤ −1 when basic is double; 9 vs 2 double at +1 (6D) or hit at TC &lt; 0 (2D); 10 vs A double at +4 (6D S17) or +3 (2D/H17); 9 vs 7 double at +3; 16 vs 9 stand at +5; 13 vs 2 hit at ≤ −1; 12 vs 4 hit at ≤ 0; 12 vs 5 hit at ≤ −2; 12 vs 6 hit at ≤ −1; 13 vs 3 hit at ≤ −2.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Fab 4 late surrender</summary>
+ <div class="guide-block-body">
+ <p>When the Fab 4 toggle is on and late surrender is allowed: <strong>14 vs 10</strong> (including 7,7) surrender at TC ≥ +3; <strong>15 vs 10</strong> at TC ≥ 0; <strong>15 vs 9</strong> at TC ≥ +2; <strong>15 vs A</strong> at TC ≥ +1 for S17, or TC ≥ −1 for H17.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Insurance and even money</summary>
+ <div class="guide-block-body">
+ <p>Insurance (and even money, which is the same decision when you have blackjack vs an ace) is +EV at the insurance index: <strong>TC ≥ +3</strong> in 4–8 deck shoes, +2.5 in double deck, +1.5 in single deck. When the insurance-index toggle is off, the coach does not grade this decision. A lost or won insurance bet is included in the round’s net result.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Bet spreads and the ramp</summary>
+ <div class="guide-block-body">
+ <p>You set a <strong>unit size</strong> and a <strong>min–max spread</strong> (for example 1–8 or 1–12). The default ramp bets the minimum at TC ≤ 1, then adds <strong>one unit per true count</strong>, capped at the maximum. The HUD can show the recommended bet. Optional <strong>bet grading</strong> scores each deal as correct, too high, or too low against that ramp. You can still pick Half-Kelly in Betting Strategy if you prefer a bankroll-fraction bet.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Quizzes and drills</summary>
+ <div class="guide-block-body">
+ <p><strong>Count-check quizzes</strong> pause Table Play after a set number of hands, or at a random gap between 5 and 15 hands. Enter the running count and true count. The true-count answer uses your rounding setting (in Exact mode, either truncate or round is accepted, as before).</p>
+ <p><strong>Deck estimation</strong> shows a discard-tray stack whose height matches cards already used. Guess decks remaining or played; a guess within 0.5 decks is correct.</p>
+ <p><strong>Speed Count</strong> times a full 52-card run. You enter the final RC (always 0 for a full deck). Time and accuracy are scored, and your best correct time is saved.</p>
+ <p><strong>Timed decisions</strong> in Strategy Drill give you a set number of seconds. If the timer runs out, the hand is scored as a miss.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Stats and mistake review</summary>
+ <div class="guide-block-body">
+ <p>When stats tracking is on, the app records session and lifetime accuracy for hard totals, soft totals, pairs, deviations, bets, and insurance, plus a bankroll history chart and your most-missed matchups. <strong>Review mistakes</strong> replays logged errors as strategy quizzes. Data stays in this browser (versioned localStorage) and the mistake log is capped. Use Reset stats &amp; logs to clear it.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Win rate, risk of ruin, and Kelly</summary>
+ <div class="guide-block-body">
+ <p>Risk Tools estimates expected win per hour, standard deviation per hour, N0 (hands for a 1-standard-deviation edge), and risk of ruin for your bankroll, using your spread, rules, and penetration. True-count frequencies are simulated with this app’s own shuffle and cut card and then cached. Kelly and half-Kelly bet sizes are shown as a fraction of bankroll. Every result is labeled as an estimate.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>Other seats and heat hints</summary>
+ <div class="guide-block-body">
+ <p>You can add 1–6 other seats that play <strong>basic strategy</strong> from the same shoe. Their cards are dealt and counted in the running count, which changes true counts and penetration the way a full table does. They do not use deviations and do not affect your bankroll.</p>
+ <p><strong>Heat hints</strong> are educational only. If a bet jumps more than 2×, or you leap from a small bet to the top of the spread, you will see a reminder that ramping with the count is quieter than jumping after a win or loss. Nothing is blocked.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
+ <summary>What each toggle does</summary>
+ <div class="guide-block-body">
+ <p>Open <strong>Rules → Features</strong>. Turning a toggle off hides that tool’s screens and stops its logic (no grades, no quizzes, no extra seats, and so on). The core table, basic strategy, and charts remain. I18, Fab 4, and the insurance index can be switched independently. Rounding applies globally when you change it. Speed Count, Strategy Drill, Stats, and Risk Tools disappear from the mode list when turned off. How It Works and Table Play always stay in the list.</p>
+ </div>
+ </details>
+ </div>
+ </section>
 </main>
 
 <!-- Settings Modal -->
 <div class="modal-backdrop" id="settings-modal">
  <div class="modal">
  <div class="row between" style="margin-bottom:8px;">
- <h3 style="margin:0;">Table Rules &amp; RNG Seed</h3>
+ <h3 style="margin:0;">Settings, Features &amp; Seed</h3>
  <button class="btn btn-sm" id="btn-close-settings">Done</button>
  </div>
 
@@ -1299,13 +1614,6 @@
  <input type="checkbox" id="opt-ls" checked>
  </div>
  <div class="setting-row">
- <span>Coach Grade Mode</span>
- <select id="opt-dev-coach">
- <option value="basic">Basic Strategy Only</option>
- <option value="i18" selected>Basic + I18 &amp; Fab 4</option>
- </select>
- </div>
- <div class="setting-row">
  <span>Betting Strategy (HUD)</span>
  <select id="opt-bet-strat">
  <option value="auto" selected>Auto by Deck (2D: 1–8 / 6–8D: 1–12)</option>
@@ -1326,15 +1634,72 @@
  <span>Live Strategy Coach</span>
  <input type="checkbox" id="opt-coach" checked>
  </div>
- <div class="setting-row">
- <span>Auto Count Quiz</span>
- <select id="opt-quiz-int">
+
+ <details class="feat-block" open>
+ <summary>Features (toggle each on or off)</summary>
+ <div class="feat-body">
+ <p class="feat-note">Each advanced tool can be turned off completely — its menus, banners, and logic stay out of the way. Choices are saved on this device.</p>
+ <div class="setting-row"><span class="lbl">Illustrious 18 (play coach &amp; charts)</span><input type="checkbox" id="feat-i18" checked aria-label="Enable Illustrious 18 deviations"></div>
+ <div class="setting-row"><span class="lbl">Fab 4 surrender indices</span><input type="checkbox" id="feat-fab4" checked aria-label="Enable Fab 4 surrender deviations"></div>
+ <div class="setting-row"><span class="lbl">Insurance / even-money index</span><input type="checkbox" id="feat-ins" checked aria-label="Enable insurance true-count index"></div>
+ <div class="setting-row"><span class="lbl">True-count rounding</span>
+ <select id="opt-tc-round" aria-label="True count rounding convention">
+ <option value="exact" selected>Exact (no rounding)</option>
+ <option value="floor">Floor</option>
+ <option value="truncate">Truncate toward 0</option>
+ <option value="round">Round to nearest</option>
+ </select>
+ </div>
+ <div class="setting-row"><span class="lbl">Bet-spread ramp &amp; recommended bet</span><input type="checkbox" id="feat-bet-ramp" checked aria-label="Enable bet-spread ramp"></div>
+ <div class="setting-row"><span class="lbl">Grade my bets against the ramp</span><input type="checkbox" id="feat-bet-grade" aria-label="Enable bet-spread grading"></div>
+ <div class="setting-row"><span class="lbl">Unit size ($)</span>
+ <input type="number" id="opt-unit" min="5" step="5" value="25" aria-label="Betting unit size in dollars" style="width:90px;">
+ </div>
+ <div class="setting-row"><span class="lbl">Spread (min–max units)</span>
+ <div class="row" style="gap:6px;">
+ <input type="number" id="opt-spread-min" min="1" max="8" value="1" aria-label="Minimum units" style="width:70px;">
+ <span>to</span>
+ <input type="number" id="opt-spread-max" min="1" max="20" value="12" aria-label="Maximum units" style="width:70px;">
+ </div>
+ </div>
+ <div class="setting-row"><span class="lbl">Count-check quizzes</span><input type="checkbox" id="feat-quiz" aria-label="Enable count-check quizzes"></div>
+ <div class="setting-row"><span class="lbl">Quiz frequency</span>
+ <select id="opt-quiz-int" aria-label="Count quiz frequency">
  <option value="0" selected>Off</option>
+ <option value="random">Random (5–15 hands)</option>
  <option value="5">Every 5 hands</option>
  <option value="10">Every 10 hands</option>
  <option value="15">Every 15 hands</option>
  </select>
  </div>
+ <div class="setting-row"><span class="lbl">Deck-estimation drill</span><input type="checkbox" id="feat-deck-est" aria-label="Enable deck estimation drill"></div>
+ <div class="setting-row"><span class="lbl">Speed Count mode</span><input type="checkbox" id="feat-speed" checked aria-label="Show Speed Count mode"></div>
+ <div class="setting-row"><span class="lbl">Strategy Drill mode</span><input type="checkbox" id="feat-strat" checked aria-label="Show Strategy Drill mode"></div>
+ <div class="setting-row"><span class="lbl">Timed decisions (strategy drill)</span><input type="checkbox" id="feat-timed" aria-label="Enable timed decisions"></div>
+ <div class="setting-row"><span class="lbl">Seconds per decision</span>
+ <input type="number" id="opt-decision-sec" min="2" max="20" value="5" aria-label="Seconds per timed decision" style="width:90px;">
+ </div>
+ <div class="setting-row"><span class="lbl">Stats tracking &amp; mistake review</span><input type="checkbox" id="feat-stats" checked aria-label="Enable stats tracking"></div>
+ <div class="setting-row"><span class="lbl">Risk tools (EV, RoR, Kelly)</span><input type="checkbox" id="feat-risk" checked aria-label="Show Risk Tools mode"></div>
+ <div class="setting-row"><span class="lbl">Other seats (casino realism)</span><input type="checkbox" id="feat-seats" aria-label="Enable other seats"></div>
+ <div class="setting-row"><span class="lbl">Other seats at the table</span>
+ <select id="opt-other-seats" aria-label="Number of other seats">
+ <option value="0" selected>0</option>
+ <option value="1">1</option>
+ <option value="2">2</option>
+ <option value="3">3</option>
+ <option value="4">4</option>
+ <option value="5">5</option>
+ <option value="6">6</option>
+ </select>
+ </div>
+ <div class="setting-row"><span class="lbl">Heat hints (educational)</span><input type="checkbox" id="feat-heat" aria-label="Enable heat hints"></div>
+ <div class="ins-grid" style="margin-top:10px;">
+ <button class="btn" id="btn-reset-stats" type="button">Reset stats &amp; logs</button>
+ </div>
+ </div>
+ </details>
+
 
  <div class="seed-box">
  <div class="row between" style="margin-bottom:4px;">
@@ -1372,6 +1737,24 @@
  <button class="btn" id="quiz-close">Close</button>
  <button class="btn btn-gold" id="quiz-submit">Check</button>
  </div>
+ </div>
+</div>
+
+
+<!-- Deck Estimate Modal -->
+<div class="modal-backdrop" id="deckest-modal" role="dialog" aria-labelledby="de-title">
+ <div class="modal">
+ <div class="row between" style="margin-bottom:8px;">
+ <h3 id="de-title" style="margin:0;">Deck Estimation</h3>
+ <button class="btn btn-sm" id="de-close" type="button">Close</button>
+ </div>
+ <p class="feat-note" id="de-prompt">Look at the discard tray and estimate the decks.</p>
+ <div class="discard-tray" id="de-tray" aria-hidden="true"><div class="tray-fill" id="de-fill" style="height:40%;"></div></div>
+ <div class="setting-row"><span class="lbl" id="de-q-label">Decks remaining</span>
+ <input type="number" id="de-guess" step="0.5" inputmode="decimal" aria-label="Your deck estimate" style="width:100px;">
+ </div>
+ <button class="btn btn-gold" id="de-submit" type="button">Submit estimate</button>
+ <div class="feedback-bar" id="de-result" style="display:none; margin-top:8px;"></div>
  </div>
 </div>
 
@@ -1455,7 +1838,8 @@
  }
 
  /* ==================== CORE DATA & STORAGE ==================== */
- const STORAGE_KEY = 'bj_trainer_v4';
+ const STORAGE_KEY = 'bj_trainer_v7';
+ const LEGACY_STORAGE_KEY = 'bj_trainer_v4';
  const SUITS = ['♠', '♥', '♦', '♣'];
  const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
  const TEN_RANKS = ['10', 'J', 'Q', 'K'];
@@ -1482,13 +1866,56 @@
  sdTotal: 0,
  sdStreak: 0,
  sdBest: 0,
- speedBestCps: 0
+ speedBestCps: 0,
+ speedBestMs: 0,
+ schemaVersion: 7,
+ featI18: true,
+ featFab4: true,
+ featIns: true,
+ featBetRamp: true,
+ featBetGrade: false,
+ featQuiz: false,
+ featDeckEst: false,
+ featSpeed: true,
+ featStrat: true,
+ featTimed: false,
+ featStats: true,
+ featRisk: true,
+ featSeats: false,
+ featHeat: false,
+ tcRounding: 'exact',
+ unitSize: 25,
+ spreadMin: 1,
+ spreadMax: 12,
+ decisionSec: 5,
+ otherSeats: 0,
+ stats: { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} }
  };
+
+ function migrateState(saved) {
+ if (!saved || typeof saved !== 'object') return { ...defaultState };
+ const s = { ...defaultState, ...saved };
+ if (saved.featI18 === undefined && saved.devCoach === 'basic') {
+ s.featI18 = false; s.featFab4 = false; s.featIns = false;
+ }
+ s.schemaVersion = 7;
+ if (!s.stats || s.stats.v !== 1) {
+ s.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} };
+ } else {
+ s.stats.session = Object.assign(emptyCategoryStats(), s.stats.session);
+ s.stats.lifetime = Object.assign(emptyCategoryStats(), s.stats.lifetime);
+ s.stats.mistakes = Array.isArray(s.stats.mistakes) ? s.stats.mistakes : [];
+ s.stats.bankrollHistory = Array.isArray(s.stats.bankrollHistory) ? s.stats.bankrollHistory : [];
+ s.stats.missedMap = s.stats.missedMap || {};
+ }
+ return s;
+ }
 
  let state = { ...defaultState };
  try {
- const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
- if (saved) state = { ...state, ...saved };
+ let saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+ if (!saved) saved = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || 'null');
+ if (saved) state = migrateState(saved);
  } catch (e) {}
 
  function saveState() {
@@ -1537,6 +1964,466 @@
  if (clause) parts.push(clause);
  parts.push(outcome.msg);
  return { text: parts.join(' '), net, cls: outcome.cls };
+ }
+
+/* ==================== V7: TC ROUNDING, BET RAMP, GRADING, RISK, SIM ==================== */
+ function applyTcRounding(tc, mode) {
+ if (!Number.isFinite(tc)) return 0;
+ if (mode === 'floor') return Math.floor(tc);
+ if (mode === 'truncate') return Math.trunc(tc);
+ if (mode === 'round') return Math.round(tc);
+ return tc; // 'exact' — raw float, current default
+ }
+
+ function roundingLabel(mode) {
+ return ({ exact: 'exact (no rounding)', floor: 'floor', truncate: 'truncate toward 0', round: 'round half away from 0 (Math.round)' })[mode] || mode;
+ }
+
+ /** Default ramp: TC <= 1 → min units; then +1 unit per TC, capped at max. */
+ function getRampUnits(tc, minUnits, maxUnits) {
+ const minU = Math.max(1, minUnits | 0);
+ const maxU = Math.max(minU, maxUnits | 0);
+ if (!Number.isFinite(tc) || tc <= 1) return minU;
+ return Math.max(minU, Math.min(maxU, minU + Math.floor(tc - 1)));
+ }
+
+ function gradeBetUnits(actualUnits, recommendedUnits) {
+ const a = Number(actualUnits);
+ const r = Number(recommendedUnits);
+ if (!Number.isFinite(a) || !Number.isFinite(r)) return { grade: 'unknown', rec: r };
+ if (a === r) return { grade: 'correct', rec: r };
+ if (a > r) return { grade: 'too high', rec: r };
+ return { grade: 'too low', rec: r };
+ }
+
+ function gradeCountQuiz(guessRc, guessTc, actualRc, rawTc, mode) {
+ const rcOk = Number(guessRc) === Number(actualRc);
+ const rounded = applyTcRounding(rawTc, mode || 'exact');
+ let tcOk = false;
+ if (!Number.isFinite(Number(guessTc))) tcOk = false;
+ else if (!mode || mode === 'exact') {
+ tcOk = Number(guessTc) === Math.trunc(rawTc) || Number(guessTc) === Math.round(rawTc);
+ } else {
+ tcOk = Number(guessTc) === rounded;
+ }
+ return { rcOk, tcOk, ok: rcOk && tcOk, actualTc: rounded, rawTc };
+ }
+
+ function gradeDeckEstimate(guess, actual, tolerance) {
+ const tol = tolerance == null ? 0.5 : tolerance;
+ const err = Math.abs(Number(guess) - Number(actual));
+ return { ok: Number.isFinite(err) && err <= tol + 1e-9, error: err, actual: Number(actual), tolerance: tol };
+ }
+
+ function getHeatHint(prevBet, newBet, opts) {
+ const jump = (opts && opts.jumpFactor) || 2;
+ const unit = (opts && opts.unit) || 25;
+ const maxUnits = (opts && opts.maxUnits) || 12;
+ if (!(prevBet > 0) || !(newBet > 0)) return '';
+ if (newBet >= prevBet * jump - 1e-9 && newBet > unit) {
+ return 'Heat hint: jumping more than ' + jump + '× on the next bet can attract attention. Ramp with the true count, not the last win or loss.';
+ }
+ if (newBet >= unit * maxUnits && prevBet <= unit * 2) {
+ return 'Heat hint: going from a small bet to the top of the spread in one hand is a common tell. Build the spread with the count.';
+ }
+ return '';
+ }
+
+ /* ----- Risk / Kelly estimates (clearly labeled as approximations) ----- */
+ const BJ_VAR_PER_UNIT = 1.3; // typical units^2 per unit wagered
+
+ function kellyFraction(edge, variancePerUnit) {
+ const v = variancePerUnit == null ? BJ_VAR_PER_UNIT : variancePerUnit;
+ if (!(v > 0)) return 0;
+ return edge / v;
+ }
+
+ function halfKellyFraction(edge, variancePerUnit) {
+ return 0.5 * kellyFraction(edge, variancePerUnit);
+ }
+
+ function evPerHour(evPerHand, handsPerHour) {
+ return evPerHand * handsPerHour;
+ }
+
+ function sdPerHour(varPerHand, handsPerHour) {
+ if (!(varPerHand >= 0) || !(handsPerHour >= 0)) return 0;
+ return Math.sqrt(varPerHand * handsPerHour);
+ }
+
+ function n0Hands(evPerHand, varPerHand) {
+ if (!(evPerHand > 0) || !(varPerHand > 0)) return Infinity;
+ return varPerHand / (evPerHand * evPerHand);
+ }
+
+ /** Diffusion / gambler's-ruin approximation. Returns 1 when EV ≤ 0. */
+ function riskOfRuin(bankroll, evPerHand, varPerHand) {
+ if (!(varPerHand > 0)) return evPerHand > 0 ? 0 : 1;
+ if (!(evPerHand > 0) || !(bankroll > 0)) return 1;
+ const r = Math.exp(-2 * bankroll * evPerHand / varPerHand);
+ return Math.max(0, Math.min(1, r));
+ }
+
+ function emptyCategoryStats() {
+ return { hard: { c: 0, t: 0 }, soft: { c: 0, t: 0 }, pairs: { c: 0, t: 0 }, deviations: { c: 0, t: 0 }, bets: { c: 0, t: 0 }, insurance: { c: 0, t: 0 } };
+ }
+
+ function recordCategory(stats, category, correct) {
+ if (!stats[category]) stats[category] = { c: 0, t: 0 };
+ stats[category].t++;
+ if (correct) stats[category].c++;
+ return stats;
+ }
+
+ function mostMissed(list, cap) {
+ const map = {};
+ (list || []).forEach(m => {
+ const k = m.key || m.situation || '';
+ if (!k) return;
+ map[k] = (map[k] || 0) + 1;
+ });
+ return Object.keys(map).map(k => ({ key: k, n: map[k] })).sort((a, b) => b.n - a.n).slice(0, cap || 10);
+ }
+
+ function mergeCategoryStats(a, b) {
+ const out = emptyCategoryStats();
+ Object.keys(out).forEach(k => {
+ out[k].c = ((a[k] && a[k].c) || 0) + ((b[k] && b[k].c) || 0);
+ out[k].t = ((a[k] && a[k].t) || 0) + ((b[k] && b[k].t) || 0);
+ });
+ return out;
+ }
+
+ /**
+  * Simulate TC frequencies at the start of each hand for this app's shoe
+  * (1 burn card, cut-card penetration, single-player 2+2 deal then leftover
+  * cards until the cut). Cached by the caller.
+  */
+ function simulateTcFrequencies(opts) {
+ const decks = (opts && opts.decks) || 6;
+ const pen = (opts && opts.penetration) != null ? opts.penetration : getPenetrationForDecks(decks);
+ const nHands = (opts && opts.nHands) || 8000;
+ const rounding = (opts && opts.rounding) || 'exact';
+ const seed = (opts && opts.seed) || ('TCFREQ-' + decks + '-' + pen);
+ const rng = createSeededRng(seed);
+ const bins = {};
+ let hands = 0;
+ const total = decks * 52;
+ const cut = Math.floor(total * pen);
+
+ function freshShoe() {
+ const s = [];
+ for (let d = 0; d < decks; d++) {
+ for (let i = 0; i < SUITS.length; i++) {
+ for (let j = 0; j < RANKS.length; j++) s.push({ rank: RANKS[j], suit: SUITS[i] });
+ }
+ }
+ fisherYatesShuffle(s, rng);
+ s.pop(); // burn, uncounted (matches buildShoe)
+ return s;
+ }
+
+ let shoe = freshShoe();
+ let rc = 0;
+ let dealt = 1; // burn
+ while (hands < nHands) {
+ if (dealt >= cut || shoe.length < 6) {
+ shoe = freshShoe();
+ rc = 0;
+ dealt = 1;
+ }
+ const decksLeft = Math.max(0.25, (total - dealt) / 52);
+ const rawTc = rc / decksLeft;
+ const tc = applyTcRounding(rawTc, rounding);
+ const key = rounding === 'exact' ? (Math.round(tc * 2) / 2).toFixed(1) : String(tc);
+ bins[key] = (bins[key] || 0) + 1;
+ hands++;
+ // Consume a typical one-player round (~6 cards), all counted (approx).
+ const take = Math.min(6, shoe.length);
+ for (let i = 0; i < take; i++) {
+ const c = shoe.pop();
+ dealt++;
+ rc += hiLoValue(c.rank);
+ }
+ }
+ const freq = {};
+ Object.keys(bins).forEach(k => { freq[k] = bins[k] / hands; });
+ return { freq, hands, bins, decks, penetration: pen, rounding };
+ }
+
+ function expectedValueForSpread(freq, opts) {
+ const unit = (opts && opts.unit) || 25;
+ const minU = (opts && opts.minUnits) || 1;
+ const maxU = (opts && opts.maxUnits) || 12;
+ const edgeFn = (opts && opts.edgeFn) || (tc => getEstimatedEdge(tc));
+ const varUnit = (opts && opts.varPerUnit) || BJ_VAR_PER_UNIT;
+ let ev = 0, ev2 = 0, meanVar = 0;
+ Object.keys(freq).forEach(k => {
+ const p = freq[k];
+ const tc = parseFloat(k);
+ const units = getRampUnits(tc, minU, maxU);
+ const edge = edgeFn(tc); // edge per unit wagered
+ const evH = edge * units * unit;
+ const varH = varUnit * units * units * unit * unit;
+ ev += p * evH;
+ ev2 += p * evH * evH;
+ meanVar += p * varH;
+ });
+ const varHand = Math.max(0, meanVar + ev2 - ev * ev);
+ return { evPerHand: ev, varPerHand: varHand, unit, minU, maxU };
+ }
+
+ function riskReport(opts) {
+ const bankroll = opts.bankroll;
+ const handsPerHour = opts.handsPerHour || 80;
+ const ev = opts.evPerHand;
+ const v = opts.varPerHand;
+ const unit = opts.unit || 25;
+ const evHr = evPerHour(ev, handsPerHour);
+ const sdHr = sdPerHour(v, handsPerHour);
+ const n0 = n0Hands(ev, v);
+ const ror = riskOfRuin(bankroll, ev, v);
+ const edgePerUnit = unit > 0 ? ev / unit : 0;
+ const kelly = kellyFraction(edgePerUnit, BJ_VAR_PER_UNIT);
+ const half = halfKellyFraction(edgePerUnit, BJ_VAR_PER_UNIT);
+ return {
+ evPerHand: ev, varPerHand: v, evPerHour: evHr, sdPerHour: sdHr,
+ n0Hands: n0, riskOfRuin: ror,
+ kellyFraction: kelly, halfKellyFraction: half,
+ kellyBet: Math.max(0, bankroll * kelly),
+ halfKellyBet: Math.max(0, bankroll * half),
+ estimate: true
+ };
+ }
+
+ /**
+  * Self-contained multi-round simulator for soak tests. Uses the same
+  * shuffle, strategy, insurance, and payout helpers as the app. Optional
+  * other seats play basic strategy and their cards count.
+  */
+ function simulateManyRounds(n, opts) {
+ const o = opts || {};
+ const decks = o.decks || 6;
+ const s17 = o.s17 !== false;
+ const das = o.das !== false;
+ const ls = o.ls !== false;
+ const otherSeats = Math.max(0, Math.min(6, o.otherSeats || 0));
+ const unit = o.unit || 25;
+ const minU = o.minUnits || 1;
+ const maxU = o.maxUnits || 12;
+ const useI18 = !!o.useI18;
+ const useFab4 = !!o.useFab4;
+ const useIns = !!o.useIns;
+ const rounding = o.rounding || 'exact';
+ const rng = createSeededRng(o.seed || 'SOAK-v7');
+ const prevRules = { s17: state.s17, das: state.das, ls: state.ls, decks: state.decks };
+ state.s17 = s17; state.das = das; state.ls = ls; state.decks = decks;
+ let bankroll = o.bankroll != null ? o.bankroll : 10000;
+ const startBank = bankroll;
+ const pen = getPenetrationForDecks(decks);
+ const total = decks * 52;
+ const cut = Math.floor(total * pen);
+ let exceptions = 0, rcMismatches = 0, midShuffles = 0, rounds = 0;
+ let shoe = [], rc = 0, dealt = 0, shoeId = 0, seen = [];
+
+ function newShoe() {
+ shoe = [];
+ shoeId++;
+ for (let d = 0; d < decks; d++) {
+ for (let i = 0; i < SUITS.length; i++) {
+ for (let j = 0; j < RANKS.length; j++) shoe.push({ rank: RANKS[j], suit: SUITS[i], shoeId });
+ }
+ }
+ fisherYatesShuffle(shoe, rng);
+ shoe.pop(); // burn, uncounted
+ dealt = 1;
+ rc = 0;
+ seen = [];
+ }
+
+ function draw(count) {
+ if (shoe.length === 0) {
+ midShuffles++;
+ newShoe();
+ }
+ const c = shoe.pop();
+ dealt++;
+ if (count) {
+ rc += hiLoValue(c.rank);
+ seen.push(c);
+ }
+ return c;
+ }
+
+ function checkRc() {
+ const expect = seen.reduce((s, c) => s + hiLoValue(c.rank), 0);
+ if (expect !== rc) rcMismatches++;
+ }
+
+ function decksLeft() {
+ return Math.max(0.25, (total - dealt) / 52);
+ }
+ function tcNow() {
+ return applyTcRounding(rc / decksLeft(), rounding);
+ }
+
+ function playHand(cards, up, bet, fromSplit) {
+ let doubled = false, surrendered = false, finished = false;
+ const hands = [{ cards, bet, fromSplit: !!fromSplit, surrendered, doubled, finished }];
+ let i = 0;
+ while (i < hands.length) {
+ const h = hands[i];
+ let guard = 0;
+ while (!h.finished && guard++ < 20) {
+ const ev = evalHand(h.cards);
+ if (ev.isBlackjack && !h.fromSplit) { h.finished = true; break; }
+ if (ev.isBust) { h.finished = true; break; }
+ const canDouble = h.cards.length === 2 && !h.doubled;
+ const canSplit = h.cards.length === 2 && hands.length < 4 &&
+ normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const canSurr = ls && h.cards.length === 2 && !h.fromSplit && hands.length === 1;
+ const dec = getOptimalDecision(h.cards, up.rank, {
+ canDouble, canSplit, canSurrender: canSurr,
+ useI18: useI18 && !h.fromSplit ? useI18 : useI18,
+ useFab4: useFab4,
+ useDeviations: useI18 || useFab4,
+ tc: tcNow(), rc, decks, s17Override: s17
+ });
+ const act = dec.action;
+ if (act === 'R' && canSurr) { h.surrendered = true; h.finished = true; break; }
+ if (act === 'P' && canSplit) {
+ const c0 = h.cards.pop();
+ const sibling = { cards: [c0, draw(true)], bet: h.bet, fromSplit: true, surrendered: false, doubled: false, finished: false };
+ h.cards.push(draw(true));
+ h.fromSplit = true;
+ hands.splice(i + 1, 0, sibling);
+ continue;
+ }
+ if (act === 'D' && canDouble) {
+ h.cards.push(draw(true));
+ h.bet = roundMoney(h.bet * 2);
+ h.doubled = true;
+ h.finished = true;
+ break;
+ }
+ if (act === 'H') {
+ h.cards.push(draw(true));
+ if (evalHand(h.cards).isBust) { h.finished = true; break; }
+ if (h.fromSplit && normalizeRank(h.cards[0].rank) === 'A') { h.finished = true; break; }
+ continue;
+ }
+ h.finished = true; // stand or fallback
+ }
+ i++;
+ }
+ return hands;
+ }
+
+ newShoe();
+ for (let r = 0; r < n; r++) {
+ try {
+ if (dealt >= cut || shoe.length < 8 + otherSeats * 4) newShoe();
+ const tc = tcNow();
+ const units = getRampUnits(tc, minU, maxU);
+ const bet = Math.min(units * unit, bankroll);
+ if (bet <= 0) { bankroll += 10000; continue; }
+ bankroll = roundMoney(bankroll - bet);
+
+ const others = [];
+ for (let s = 0; s < otherSeats; s++) others.push([draw(true), draw(true)]);
+ const p1 = draw(true), d1 = draw(true), p2 = draw(true), d2 = draw(false);
+ const dealer = [d1, d2];
+ let ins = 0;
+ const pEv0 = evalHand([p1, p2]);
+ const dUpAce = d1.rank === 'A';
+ if (dUpAce && useIns && !pEv0.isBlackjack && bankroll >= roundMoney(bet / 2)) {
+ const idx = getInsuranceIndex(decks);
+ const should = tcNow() >= idx;
+ if (should) {
+ ins = roundMoney(bet / 2);
+ bankroll = roundMoney(bankroll - ins);
+ }
+ }
+ // Peek / initial BJ
+ const dEvPeek = evalHand(dealer);
+ if (pEv0.isBlackjack || dEvPeek.isBlackjack) {
+ rc += hiLoValue(d2.rank); seen.push(d2); // reveal hole
+ if (ins > 0 && dEvPeek.isBlackjack) bankroll = roundMoney(bankroll + ins * 3);
+ if (pEv0.isBlackjack && dEvPeek.isBlackjack) bankroll = roundMoney(bankroll + bet);
+ else if (pEv0.isBlackjack) bankroll = roundMoney(bankroll + bet + roundMoney(bet * 1.5));
+ // other seats also resolved vs BJ: ignore their money
+ // but we must still "see" their cards (already counted). Reveal nothing more.
+ checkRc();
+ rounds++;
+ continue;
+ }
+ // Other seats play basic (no deviations)
+ const savedI18 = useI18, savedFab = useFab4;
+ // temporarily play others with deviations off via flags in this closure — call getOptimalDecision with useI18 false
+ const _useI18 = useI18, _useFab4 = useFab4;
+ // play others
+ others.forEach(cards => {
+ // local play with deviations off
+ const tmpUse = { i: useI18, f: useFab4 };
+ // inline mini play
+ let hCards = cards.slice();
+ let guard = 0;
+ while (guard++ < 20) {
+ const ev = evalHand(hCards);
+ if (ev.isBust || ev.isBlackjack) break;
+ const dec = getOptimalDecision(hCards, d1.rank, {
+ canDouble: hCards.length === 2, canSplit: false, canSurrender: false,
+ useI18: false, useFab4: false, useDeviations: false,
+ tc: tcNow(), rc, decks
+ });
+ if (dec.action === 'D' && hCards.length === 2) { hCards.push(draw(true)); break; }
+ if (dec.action === 'H') {
+ hCards.push(draw(true));
+ if (evalHand(hCards).isBust) break;
+ continue;
+ }
+ break;
+ }
+ });
+ // Player plays
+ // Play player; deduct extra stake for splits/doubles as they happen via a hook on bet growth
+ const playerHands = playHand([p1, p2], d1, bet, false);
+ // Deduct any stake beyond the original bet (splits and doubles)
+ const totalStake = playerHands.reduce((s, h) => s + h.bet, 0);
+ bankroll = roundMoney(bankroll - (totalStake - bet));
+ const anyLive = playerHands.some(h => !h.surrendered && !evalHand(h.cards).isBust);
+ rc += hiLoValue(d2.rank); seen.push(d2);
+ if (anyLive) {
+ let dEv = evalHand(dealer);
+ while (dEv.total < 17 || (dEv.total === 17 && dEv.isSoft && !s17)) {
+ dealer.push(draw(true));
+ dEv = evalHand(dealer);
+ }
+ }
+ const dEv = evalHand(dealer);
+ playerHands.forEach(h => {
+ if (h.surrendered) {
+ bankroll = roundMoney(bankroll + h.bet / 2);
+ return;
+ }
+ const pEv = evalHand(h.cards);
+ if (pEv.isBust) return;
+ if (dEv.isBust || pEv.total > dEv.total) bankroll = roundMoney(bankroll + h.bet * 2);
+ else if (pEv.total === dEv.total) bankroll = roundMoney(bankroll + h.bet);
+ });
+ if (ins > 0 && dEv.isBlackjack) bankroll = roundMoney(bankroll + ins * 3);
+ checkRc();
+ rounds++;
+ } catch (e) {
+ exceptions++;
+ }
+ }
+ state.s17 = prevRules.s17; state.das = prevRules.das; state.ls = prevRules.ls; state.decks = prevRules.decks;
+ return {
+ rounds, exceptions, rcMismatches, midShuffles,
+ startBank, bankroll, net: roundMoney(bankroll - startBank),
+ otherSeats, decks
+ };
  }
 
  function getPenetrationForDecks(decks) {
@@ -1720,6 +2607,8 @@
  canSplit = false,
  canSurrender = false,
  useDeviations = false,
+ useI18,
+ useFab4,
  tc = 0,
  rc = null,
  decks = state.decks
@@ -1731,11 +2620,13 @@
  const isPair = canSplit && cards.length === 2 && normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
  const pairKey = isPair ? normalizeRank(cards[0].rank) : null;
  const effectiveRc = rc !== null ? rc : tc;
+ const enableI18 = (useI18 !== undefined) ? !!useI18 : !!useDeviations;
+ const enableFab4 = (useFab4 !== undefined) ? !!useFab4 : !!useDeviations;
 
  // 1. Check Deck-Aware Fab 4 & Illustrious 18 Deviations
- if (useDeviations) {
+ if (enableFab4 || enableI18) {
  // Fab 4 Late Surrender (includes 7,7 vs 10 as Hard 14)
- if (canSurrender && !ev.isSoft) {
+ if (enableFab4 && canSurrender && !ev.isSoft) {
  if (ev.total === 14 && up === 10 && tc >= 3) return { action: 'R', note: 'Fab 4: Surrender 14 vs 10 at TC ≥ +3' };
  if (ev.total === 15 && up === 10) {
  if (tc >= 0) return { action: 'R', note: 'Fab 4: Surrender 15 vs 10 at TC ≥ 0' };
@@ -1750,13 +2641,13 @@
  }
 
  // Pair of 10s Splits (I18 #4 & #5)
- if (isPair && pairKey === '10') {
+ if (enableI18 && isPair && pairKey === '10') {
  if (up === 5 && tc >= 5) return { action: 'P', note: 'I18 #4: Split 10,10 vs 5 at TC ≥ +5' };
  if (up === 6 && tc >= 4) return { action: 'P', note: 'I18 #5: Split 10,10 vs 6 at TC ≥ +4' };
  }
 
  // Hard Total Deviations (exclude 8,8 which follows pair rule)
- if (!ev.isSoft && !(isPair && pairKey === '8')) {
+ if (enableI18 && !ev.isSoft && !(isPair && pairKey === '8')) {
  if (ev.total === 16 && up === 10 && !canSurrender && tc >= 0) return { action: 'S', note: 'I18 #2: Stand 16 vs 10 at TC ≥ 0' };
  if (ev.total === 15 && up === 10 && !canSurrender && tc >= 4) return { action: 'S', note: 'I18 #3: Stand 15 vs 10 at TC ≥ +4' };
  if (ev.total === 16 && up === 9 && !canSurrender && tc >= 5) return { action: 'S', note: 'I18 #13: Stand 16 vs 9 at TC ≥ +5' };
@@ -1775,7 +2666,7 @@
  // 9 vs 2: 2D basic is Double (Hit at TC < 0); 4D-8D basic is Hit (Double at TC >= +1)
  if (ev.total === 9 && up === 2 && canDouble) {
  if (decks >= 4 && tc >= 1) return { action: 'D', note: 'I18 #10: Double 9 vs 2 at TC ≥ +1' };
- if (decks <= 2 && effectiveRc < 0) return { action: 'H', note: 'I18 #10 (2D): Hit 9 vs 2 when RC < 0' };
+ if (decks <= 2 && tc < 0) return { action: 'H', note: 'I18 #10 (2D): Hit 9 vs 2 at TC < 0' };
  }
 
  if (ev.total === 9 && up === 7 && canDouble && tc >= 3) return { action: 'D', note: 'I18 #12: Double 9 vs 7 at TC ≥ +3' };
@@ -1826,9 +2717,12 @@
  }
  activeTab = modeSelect.value;
  document.querySelectorAll('.tab-view').forEach(v => v.classList.toggle('active', v.id === 'tab-' + activeTab));
- quizBtn.style.display = activeTab === 'play' ? 'inline-flex' : 'none';
+ quizBtn.style.display = (activeTab === 'play' && state.featQuiz) ? 'inline-flex' : 'none';
  if (activeTab === 'charts') renderCharts();
  if (activeTab === 'strat') { updateStratRulesLabel(); sdNextHand(); }
+ if (activeTab === 'stats') renderStatsTab();
+ if (activeTab === 'risk') renderRiskTab();
+ if (activeTab === 'speed') syncDeckEstButton();
  });
 
  const settingsModal = document.getElementById('settings-modal');
@@ -1937,8 +2831,11 @@
  return Math.max(0.25, unseen / 52);
  }
 
- function getTrueCount() {
+ function getRawTrueCount() {
  return runningCount / getDecksRemaining();
+ }
+ function getTrueCount() {
+ return applyTcRounding(getRawTrueCount(), state.tcRounding || 'exact');
  }
 
  function getEstimatedEdge(tc) {
@@ -1953,10 +2850,14 @@
  }
 
  function getSuggestedBet(tc, edge) {
- const unit = 25;
+ const unit = state.unitSize || 25;
+ if (!state.featBetRamp) {
+ lastSuggestedAmount = unit;
+ return { text: formatMoney(unit), cls: 'gold', label: 'Bet', units: 1 };
+ }
  if (tc <= -2) {
  lastSuggestedAmount = unit;
- return { text: 'WONG', cls: 'neg', label: 'Sit Out' };
+ return { text: 'WONG', cls: 'neg', label: 'Sit Out', units: 1 };
  }
 
  const activeStrat = state.betStrat === 'auto'
@@ -1966,31 +2867,22 @@
  if (activeStrat === 'kelly') {
  if (edge <= 0.001) {
  lastSuggestedAmount = unit;
- return { text: formatMoney(unit), cls: 'gold', label: '½-Kelly' };
+ return { text: formatMoney(unit), cls: 'gold', label: '½-Kelly', units: 1 };
  }
  const kellyFrac = 0.5 * (edge / 1.33);
  let amt = Math.round((state.bankroll * kellyFrac) / 5) * 5;
- amt = Math.max(unit, Math.min(amt, unit * 16, Math.floor(state.bankroll / 5) * 5));
+ amt = Math.max(unit, Math.min(amt, unit * (state.spreadMax || 16), Math.floor(state.bankroll / 5) * 5));
  lastSuggestedAmount = amt;
- return { text: formatMoney(amt), cls: 'pos', label: '½-Kelly' };
+ return { text: formatMoney(amt), cls: 'pos', label: '½-Kelly', units: Math.max(1, Math.round(amt / unit)) };
  }
 
- let units = 1;
- if (activeStrat === 'spread8') {
- if (tc >= 4) units = 8;
- else if (tc >= 3) units = 6;
- else if (tc >= 2) units = 4;
- else if (tc >= 1) units = 2;
- } else {
- if (tc >= 5) units = 12;
- else if (tc >= 4) units = 8;
- else if (tc >= 3) units = 6;
- else if (tc >= 2) units = 4;
- else if (tc >= 1) units = 2;
- }
+ const minU = Math.max(1, state.spreadMin || 1);
+ let maxU = Math.max(minU, state.spreadMax || 12);
+ if (state.betStrat === 'spread8') maxU = Math.min(maxU, 8);
+ const units = getRampUnits(tc, minU, maxU);
  const amt = units * unit;
  lastSuggestedAmount = amt;
- return { text: formatMoney(amt), cls: units > 1 ? 'pos' : 'gold', label: `${units}u Bet` };
+ return { text: formatMoney(amt), cls: units > 1 ? 'pos' : 'gold', label: `${units}u Bet`, units };
  }
 
  function updateHud() {
@@ -2007,7 +2899,8 @@
  document.getElementById('hud-decks').textContent = decksLeft.toFixed(1);
 
  const tcEl = document.getElementById('hud-tc');
- tcEl.textContent = (tc > 0 ? '+' : '') + tc.toFixed(1);
+ const tcDisp = (state.tcRounding && state.tcRounding !== 'exact') ? String(tc) : tc.toFixed(1);
+ tcEl.textContent = (tc > 0 ? '+' : '') + tcDisp;
  tcEl.className = 'val ' + (tc >= 1 ? 'pos' : tc <= -1 ? 'neg' : '');
 
  const edgeEl = document.getElementById('hud-edge');
@@ -2018,6 +2911,13 @@
  const betEl = document.getElementById('hud-bet');
  betEl.textContent = sug.text;
  betEl.className = 'val ' + sug.cls;
+ const betCell = document.getElementById('hud-bet-cell');
+ if (betCell) betCell.style.display = state.featBetRamp ? '' : 'none';
+ const recLine = document.getElementById('bet-rec-line');
+ if (recLine) {
+ recLine.hidden = !state.featBetRamp;
+ if (state.featBetRamp) recLine.textContent = 'Recommended: ' + sug.text + (sug.label ? ' · ' + sug.label : '');
+ }
 
  const pct = Math.min(100, ((cardsDealtCount + burnCardCount) / totalCards) * 100);
  document.getElementById('shoe-bar-fill').style.width = pct.toFixed(1) + '%';
@@ -2046,6 +2946,7 @@
  }
 
  function renderTable() {
+ renderOtherSeats();
  const dContainer = document.getElementById('dealer-cards');
  dContainer.innerHTML = '';
  dealerHand.forEach((c, idx) => {
@@ -2139,11 +3040,14 @@
  setFeedback('Your turn.', '');
  }
 
+ maybeShowHeat(state.lastBet, state.bet);
+ maybeGradeBet();
  state.lastBet = state.bet;
  state.bankroll = roundMoney(state.bankroll - state.bet);
  insuranceBet = 0;
  isEvenMoneyOffer = false;
  holeHidden = true;
+ dealOtherSeats();
 
  const p1 = drawCard(true);
  const d1 = drawCard(true);
@@ -2222,6 +3126,7 @@
  setFeedback(banner.text, banner.cls);
  finishRound();
  } else {
+ playOtherSeats();
  phase = 'playing';
  renderTable();
  }
@@ -2238,7 +3143,9 @@
  canDouble,
  canSplit,
  canSurrender,
- useDeviations: state.devCoach === 'i18',
+ useDeviations: !!(state.featI18 || state.featFab4),
+ useI18: !!state.featI18,
+ useFab4: !!state.featFab4,
  tc: getTrueCount(),
  rc: runningCount,
  decks: state.decks
@@ -2247,6 +3154,7 @@
  state.playTotal++;
  const isCorrect = action === dec.action;
  if (isCorrect) state.playCorrect++;
+ if (state.featStats) recordPlayOutcome(h.cards, dealerHand[0] && dealerHand[0].rank, isCorrect, dec);
  saveState();
 
  if (state.coach) {
@@ -2408,8 +3316,10 @@
  saveState();
  renderTable();
 
- if (state.quizInterval > 0 && handsSinceQuiz >= state.quizInterval) {
+ if (state.featStats) snapshotBankroll();
+ if (shouldOfferCountQuiz()) {
  handsSinceQuiz = 0;
+ scheduleNextQuiz();
  openCountQuiz();
  }
  }
@@ -2417,6 +3327,7 @@
  /* ==================== COUNT QUIZ MODAL ==================== */
  const quizModal = document.getElementById('quiz-modal');
  function openCountQuiz() {
+ if (!state.featQuiz) return;
  document.getElementById('quiz-rc').value = '';
  document.getElementById('quiz-tc').value = '';
  document.getElementById('quiz-result').style.display = 'none';
@@ -2426,23 +3337,23 @@
 
  function submitCountQuiz() {
  const gRc = parseInt(document.getElementById('quiz-rc').value, 10);
- const gTc = parseInt(document.getElementById('quiz-tc').value, 10);
- const exactTc = getTrueCount();
- const truncTc = Math.trunc(exactTc);
- const roundTc = Math.round(exactTc);
+ const gTc = parseFloat(document.getElementById('quiz-tc').value);
+ const raw = getRawTrueCount();
+ const shown = getTrueCount();
+ const graded = gradeCountQuiz(gRc, gTc, runningCount, raw, state.tcRounding || 'exact');
  const res = document.getElementById('quiz-result');
  res.style.display = 'flex';
- const tcOk = (gTc === truncTc || gTc === roundTc);
- if (gRc === runningCount && tcOk) {
+ const shownTxt = (state.tcRounding && state.tcRounding !== 'exact') ? String(shown) : raw.toFixed(2);
+ if (graded.ok) {
  res.className = 'feedback-bar good';
- res.textContent = `Spot on! RC = ${runningCount}, TC = ${exactTc.toFixed(2)} (${truncTc} trunc / ${roundTc} round).`;
+ res.textContent = 'Spot on! RC = ' + runningCount + ', TC = ' + shownTxt + ' (rounding: ' + (state.tcRounding || 'exact') + ').';
  } else {
  res.className = 'feedback-bar warn';
- res.textContent = `Actual: RC = ${runningCount}, TC = ${exactTc.toFixed(2)} (${truncTc} trunc / ${roundTc} round).`;
+ res.textContent = 'Actual: RC = ' + runningCount + ', TC = ' + shownTxt + '.';
  }
  }
 
- quizBtn.addEventListener('click', openCountQuiz);
+ quizBtn.addEventListener('click', () => { if (state.featQuiz) openCountQuiz(); });
  document.getElementById('quiz-close').addEventListener('click', () => quizModal.classList.remove('open'));
  quizModal.addEventListener('click', (e) => { if (e.target === quizModal) quizModal.classList.remove('open'); });
  document.getElementById('quiz-submit').addEventListener('click', submitCountQuiz);
@@ -2502,10 +3413,17 @@
  function gradeInsurance(tookIt) {
  const tc = getTrueCount();
  const idx = getInsuranceIndex(state.decks);
- const shouldTake = state.devCoach === 'i18' && tc >= idx;
- const isCorrect = tookIt === shouldTake;
+ const shouldTake = !!state.featIns && tc >= idx;
+ const isCorrect = !state.featIns ? true : (tookIt === shouldTake);
+ if (state.featIns) {
  state.playTotal++;
  if (isCorrect) state.playCorrect++;
+ if (state.featStats) {
+ recordCategory(state.stats.session, 'insurance', isCorrect);
+ recordCategory(state.stats.lifetime, 'insurance', isCorrect);
+ if (!isCorrect) pushMistake({ key: (tookIt ? 'Took' : 'Skipped') + ' insurance @ TC ' + (Number.isInteger(tc) ? tc : tc.toFixed(1)), cat: 'insurance' });
+ }
+ }
  saveState();
  return { isCorrect, idx, shouldTake };
  }
@@ -2519,21 +3437,21 @@
  state.bankroll = roundMoney(state.bankroll + playerHands[0].bet * 2);
  playerHands[0].result = 'res-win';
  playerHands[0].resultText = `EVEN MONEY (+${formatMoney(playerHands[0].bet)})`;
- const prior = state.coach
+ const prior = (state.coach && state.featIns)
  ? (isCorrect
  ? `✓ I18 #1 (${state.decks}D): Even Money is +EV at TC ≥ +${idx}!`
  : `✗ Even Money = Insurance—only take at TC ≥ +${idx} (${state.decks}D).`)
  : '';
  const prefix = [prior, 'Even Money paid 1:1'].filter(Boolean).map(s => s.replace(/[. ]+$/, '')).join('. ');
  const banner = composeRoundBanner(playerHands[0].bet, 0, false, prefix);
- setFeedback(banner.text, state.coach ? (isCorrect ? 'good' : 'warn') : banner.cls);
+ setFeedback(banner.text, (state.coach && state.featIns) ? (isCorrect ? 'good' : 'warn') : banner.cls);
  finishRound();
  return;
  }
 
  insuranceBet = roundMoney(state.bet / 2);
  state.bankroll = roundMoney(state.bankroll - insuranceBet);
- if (state.coach) {
+ if (state.coach && state.featIns) {
  setFeedback(
  isCorrect
  ? `✓ I18 #1 (${state.decks}D): Insurance is +EV at TC ≥ +${idx}!`
@@ -2547,7 +3465,7 @@
  document.getElementById('btn-ins-no').addEventListener('click', () => {
  if (phase !== 'insurance') return;
  const { isCorrect, idx } = gradeInsurance(false);
- if (state.coach && !isCorrect) {
+ if (state.coach && state.featIns && !isCorrect) {
  setFeedback(`Note (I18 #1 · ${state.decks}D): At TC ≥ +${idx}, taking ${isEvenMoneyOffer ? 'Even Money' : 'Insurance'} is +EV!`, 'info');
  }
  checkInitialBlackjacks();
@@ -2579,7 +3497,6 @@
  const optS17 = document.getElementById('opt-s17');
  const optDas = document.getElementById('opt-das');
  const optLs = document.getElementById('opt-ls');
- const optDevCoach = document.getElementById('opt-dev-coach');
  const optBetStrat = document.getElementById('opt-bet-strat');
  const optHud = document.getElementById('opt-hud');
  const optTags = document.getElementById('opt-tags');
@@ -2596,12 +3513,12 @@
  optS17.value = state.s17 ? 'S17' : 'H17';
  optDas.checked = state.das;
  optLs.checked = state.ls;
- optDevCoach.value = state.devCoach;
  optBetStrat.value = state.betStrat;
  optHud.checked = state.showHud;
  optTags.checked = state.showTags;
  optCoach.checked = state.coach;
- optQuizInt.value = String(state.quizInterval);
+ optQuizInt.value = String(state.quizInterval || 0);
+ syncFeatureToggles();
 
  chartOptDecks.value = String(state.decks);
  chartOptS17.value = state.s17 ? 'S17' : 'H17';
@@ -2646,12 +3563,19 @@
  optLs.addEventListener('change', () => { state.ls = optLs.checked; applyRuleChange(); });
  chartOptLs.addEventListener('change', () => { state.ls = chartOptLs.checked; applyRuleChange(); });
 
- optDevCoach.addEventListener('change', () => { state.devCoach = optDevCoach.value; saveState(); });
  optBetStrat.addEventListener('change', () => { state.betStrat = optBetStrat.value; saveState(); updateHud(); });
  optHud.addEventListener('change', () => { state.showHud = optHud.checked; saveState(); updateHud(); });
  optTags.addEventListener('change', () => { state.showTags = optTags.checked; saveState(); renderTable(); });
  optCoach.addEventListener('change', () => { state.coach = optCoach.checked; saveState(); });
- optQuizInt.addEventListener('change', () => { state.quizInterval = parseInt(optQuizInt.value, 10); handsSinceQuiz = 0; saveState(); });
+ optQuizInt.addEventListener('change', () => {
+ state.quizInterval = optQuizInt.value === 'random' ? 'random' : parseInt(optQuizInt.value, 10) || 0;
+ state.featQuiz = state.quizInterval !== 0;
+ const fq = document.getElementById('feat-quiz');
+ if (fq) fq.checked = state.featQuiz;
+ handsSinceQuiz = 0;
+ scheduleNextQuiz();
+ saveState();
+ });
 
  /* ==================== TAB 2: SPEED COUNT DRILL ==================== */
  let spDeck = [];
@@ -2668,7 +3592,9 @@
  document.getElementById('sp-time').textContent = elapsed.toFixed(1) + 's';
  const cps = elapsed > 0.2 ? (spSeen / elapsed) : 0;
  document.getElementById('sp-cps').textContent = cps.toFixed(2) + ' c/s';
- document.getElementById('sp-best').textContent = state.speedBestCps > 0 ? state.speedBestCps.toFixed(2) + ' c/s' : '--';
+ const bestTime = state.speedBestMs ? (state.speedBestMs / 1000).toFixed(1) + 's' : '';
+ const bestCps = state.speedBestCps > 0 ? state.speedBestCps.toFixed(2) + ' c/s' : '';
+ document.getElementById('sp-best').textContent = (bestTime && bestCps) ? (bestTime + ' · ' + bestCps) : (bestCps || '--');
  }
 
  function spStopTimers() {
@@ -2745,8 +3671,10 @@
  if (guess === spCount) {
  fb.className = 'feedback-bar good';
  fb.textContent = `✓ Correct! RC = ${spCount} (${spSeen} cards in ${elapsed.toFixed(1)}s = ${cps.toFixed(2)} c/s).`;
- if (spSeen === 52 && cps > state.speedBestCps) {
- state.speedBestCps = cps;
+ if (spSeen === 52) {
+ const ms = Date.now() - spStartTime;
+ if (!state.speedBestMs || ms < state.speedBestMs) state.speedBestMs = ms;
+ if (cps > state.speedBestCps) state.speedBestCps = cps;
  saveState();
  spUpdateStats();
  }
@@ -2808,7 +3736,46 @@
  function realizeRank(r) { return r === '10' ? randTenFace() : r; }
  function randUpcard() { return { rank: RANKS[drillRng.randInt(RANKS.length)], suit: randSuit() }; }
 
+ function sdRenderCurrent(cards, dealerUp, canSplit, allowSurr) {
+ const dBox = document.getElementById('sd-dealer-card');
+ dBox.innerHTML = '';
+ dBox.appendChild(createCardEl(dealerUp, { large: true }));
+ const pBox = document.getElementById('sd-player-cards');
+ pBox.innerHTML = '';
+ cards.forEach(c => pBox.appendChild(createCardEl(c, { large: true })));
+ const ev = evalHand(cards);
+ const lbl = canSplit ? ('Pair ' + normalizeRank(cards[0].rank) + 's') : (ev.isSoft ? ('Soft ' + ev.total) : ('Hard ' + ev.total));
+ document.getElementById('sd-hand-label').textContent = lbl;
+ document.getElementById('sd-btn-split').disabled = !canSplit;
+ const surrBtn = document.getElementById('sd-btn-surr');
+ const grid = document.getElementById('sd-action-grid');
+ surrBtn.style.display = allowSurr ? 'block' : 'none';
+ grid.className = allowSurr ? 'action-grid cols-5' : 'action-grid';
+ sdUpdateStats();
+ startSdTimer();
+ }
+
  function sdNextHand() {
+ stopSdTimer();
+ if (reviewQueue.length) {
+ const m = reviewQueue.shift();
+ const cards = (m.cards || []).map(c => ({ rank: c.rank, suit: c.suit }));
+ const dealerUp = { rank: m.up, suit: randSuit() };
+ const canSplit = cards.length === 2 && normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
+ const allowSurr = state.ls && cards.length === 2;
+ const tc = typeof m.tc === 'number' ? m.tc : 0;
+ const dec = getOptimalDecision(cards, dealerUp.rank, {
+ canDouble: true, canSplit, canSurrender: allowSurr,
+ useI18: !!state.featI18, useFab4: !!state.featFab4,
+ useDeviations: !!(state.featI18 || state.featFab4),
+ tc, rc: tc, decks: state.decks
+ });
+ sdCurrent = { cards, dealerUp, optimal: dec.action, note: dec.note || m.key, canSplit, allowSurr, tc, isDevMode: !!dec.note };
+ sdRenderCurrent(cards, dealerUp, canSplit, allowSurr);
+ const fb = document.getElementById('sd-feedback');
+ if (fb) { fb.className = 'feedback-bar info'; fb.textContent = 'Review: ' + (m.key || 'missed hand') + ' (' + reviewQueue.length + ' left).'; }
+ return;
+ }
  const filter = document.getElementById('sd-filter').value;
  const isDevMode = filter === 'deviations';
  const tcBadge = document.getElementById('sd-tc-badge');
@@ -2864,33 +3831,16 @@
  canDouble: true,
  canSplit,
  canSurrender: allowSurr,
- useDeviations: isDevMode,
+ useDeviations: isDevMode && !!(state.featI18 || state.featFab4),
+ useI18: isDevMode && !!state.featI18,
+ useFab4: isDevMode && !!state.featFab4,
  tc,
  rc: tc,
  decks: state.decks
  });
 
  sdCurrent = { cards, dealerUp, optimal: dec.action, note: dec.note, canSplit, allowSurr, tc, isDevMode };
-
- const dBox = document.getElementById('sd-dealer-card');
- dBox.innerHTML = '';
- dBox.appendChild(createCardEl(dealerUp, { large: true }));
-
- const pBox = document.getElementById('sd-player-cards');
- pBox.innerHTML = '';
- cards.forEach(c => pBox.appendChild(createCardEl(c, { large: true })));
-
- const ev = evalHand(cards);
- const lbl = canSplit ? `Pair ${normalizeRank(cards[0].rank)}s` : (ev.isSoft ? `Soft ${ev.total}` : `Hard ${ev.total}`);
- document.getElementById('sd-hand-label').textContent = lbl;
- document.getElementById('sd-btn-split').disabled = !canSplit;
-
- const surrBtn = document.getElementById('sd-btn-surr');
- const grid = document.getElementById('sd-action-grid');
- surrBtn.style.display = allowSurr ? 'block' : 'none';
- grid.className = allowSurr ? 'action-grid cols-5' : 'action-grid';
-
- sdUpdateStats();
+ sdRenderCurrent(cards, dealerUp, canSplit, allowSurr);
  }
 
  function sdUpdateStats() {
@@ -2901,25 +3851,28 @@
  }
 
  function sdAnswer(act) {
+ stopSdTimer();
  if (!sdCurrent) return;
- if (act === 'P' && !sdCurrent.canSplit) return;
- if (act === 'R' && !sdCurrent.allowSurr) return;
+ if (act !== 'timeout' && act === 'P' && !sdCurrent.canSplit) return;
+ if (act !== 'timeout' && act === 'R' && !sdCurrent.allowSurr) return;
 
  const fb = document.getElementById('sd-feedback');
  state.sdTotal++;
- const tcTxt = sdCurrent.isDevMode ? ` at TC ${sdCurrent.tc >= 0 ? '+' : ''}${sdCurrent.tc}` : '';
- const extra = sdCurrent.note ? ` (${sdCurrent.note})` : '';
-
- if (act === sdCurrent.optimal) {
+ const tcTxt = sdCurrent.isDevMode ? (' at TC ' + (sdCurrent.tc >= 0 ? '+' : '') + sdCurrent.tc) : '';
+ const extra = sdCurrent.note ? (' (' + sdCurrent.note + ')') : '';
+ const correct = act === sdCurrent.optimal;
+ if (state.featStats) recordPlayOutcome(sdCurrent.cards, sdCurrent.dealerUp.rank, correct, { action: sdCurrent.optimal, note: sdCurrent.note });
+ if (correct) {
  state.sdCorrect++;
  state.sdStreak++;
  if (state.sdStreak > state.sdBest) state.sdBest = state.sdStreak;
  fb.className = 'feedback-bar good';
- fb.textContent = `✓ Correct! ${actionName(act)} vs ${normalizeRank(sdCurrent.dealerUp.rank)}${tcTxt}${extra}`;
+ fb.textContent = '✓ Correct! ' + actionName(act) + ' vs ' + normalizeRank(sdCurrent.dealerUp.rank) + tcTxt + extra;
  } else {
  state.sdStreak = 0;
  fb.className = 'feedback-bar warn';
- fb.textContent = `✗ Optimal (${state.decks}D) was ${actionName(sdCurrent.optimal)}${tcTxt}${extra} (picked ${actionName(act)}).`;
+ const picked = act === 'timeout' ? 'time out' : actionName(act);
+ fb.textContent = '✗ Optimal (' + state.decks + 'D) was ' + actionName(sdCurrent.optimal) + tcTxt + extra + ' (picked ' + picked + ').';
  }
  saveState();
  sdNextHand();
@@ -2979,7 +3932,7 @@
  ? ['9', '11 vs A', 'TC ≤ -1', 'Hit', 'H', 'Double', 'D']
  : ['9', '11 vs A', 'TC ≥ +1', 'Double', 'D', 'Hit', 'H'];
  const row92 = (state.decks <= 2)
- ? ['10', '9 vs 2', 'RC < 0', 'Hit', 'H', 'Double', 'D']
+ ? ['10', '9 vs 2', 'TC < 0', 'Hit', 'H', 'Double', 'D']
  : ['10', '9 vs 2', 'TC ≥ +1', 'Double', 'D', 'Hit', 'H'];
 
  const i18Rows = [
@@ -3081,8 +4034,451 @@
  }
  });
 
+ /* ==================== V7 UI: FEATURES, SEATS, STATS, RISK, DRILLS ==================== */
+ let otherSeatHands = [];
+ let nextQuizAt = 0;
+ let reviewQueue = [];
+ let sdTimerId = null;
+ let tcFreqCache = {};
+ const MISTAKE_CAP = 150;
+ const HISTORY_CAP = 400;
+
+ function scheduleNextQuiz() {
+ if (state.quizInterval === 'random') nextQuizAt = 5 + Math.floor(Math.random() * 11);
+ else nextQuizAt = parseInt(state.quizInterval, 10) || 0;
+ }
+ function shouldOfferCountQuiz() {
+ if (!state.featQuiz) return false;
+ if (state.quizInterval === 'random') return nextQuizAt > 0 && handsSinceQuiz >= nextQuizAt;
+ const n = parseInt(state.quizInterval, 10) || 0;
+ return n > 0 && handsSinceQuiz >= n;
+ }
+
+ function updateModeOptions() {
+ const sel = document.getElementById('mode-select');
+ if (!sel) return;
+ const show = { play: true, guide: true, charts: true, speed: !!state.featSpeed, strat: !!state.featStrat, stats: !!state.featStats, risk: !!state.featRisk };
+ [...sel.options].forEach(opt => { opt.hidden = show[opt.value] === false; });
+ if (show[sel.value] === false) {
+ sel.value = 'play';
+ sel.dispatchEvent(new Event('change'));
+ }
+ const dep = document.getElementById('deck-est-panel');
+ if (dep) dep.hidden = !state.featDeckEst;
+ const quizBtnEl = document.getElementById('btn-check-count');
+ if (quizBtnEl) {
+ const mode = sel.value;
+ quizBtnEl.style.display = (mode === 'play' && state.featQuiz) ? 'inline-flex' : 'none';
+ }
+ const heatEl = document.getElementById('heat-hint');
+ if (heatEl && !state.featHeat) { heatEl.classList.remove('show'); heatEl.textContent = ''; }
+ }
+
+ function syncFeatureToggles() {
+ const map = {
+ 'feat-i18': 'featI18', 'feat-fab4': 'featFab4', 'feat-ins': 'featIns',
+ 'feat-bet-ramp': 'featBetRamp', 'feat-bet-grade': 'featBetGrade',
+ 'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
+ 'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
+ };
+ Object.keys(map).forEach(id => {
+ const el = document.getElementById(id);
+ if (el) el.checked = !!state[map[id]];
+ });
+ const tr = document.getElementById('opt-tc-round'); if (tr) tr.value = state.tcRounding || 'exact';
+ const u = document.getElementById('opt-unit'); if (u) u.value = String(state.unitSize || 25);
+ const mn = document.getElementById('opt-spread-min'); if (mn) mn.value = String(state.spreadMin || 1);
+ const mx = document.getElementById('opt-spread-max'); if (mx) mx.value = String(state.spreadMax || 12);
+ const ds = document.getElementById('opt-decision-sec'); if (ds) ds.value = String(state.decisionSec || 5);
+ const os = document.getElementById('opt-other-seats'); if (os) os.value = String(state.otherSeats || 0);
+ if (optQuizInt) optQuizInt.value = String(state.quizInterval || 0);
+ }
+
+ function bindFeatureToggles() {
+ const boolMap = {
+ 'feat-i18': 'featI18', 'feat-fab4': 'featFab4', 'feat-ins': 'featIns',
+ 'feat-bet-ramp': 'featBetRamp', 'feat-bet-grade': 'featBetGrade',
+ 'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
+ 'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
+ };
+ Object.keys(boolMap).forEach(id => {
+ const el = document.getElementById(id);
+ if (!el) return;
+ el.addEventListener('change', () => {
+ state[boolMap[id]] = el.checked;
+ if (id === 'feat-quiz' && el.checked && (!state.quizInterval || state.quizInterval === 0)) {
+ state.quizInterval = 'random';
+ if (optQuizInt) optQuizInt.value = 'random';
+ scheduleNextQuiz();
+ }
+ if (id === 'feat-quiz' && !el.checked) { state.quizInterval = 0; if (optQuizInt) optQuizInt.value = '0'; }
+ if (id === 'feat-seats' && el.checked && !state.otherSeats) {
+ state.otherSeats = 2;
+ const os = document.getElementById('opt-other-seats');
+ if (os) os.value = '2';
+ }
+ if (id === 'feat-seats' && !el.checked) { /* keep otherSeats but logic off */ }
+ saveState();
+ updateModeOptions();
+ updateHud();
+ renderTable();
+ syncDeckEstButton();
+ });
+ });
+ const bindNum = (id, key, min) => {
+ const el = document.getElementById(id);
+ if (!el) return;
+ el.addEventListener('change', () => {
+ const n = parseFloat(el.value);
+ if (Number.isFinite(n) && n >= min) state[key] = n;
+ saveState();
+ updateHud();
+ });
+ };
+ bindNum('opt-unit', 'unitSize', 5);
+ bindNum('opt-spread-min', 'spreadMin', 1);
+ bindNum('opt-spread-max', 'spreadMax', 1);
+ bindNum('opt-decision-sec', 'decisionSec', 2);
+ const tr = document.getElementById('opt-tc-round');
+ if (tr) tr.addEventListener('change', () => { state.tcRounding = tr.value; saveState(); updateHud(); });
+ const os = document.getElementById('opt-other-seats');
+ if (os) os.addEventListener('change', () => {
+ state.otherSeats = parseInt(os.value, 10) || 0;
+ if (state.otherSeats > 0) { state.featSeats = true; const f = document.getElementById('feat-seats'); if (f) f.checked = true; }
+ saveState();
+ renderTable();
+ });
+ document.getElementById('btn-reset-stats')?.addEventListener('click', resetAllStats);
+ document.getElementById('btn-reset-stats-tab')?.addEventListener('click', resetAllStats);
+ document.getElementById('btn-review-mistakes')?.addEventListener('click', startMistakeReview);
+ document.getElementById('rk-compute')?.addEventListener('click', renderRiskTab);
+ document.getElementById('de-start')?.addEventListener('click', openDeckEstimate);
+ document.getElementById('de-close')?.addEventListener('click', () => document.getElementById('deckest-modal')?.classList.remove('open'));
+ document.getElementById('de-submit')?.addEventListener('click', submitDeckEstimate);
+ document.getElementById('deckest-modal')?.addEventListener('click', e => { if (e.target.id === 'deckest-modal') e.target.classList.remove('open'); });
+ scheduleNextQuiz();
+ }
+
+ function maybeShowHeat(prevBet, newBet) {
+ const el = document.getElementById('heat-hint');
+ if (!el) return;
+ if (!state.featHeat) { el.classList.remove('show'); el.textContent = ''; return; }
+ const hint = getHeatHint(prevBet, newBet, { unit: state.unitSize || 25, maxUnits: state.spreadMax || 12, jumpFactor: 2 });
+ el.textContent = hint;
+ el.classList.toggle('show', !!hint);
+ }
+
+ function maybeGradeBet() {
+ if (!state.featBetGrade || !state.featBetRamp) return;
+ const tc = getTrueCount();
+ const sug = getSuggestedBet(tc, getEstimatedEdge(tc));
+ const units = (state.unitSize > 0) ? roundMoney(state.bet / state.unitSize) : 0;
+ const rec = sug.units || (sug.text === 'WONG' ? 1 : 0);
+ const g = gradeBetUnits(units, rec);
+ if (state.featStats) {
+ recordCategory(state.stats.session, 'bets', g.grade === 'correct');
+ recordCategory(state.stats.lifetime, 'bets', g.grade === 'correct');
+ if (g.grade !== 'correct') pushMistake({ key: 'Bet ' + units + 'u vs rec ' + rec + 'u @ TC ' + (Number.isInteger(tc) ? tc : tc.toFixed(1)), cat: 'bets' });
+ }
+ const recLine = document.getElementById('bet-rec-line');
+ if (recLine && !recLine.hidden) {
+ const msg = g.grade === 'correct' ? 'Bet grade: correct (' + rec + 'u).' : 'Bet grade: ' + g.grade + ' (recommended ' + rec + 'u).';
+ recLine.textContent = msg;
+ }
+ }
+
+ function dealOtherSeats() {
+ otherSeatHands = [];
+ if (!state.featSeats) return;
+ const n = Math.max(0, Math.min(6, state.otherSeats || 0));
+ for (let i = 0; i < n; i++) {
+ otherSeatHands.push({ cards: [drawCard(true), drawCard(true)] });
+ }
+ }
+
+ function playOtherSeats() {
+ if (!state.featSeats || !otherSeatHands.length || !dealerHand[0]) return;
+ otherSeatHands.forEach((seat, idx) => {
+ const hands = [{ cards: seat.cards, fromSplit: false }];
+ let i = 0;
+ while (i < hands.length) {
+ const h = hands[i];
+ let guard = 0;
+ while (guard++ < 16) {
+ const ev = evalHand(h.cards);
+ if (ev.isBust || ev.isBlackjack) break;
+ const canSplit = h.cards.length === 2 && hands.length < 4 &&
+ normalizeRank(h.cards[0].rank) === normalizeRank(h.cards[1].rank);
+ const dec = getOptimalDecision(h.cards, dealerHand[0].rank, {
+ canDouble: h.cards.length === 2,
+ canSplit,
+ canSurrender: state.ls && h.cards.length === 2 && !h.fromSplit && hands.length === 1,
+ useI18: false, useFab4: false, useDeviations: false,
+ tc: getTrueCount(), rc: runningCount, decks: state.decks
+ });
+ if (dec.action === 'R') break;
+ if (dec.action === 'P' && canSplit) {
+ const c1 = h.cards.pop();
+ h.cards.push(drawCard(true));
+ h.fromSplit = true;
+ hands.splice(i + 1, 0, { cards: [c1, drawCard(true)], fromSplit: true });
+ if (normalizeRank(h.cards[0].rank) === 'A') break;
+ continue;
+ }
+ if (dec.action === 'D' && h.cards.length === 2) { h.cards.push(drawCard(true)); break; }
+ if (dec.action === 'H') {
+ h.cards.push(drawCard(true));
+ if (evalHand(h.cards).isBust) break;
+ if (h.fromSplit && normalizeRank(h.cards[0].rank) === 'A') break;
+ continue;
+ }
+ break;
+ }
+ i++;
+ }
+ seat.cards = hands[0].cards;
+ if (hands.length > 1) {
+ hands.slice(1).forEach(h => otherSeatHands.push({ cards: h.cards, fromSplit: true }));
+ }
+ });
+ }
+
+ function renderOtherSeats() {
+ const wrap = document.getElementById('other-seats');
+ if (!wrap) return;
+ wrap.innerHTML = '';
+ const show = state.featSeats && otherSeatHands.length;
+ wrap.hidden = !show;
+ if (!show) return;
+ otherSeatHands.forEach((seat, i) => {
+ const box = document.createElement('div');
+ box.className = 'other-seat';
+ const lab = document.createElement('div');
+ lab.className = 'os-label';
+ const ev = evalHand(seat.cards);
+ lab.textContent = 'Seat ' + (i + 1) + ' · ' + (ev.isBust ? 'Bust ' : '') + ev.total;
+ box.appendChild(lab);
+ const row = document.createElement('div');
+ row.className = 'cards-row overlap';
+ seat.cards.forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
+ box.appendChild(row);
+ wrap.appendChild(box);
+ });
+ }
+
+ function situationKey(cards, upRank, dec) {
+ if (dec && dec.note) return dec.note.replace(/^[^:]+:\s*/, '');
+ const ev = evalHand(cards);
+ const isPair = cards.length === 2 && normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
+ const left = isPair ? ('Pair ' + normalizeRank(cards[0].rank)) : ((ev.isSoft ? 'Soft ' : '') + ev.total);
+ return left + ' vs ' + normalizeRank(upRank);
+ }
+
+ function recordPlayOutcome(cards, upRank, correct, dec) {
+ const ev = evalHand(cards);
+ const isPair = cards.length === 2 && normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
+ const cat = (dec && dec.note) ? 'deviations' : (isPair ? 'pairs' : (ev.isSoft ? 'soft' : 'hard'));
+ recordCategory(state.stats.session, cat, correct);
+ recordCategory(state.stats.lifetime, cat, correct);
+ if (!correct) pushMistake({ key: situationKey(cards, upRank, dec), cat, cards: cards.map(c => ({ rank: c.rank, suit: c.suit })), up: upRank, action: dec && dec.action });
+ }
+
+ function pushMistake(m) {
+ if (!state.stats) return;
+ state.stats.mistakes.push(Object.assign({ t: Date.now() }, m));
+ if (state.stats.mistakes.length > MISTAKE_CAP) state.stats.mistakes.splice(0, state.stats.mistakes.length - MISTAKE_CAP);
+ state.stats.missedMap = state.stats.missedMap || {};
+ if (m.key) state.stats.missedMap[m.key] = (state.stats.missedMap[m.key] || 0) + 1;
+ }
+
+ function snapshotBankroll() {
+ if (!state.stats) return;
+ state.stats.bankrollHistory.push({ t: Date.now(), br: state.bankroll });
+ if (state.stats.bankrollHistory.length > HISTORY_CAP) state.stats.bankrollHistory.splice(0, state.stats.bankrollHistory.length - HISTORY_CAP);
+ }
+
+ function resetAllStats() {
+ state.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} };
+ state.playCorrect = 0; state.playTotal = 0;
+ saveState();
+ renderStatsTab();
+ const st = document.getElementById('st-review-status');
+ if (st) st.textContent = 'Stats and mistake logs were reset on this device.';
+ }
+
+ function accStr(obj) {
+ if (!obj || !obj.t) return '—';
+ return Math.round(1000 * obj.c / obj.t) / 10 + '% (' + obj.c + '/' + obj.t + ')';
+ }
+
+ function renderStatsTab() {
+ if (!state.featStats) return;
+ const sess = state.stats.session, life = state.stats.lifetime;
+ const sum = s => Object.keys(s).reduce((a, k) => ({ c: a.c + s[k].c, t: a.t + s[k].t }), { c: 0, t: 0 });
+ const ss = sum(sess), ll = sum(life);
+ const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+ set('st-sess-acc', accStr(ss));
+ set('st-life-acc', accStr(ll));
+ set('st-hands', String(state.handsPlayed || 0));
+ set('st-mistakes', String((state.stats.mistakes || []).length));
+ set('st-bank', formatMoney(state.bankroll));
+ const cats = document.getElementById('st-cats');
+ if (cats) {
+ const labels = { hard: 'Hard', soft: 'Soft', pairs: 'Pairs', deviations: 'Deviations', bets: 'Bets', insurance: 'Insurance' };
+ cats.innerHTML = Object.keys(labels).map(k => {
+ const a = accStr(life[k]);
+ const pct = life[k] && life[k].t ? (100 * life[k].c / life[k].t) : 0;
+ return '<div class="setting-row"><span class="lbl">' + labels[k] + ' · session ' + accStr(sess[k]) + '</span><span>' + a + '</span></div><div class="stat-bar"><span style="width:' + pct.toFixed(1) + '%"></span></div>';
+ }).join('');
+ }
+ const miss = document.getElementById('st-missed');
+ if (miss) {
+ const top = mostMissed((state.stats.mistakes || []).map(m => ({ key: m.key })), 8);
+ miss.innerHTML = top.length ? top.map(x => '<li><span>' + x.key + '</span><span>' + x.n + '</span></li>').join('') : '<li>No mistakes logged yet.</li>';
+ }
+ drawBankrollChart();
+ }
+
+ function drawBankrollChart() {
+ const cv = document.getElementById('bankroll-chart');
+ if (!cv || !cv.getContext) return;
+ const ctx = cv.getContext('2d');
+ const w = cv.width, h = cv.height;
+ ctx.clearRect(0, 0, w, h);
+ const hist = state.stats.bankrollHistory || [];
+ ctx.fillStyle = 'rgba(0,0,0,0.25)';
+ ctx.fillRect(0, 0, w, h);
+ if (hist.length < 2) {
+ ctx.fillStyle = '#9bb0a6';
+ ctx.font = '14px sans-serif';
+ ctx.fillText('Play some hands to see your bankroll line.', 16, h / 2);
+ return;
+ }
+ const ys = hist.map(p => p.br);
+ const min = Math.min(...ys, 0), max = Math.max(...ys, 1);
+ const pad = 8;
+ ctx.strokeStyle = '#e5b94c';
+ ctx.lineWidth = 2;
+ ctx.beginPath();
+ hist.forEach((p, i) => {
+ const x = pad + (w - 2 * pad) * i / (hist.length - 1);
+ const y = h - pad - (h - 2 * pad) * ((p.br - min) / (max - min || 1));
+ if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+ });
+ ctx.stroke();
+ }
+
+ function renderRiskTab() {
+ if (!state.featRisk) return;
+ const unit = state.unitSize || 25;
+ const minU = state.spreadMin || 1, maxU = state.spreadMax || 12;
+ const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+ set('rk-unit', formatMoney(unit));
+ set('rk-spread', minU + '–' + maxU);
+ set('rk-rules', state.decks + 'D ' + (state.s17 ? 'S17' : 'H17'));
+ set('rk-pen', Math.round(getPenetrationForDecks(state.decks) * 100) + '%');
+ const bank = parseFloat(document.getElementById('rk-bank')?.value) || state.bankroll;
+ const hph = parseFloat(document.getElementById('rk-hph')?.value) || 80;
+ const cacheKey = [state.decks, getPenetrationForDecks(state.decks), state.tcRounding || 'exact'].join('|');
+ if (!tcFreqCache[cacheKey]) tcFreqCache[cacheKey] = simulateTcFrequencies({ decks: state.decks, penetration: getPenetrationForDecks(state.decks), rounding: state.tcRounding || 'exact', nHands: 6000, seed: 'TC-' + cacheKey });
+ const evs = expectedValueForSpread(tcFreqCache[cacheKey].freq, { unit, minUnits: minU, maxUnits: maxU, edgeFn: t => getEstimatedEdge(t) });
+ const rep = riskReport({ bankroll: bank, handsPerHour: hph, evPerHand: evs.evPerHand, varPerHand: evs.varPerHand, unit });
+ const fmtM = v => formatMoney(roundMoney(v));
+ const cells = [
+ ['EV / hand (est.)', fmtM(rep.evPerHand)],
+ ['EV / hour (est.)', fmtM(rep.evPerHour)],
+ ['SD / hour (est.)', fmtM(rep.sdPerHour)],
+ ['N0 (hands, est.)', Number.isFinite(rep.n0Hands) ? Math.round(rep.n0Hands).toLocaleString() : '—'],
+ ['Risk of ruin (est.)', (rep.riskOfRuin * 100).toFixed(2) + '%'],
+ ['Kelly bet (est.)', fmtM(rep.kellyBet)],
+ ['Half-Kelly bet (est.)', fmtM(rep.halfKellyBet)],
+ ['Kelly fraction', (rep.kellyFraction * 100).toFixed(2) + '%']
+ ];
+ const box = document.getElementById('rk-results');
+ if (box) box.innerHTML = cells.map(c => '<div class="stat-cell" style="text-align:left;padding:8px;"><span class="label">' + c[0] + '</span><span class="val">' + c[1] + '</span></div>').join('');
+ const note = document.getElementById('rk-kelly-note');
+ if (note) note.textContent = 'Estimates only. Frequencies from ' + tcFreqCache[cacheKey].hands + ' simulated hands at this penetration. Variance assumed ≈ 1.3 units² per unit wagered.';
+ }
+
+ function startMistakeReview() {
+ const list = (state.stats && state.stats.mistakes || []).filter(m => m.cards && m.up);
+ if (!list.length) {
+ const st = document.getElementById('st-review-status');
+ if (st) st.textContent = 'No replayable play mistakes yet. Strategy-drill and table-play errors with saved hands will appear here.';
+ return;
+ }
+ reviewQueue = list.slice(-40).reverse();
+ const sel = document.getElementById('mode-select');
+ sel.value = 'strat';
+ sel.dispatchEvent(new Event('change'));
+ }
+
+ function syncDeckEstButton() {
+ const p = document.getElementById('deck-est-panel');
+ if (p) p.hidden = !state.featDeckEst;
+ }
+
+ let deActual = 0, deKind = 'remaining';
+ function openDeckEstimate() {
+ if (!state.featDeckEst) return;
+ const total = state.decks * 52;
+ const used = Math.floor(total * (0.25 + Math.random() * 0.55));
+ const remaining = Math.max(0, total - used);
+ deKind = Math.random() < 0.5 ? 'remaining' : 'played';
+ deActual = (deKind === 'remaining' ? remaining : used) / 52;
+ const fill = document.getElementById('de-fill');
+ if (fill) fill.style.height = Math.max(4, Math.min(100, (used / total) * 100)) + '%';
+ const lab = document.getElementById('de-q-label');
+ if (lab) lab.textContent = deKind === 'remaining' ? 'Decks remaining' : 'Decks played';
+ const pr = document.getElementById('de-prompt');
+ if (pr) pr.textContent = 'A ' + state.decks + '-deck shoe. The tray shows cards already used. Estimate decks ' + deKind + ' (within 0.5 is correct).';
+ const res = document.getElementById('de-result');
+ if (res) { res.style.display = 'none'; res.textContent = ''; }
+ const g = document.getElementById('de-guess');
+ if (g) g.value = '';
+ document.getElementById('deckest-modal')?.classList.add('open');
+ }
+ function submitDeckEstimate() {
+ const guess = parseFloat(document.getElementById('de-guess')?.value);
+ const g = gradeDeckEstimate(guess, deActual, 0.5);
+ const res = document.getElementById('de-result');
+ if (!res) return;
+ res.style.display = 'flex';
+ res.className = 'feedback-bar ' + (g.ok ? 'good' : 'warn');
+ res.textContent = (g.ok ? '✓ Close enough. ' : '✗ Not quite. ') + 'Actual ' + deKind + ': ' + deActual.toFixed(1) + ' decks (you guessed ' + (Number.isFinite(guess) ? guess : '—') + ').';
+ if (state.featStats) {
+ // counted under a generic quiz — not a hand category
+ }
+ }
+
+ function startSdTimer() {
+ stopSdTimer();
+ const wrap = document.getElementById('sd-timer');
+ const bar = document.getElementById('sd-timer-bar');
+ if (!state.featTimed || !wrap || !bar) { if (wrap) wrap.style.display = 'none'; return; }
+ wrap.style.display = 'block';
+ const sec = Math.max(2, state.decisionSec || 5);
+ bar.style.transition = 'none';
+ bar.style.transform = 'scaleX(1)';
+ void bar.offsetWidth;
+ const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ bar.style.transition = reduce ? 'none' : 'transform ' + sec + 's linear';
+ bar.style.transform = 'scaleX(0)';
+ sdTimerId = setTimeout(() => { sdTimerId = null; sdAnswer('timeout'); }, sec * 1000);
+ }
+ function stopSdTimer() {
+ if (sdTimerId) { clearTimeout(sdTimerId); sdTimerId = null; }
+ const bar = document.getElementById('sd-timer-bar');
+ if (bar) { bar.style.transition = 'none'; bar.style.transform = 'scaleX(0)'; }
+ }
+
+
  /* ==================== INITIALIZE ==================== */
+ bindFeatureToggles();
  syncRuleControlsUI();
+ updateModeOptions();
  buildShoe();
  updateTopStats();
  renderTable();
@@ -3090,6 +4486,7 @@
  updateStratRulesLabel();
  sdNextHand();
  renderCharts();
+ syncDeckEstButton();
 })();
 </script>
 
@@ -3106,14 +4503,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v6')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v7')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v6', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v7', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v6'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v7'); } catch (e) {} }, 2500);
   });
 }
 </script>

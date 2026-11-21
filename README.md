@@ -4,9 +4,13 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 
 ## Features
 - **Table Play**: Full Blackjack with CSPRNG Fisher-Yates shuffling, burn card, deck-accurate penetration, exact $0.50 payouts, Insurance / Even Money, Late Surrender, live Count HUD, and Strategy/Deviation Coach.
-- **Speed Count Drill**: 52-card Hi-Lo flashcard drill (1, 2, or 3 cards at a time; manual or auto-deal).
-- **Strategy & Deviations Drill**: Rapid-fire Basic Strategy and Illustrious 18 / Fab 4 trainer.
-- **Charts & Counting Guide**: Dynamic deck-accurate strategy cards (2D, 6D, 8D) and full Hi-Lo / Kelly / Wonging guide.
+- **Speed Count**: 52-card Hi-Lo flashcard drill (1, 2, or 3 cards at a time; manual or auto-deal). Best time and cards/sec are saved.
+- **Strategy Drill**: Rapid-fire Basic Strategy and Illustrious 18 / Fab 4 trainer, with an optional countdown per decision.
+- **Charts**: Dynamic deck-accurate strategy cards (2D, 6D, 8D) and the Hi-Lo / Kelly / Wonging reference.
+- **Stats**: Session and lifetime accuracy by hard / soft / pairs / deviations / bets / insurance, a bankroll chart, most-missed situations, and a mistake-review quiz.
+- **Risk Tools**: Estimated win rate per hour, standard deviation, N0, risk of ruin, and Kelly / half-Kelly bet sizing (approximations — always labeled as estimates).
+- **How It Works**: In-app guide covering every strategy, index, toggle, and mode.
+- **Settings → Features**: Every advanced tool can be turned on or off individually. Choices persist in `localStorage` (`bj_trainer_v7`).
 - **Offline Ready**: Installable via **Add to Home Screen** on iOS and Android.
 
 ## Table rules (implicit)
@@ -17,7 +21,35 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v7)
+
+Open **How It Works** in the header for the full write-up. The short version:
+
+- **Basic strategy** follows the in-app, deck-accurate charts (Wizard of Odds family).
+- **Hi-Lo**: low cards (2–6) +1, 7–9 0, 10s and Aces −1. True count is the running count divided by unseen decks. Rounding can be exact (default, same as v6), floor, truncate toward 0, or `Math.round`. The chosen mode is used everywhere: HUD, deviations, bet ramp, and quizzes.
+- **Illustrious 18** (when the I18 toggle is on): insurance / even money at a deck-aware index (1D +1.5, 2D +2.5, 4–8D +3); 16 vs 10 stand at TC ≥ 0 (when surrender is not available); 15 vs 10 stand at TC ≥ +4 (no surrender); 10,10 vs 5 / 6 split at +5 / +4; 10 vs 10 double at +4; 12 vs 3 stand at +2; 12 vs 2 stand at +3; 11 vs A double at +1 (6D S17) or hit at ≤ −1 when basic is double; **9 vs 2** double at +1 (6D) or **hit at TC < 0 (2D)** — this 2-deck play now uses the true count, not the running count; 10 vs A double at +4 (6D S17) or +3 (2D / H17); 9 vs 7 double at +3; 16 vs 9 stand at +5; 13 vs 2 hit at ≤ −1; 12 vs 4 hit at ≤ 0; 12 vs 5 hit at ≤ −2; 12 vs 6 hit at ≤ −1; 13 vs 3 hit at ≤ −2.
+- **Fab 4** (when on, late surrender allowed): 14 vs 10 (including 7,7) at TC ≥ +3; 15 vs 10 at TC ≥ 0; 15 vs 9 at TC ≥ +2; 15 vs A at TC ≥ +1 (S17) or ≥ −1 (H17).
+- **Bet ramp** (default): 1 unit at TC ≤ 1, then +1 unit per true count, capped at your spread (default 1–12). An optional grader marks each bet correct / too high / too low.
+- **Quizzes & drills**: optional running/true-count quizzes, a discard-tray deck-estimate (graded within 0.5 decks), the Speed Count and Strategy Drill modes, and optional timed decisions (timeout counts as a miss).
+- **Risk tools**: EV ≈ 0.5% per TC minus the rules’ house edge; per-hand variance ≈ 1.3 units²; true-count frequencies are simulated from this app’s shoe and penetration. Kelly fraction = edge / 1.3. These are estimates, not a guarantee.
+- **Other seats** play basic strategy from the same shoe (their cards count). **Heat hints** warn about a >2× bet jump or a leap from ≤2 units to the top of the spread.
+
+Default toggles keep the core table clean: I18, Fab 4, insurance index, and the bet ramp stay on (they power the existing coach and HUD). Bet grading, count quizzes, deck estimate, timed decisions, other seats, and heat hints start off. Speed Count, Strategy Drill, Stats, and Risk Tools stay in the mode menu until you hide them.
+
+Turning a feature off hides its UI and skips its logic.
+
 ## Changelog
+
+### v7
+- Configurable unit size and bet spread with a TC → units ramp, plus an optional bet-grading mode.
+- Optional count quizzes, a discard-tray deck-estimate drill, speed-count best times, and timed strategy-drill decisions.
+- Complete I18 / Fab 4 / insurance index coverage, consistent TC rounding (exact / floor / truncate / round), and I18 #10 (2D 9 vs 2) now keys off **TC < 0** rather than the running count.
+- Session + lifetime stats, bankroll chart, most-missed list, and mistake review. Versioned `bj_trainer_v7` storage with a reset button.
+- Risk tools: estimated EV/hr, SD/hr, N0, risk of ruin, Kelly and half-Kelly.
+- Optional 1–6 other seats (basic strategy, same shoe) and educational heat hints.
+- Every advanced feature is individually toggleable under Settings → Features; choices persist. A **How It Works** mode explains each strategy, index, toggle, and mode.
+- Layout: long split hands scroll from the left so the first card is never clipped; short-landscape hand titles stay on one line above the result banner; header mode labels (`Table Play`, `Speed Count`, `Strategy Drill`, `Charts`, `Stats`, `Risk Tools`, `How It Works`) fit the dropdown.
+- Service worker cache bumped to `bj-trainer-v7`.
 
 ### v6
 - Hi-Lo count tags sit under each card's own rank/suit index in the visible left strip, so they no longer cover the next overlapping card's corner label.
