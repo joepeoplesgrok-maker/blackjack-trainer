@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v8</title>
+<title>Blackjack & Card Counting Trainer Pro v9</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -510,13 +510,19 @@
  padding: 2px 0;
  }
 
+ .player-hand-shell {
+ position: relative;
+ min-width: 0;
+ flex: 1 1 140px;
+ max-width: 100%;
+ }
  .player-hand-box {
  background: rgba(0,0,0,0.2);
  border: 2px solid transparent;
  border-radius: 10px;
  padding: 6px 8px;
  min-width: 0;
- flex: 1 1 140px;
+ width: 100%;
  max-width: 100%;
  display: flex;
  flex-direction: column;
@@ -526,6 +532,36 @@
  -webkit-overflow-scrolling: touch;
  overscroll-behavior-x: contain;
  }
+ .scroll-hint {
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ width: 22px;
+ pointer-events: none;
+ z-index: 3;
+ opacity: 0;
+ transition: opacity 0.15s ease;
+ }
+ @media (prefers-reduced-motion: reduce) {
+ .scroll-hint { transition: none; }
+ }
+ .scroll-hint-right { right: 0; background: linear-gradient(to right, transparent, rgba(11, 25, 20, 0.95)); }
+ .scroll-hint-left { left: 0; background: linear-gradient(to left, transparent, rgba(11, 25, 20, 0.95)); }
+ .player-hand-shell.has-scroll-right .scroll-hint-right,
+ .player-hand-shell.has-scroll-left .scroll-hint-left { opacity: 1; }
+ .scroll-hint-right::after,
+ .scroll-hint-left::after {
+ position: absolute;
+ top: 50%;
+ transform: translateY(-50%);
+ color: var(--gold);
+ font-size: 1.25rem;
+ font-weight: 700;
+ line-height: 1;
+ text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+ }
+ .scroll-hint-right::after { content: '›'; right: 3px; }
+ .scroll-hint-left::after { content: '‹'; left: 3px; }
  .player-hand-box .cards-row {
  justify-content: flex-start;
  width: max-content;
@@ -667,10 +703,20 @@
  display: flex;
  align-items: center;
  justify-content: space-between;
+ flex-wrap: wrap;
  padding: 7px 0;
  border-bottom: 1px solid rgba(36,70,56,0.6);
  font-size: 0.84rem;
- gap: 10px;
+ gap: 8px 10px;
+ }
+ #settings-modal select,
+ .modal select {
+ flex: 1 1 14rem;
+ min-width: min(100%, 14rem);
+ max-width: 100%;
+ width: auto;
+ box-sizing: border-box;
+ padding-right: 36px;
  }
  .setting-row:last-of-type { border-bottom: none; }
  .setting-row input[type="checkbox"] {
@@ -902,18 +948,21 @@
  #tab-play .player-hands { padding: 0; gap: 4px; }
  #tab-play .player-hand-box { padding: 0 4px; border-width: 1px; min-width: 0; background: transparent; }
  #player-hands .zone-title {
- flex-wrap: nowrap !important;
+ flex-wrap: wrap;
  font-size: 0.55rem;
  gap: 3px;
  margin-bottom: 1px;
  max-width: 100%;
- overflow: hidden;
+ overflow: visible;
+ justify-content: center;
  }
  #player-hands .zone-title > span,
- #player-hands .hand-result {
+ #player-hands .hand-result,
+ #player-hands .hand-score {
  white-space: nowrap;
- overflow: hidden;
- text-overflow: ellipsis;
+ overflow: visible;
+ text-overflow: clip;
+ max-width: none;
  }
  #tab-play .table-stage {
  flex-direction: column;
@@ -999,6 +1048,53 @@
  }
  }
 
+ /* Very short, narrow portrait (iPhone SE 1st gen 320×568 and similar):
+    keep the banner readable and both split hands reachable. */
+ @media (max-width: 400px) and (max-height: 640px) {
+ .card, .card.large { width: 44px; height: 62px; padding: 2px 3px; }
+ .card-top, .card-bot { font-size: 0.62rem; }
+ .card-center, .card.large .card-center { font-size: 1.05rem; }
+ .cards-row { min-height: 62px; }
+ .cards-row.overlap { --card-overlap: 10px; }
+ .strip { padding: 3px 6px; }
+ .stat-cell { padding: 2px 3px; }
+ .stat-cell .label { font-size: 0.55rem; }
+ .stat-cell .val { font-size: 0.78rem; }
+ .controls-bar { padding: 6px; }
+ #tab-play .table-stage { min-height: 0; flex: 1 1 auto; }
+ #tab-play .table-felt {
+ overflow-x: hidden;
+ overflow-y: auto;
+ -webkit-overflow-scrolling: touch;
+ justify-content: flex-start;
+ gap: 6px;
+ min-height: 0;
+ }
+ #tab-play .table-felt > .feedback-bar {
+ position: relative;
+ z-index: 3;
+ flex: 0 0 auto;
+ margin: 0;
+ }
+ #tab-play .table-felt > .zone {
+ flex: 0 0 auto;
+ min-height: min-content;
+ max-width: 100%;
+ overflow: visible;
+ }
+ #tab-play #dealer-cards,
+ #tab-play .zone.dealer,
+ #tab-play .table-felt > .zone:first-of-type {
+ flex-shrink: 0;
+ }
+ #player-hands {
+ overflow: visible;
+ }
+ #player-hands .player-hand-shell,
+ #player-hands .player-hand-box {
+ max-width: 100%;
+ }
+ }
  /* Desktop / Windows / Tablet enhancements */
  @media (min-width: 720px) {
  .live-tray-btn { width: 52px; min-width: 52px; padding: 6px 5px; }
@@ -1219,6 +1315,7 @@
  .sd-timer > span { display: block; height: 100%; width: 100%; background: var(--gold); transform-origin: left center; }
  .setting-row .lbl { flex: 1; min-width: 0; }
  #bet-rec-line { font-size: 0.78rem; color: var(--gold); text-align: center; min-height: 20px; margin: 4px 0; }
+ #bet-rec-line.has-bet-grade { color: #f3dc9b; }
 </style>
 </head>
 <body>
@@ -1747,8 +1844,25 @@
  <details class="guide-block">
  <summary>What each toggle does</summary>
  <div class="guide-block-body">
- <p>Open <strong>Rules → Features</strong>. Turning a toggle off hides that tool’s screens and stops its logic (no grades, no quizzes, no extra seats, and so on). The core table, basic strategy, and charts remain. I18, Fab 4, and the insurance index can be switched independently. Rounding applies globally when you change it. Speed Count, Strategy Drill, Stats, and Risk Tools disappear from the mode list when turned off. How It Works and Table Play always stay in the list.</p>
- <p><strong>Live shoe &amp; discard bars</strong> (on by default) shows the two bars on the table; turn it off to hide them and disable tap-to-estimate and auto-prompts. <strong>Show exact decks remaining</strong> (off by default) labels the bars with the true leftover decks so you can check your eye. <strong>Deck-estimate prompt</strong> asks you to guess leftover decks every N hands. <strong>Deck-estimation drill</strong> only adds the standalone practice quiz (it does not control the live bars).</p>
+ <p>Open <strong>Rules → Features</strong>. Turning a toggle off hides that tool’s screens and stops its logic. The core table, basic strategy, and charts remain. How It Works and Table Play always stay in the mode list. Each Settings → Features control:</p>
+ <ul>
+ <li><strong>Illustrious 18</strong> — coach and drills use the I18 indexes. Off: those plays follow basic strategy.</li>
+ <li><strong>Fab 4</strong> — late-surrender deviations (14/15 vs 9, 10, Ace). Off: those plays follow basic strategy.</li>
+ <li><strong>Insurance index</strong> — grades Insurance / Even Money at the deck-aware count. Off: no insurance grade.</li>
+ <li><strong>TC rounding</strong> — exact, floor, truncate, or round; used by the HUD, deviations, quizzes, and the bet ramp.</li>
+ <li><strong>Bet ramp</strong> — HUD recommended bet follows the TC → units ramp.</li>
+ <li><strong>Grade bets</strong> — after you Deal, the bet is marked correct, too high, or too low against the ramp, shown next to the recommended bet until you change the wager or deal again.</li>
+ <li><strong>Count-check quizzes</strong> — optional RC/TC prompts during Table Play. <strong>Quiz frequency</strong> sets every N hands or a random 5–15 gap.</li>
+ <li><strong>Live shoe &amp; discard bars</strong> (on by default) — the two bars on the table; turn it off to hide them and disable tap-to-estimate and auto-prompts.</li>
+ <li><strong>Show exact decks remaining</strong> (off by default) — labels the bars with the true leftover decks.</li>
+ <li><strong>Deck-estimate prompt</strong> — asks you to guess leftover decks every N hands (off by default).</li>
+ <li><strong>Deck-estimation drill</strong> — standalone practice quiz (does not control the live bars).</li>
+ <li><strong>Speed Count mode</strong> and <strong>Strategy Drill mode</strong> — show or hide those modes in the header menu.</li>
+ <li><strong>Timed decisions</strong> — countdown in Strategy Drill; a timeout is scored as a miss. <strong>Seconds per decision</strong> sets the limit.</li>
+ <li><strong>Stats</strong> and <strong>Risk Tools</strong> — show or hide those modes and (for Stats) stop logging.</li>
+ <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count.</li>
+ <li><strong>Heat hints</strong> — an educational warning when a bet jumps more than 2× or leaps from a small wager to the top of the spread.</li>
+ </ul>
  </div>
  </details>
  </div>
@@ -2221,6 +2335,12 @@
  const cutIdx = (opts && opts.cutCardIndex) != null ? opts.cutCardIndex : Math.floor(total * 0.75);
  const cutPct = Math.max(0, Math.min(100, ((total - cutIdx) / total) * 100));
  return { total, inShoe, used, unseen, decksRemaining, shoePct, discardPct, cutPct };
+ }
+
+ /** True after `handsSince` completed hands when interval is every N hands (N > 0). */
+ function isPeriodicPromptDue(handsSince, interval) {
+ const n = parseInt(interval, 10) || 0;
+ return n > 0 && handsSince >= n;
  }
 
  function gradeLiveDeckEstimate(guess, actualDecks, runningCount, rounding) {
@@ -2972,6 +3092,7 @@
  let isEvenMoneyOffer = false;
  let handsSinceQuiz = 0;
  let handsSinceDeckEst = 0;
+ let lastBetGrade = '';
  let lastSuggestedAmount = 25;
 
  function refundInFlightBetsIfAny() {
@@ -3133,16 +3254,13 @@
  betEl.className = 'val ' + sug.cls;
  const betCell = document.getElementById('hud-bet-cell');
  if (betCell) betCell.style.display = state.featBetRamp ? '' : 'none';
- const recLine = document.getElementById('bet-rec-line');
- if (recLine) {
- recLine.hidden = !state.featBetRamp;
- if (state.featBetRamp) recLine.textContent = 'Recommended: ' + sug.text + (sug.label ? ' · ' + sug.label : '');
- }
+
 
  const pct = Math.min(100, ((cardsDealtCount + burnCardCount) / totalCards) * 100);
  document.getElementById('shoe-bar-fill').style.width = pct.toFixed(1) + '%';
  document.getElementById('count-hud').style.display = state.showHud ? 'block' : 'none';
  if (typeof updateLiveTray === 'function') updateLiveTray();
+ if (typeof updateBetRecLine === 'function') updateBetRecLine(sug);
  }
 
  function updateTopStats() {
@@ -3164,6 +3282,19 @@
  const el = document.getElementById('play-feedback');
  el.textContent = msg;
  el.className = 'feedback-bar ' + cls;
+ }
+
+ function updateHandScrollHints() {
+ document.querySelectorAll('#player-hands .player-hand-shell').forEach(shell => {
+ const box = shell.querySelector('.player-hand-box');
+ if (!box) return;
+ const max = box.scrollWidth - box.clientWidth;
+ shell.classList.toggle('has-scroll-right', max > 2 && box.scrollLeft < max - 2);
+ shell.classList.toggle('has-scroll-left', box.scrollLeft > 2);
+ });
+ }
+ if (typeof window !== 'undefined') {
+ window.addEventListener('resize', () => { if (typeof updateHandScrollHints === 'function') updateHandScrollHints(); });
  }
 
  function renderTable() {
@@ -3212,8 +3343,22 @@
  row.className = 'cards-row overlap';
  h.cards.forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
  box.appendChild(row);
- pContainer.appendChild(box);
+
+ const shell = document.createElement('div');
+ shell.className = 'player-hand-shell';
+ const hintL = document.createElement('div');
+ hintL.className = 'scroll-hint scroll-hint-left';
+ hintL.setAttribute('aria-hidden', 'true');
+ const hintR = document.createElement('div');
+ hintR.className = 'scroll-hint scroll-hint-right';
+ hintR.setAttribute('aria-hidden', 'true');
+ shell.appendChild(box);
+ shell.appendChild(hintL);
+ shell.appendChild(hintR);
+ box.addEventListener('scroll', updateHandScrollHints, { passive: true });
+ pContainer.appendChild(shell);
  });
+ requestAnimationFrame(updateHandScrollHints);
 
  document.getElementById('bet-controls').style.display = (phase === 'betting' || phase === 'done') ? 'flex' : 'none';
  document.getElementById('insurance-controls').style.display = phase === 'insurance' ? 'block' : 'none';
@@ -3538,6 +3683,7 @@
  renderTable();
 
  if (state.featStats) snapshotBankroll();
+ handsSinceDeckEst++;
  if (shouldOfferCountQuiz()) {
  handsSinceQuiz = 0;
  scheduleNextQuiz();
@@ -3545,8 +3691,6 @@
  } else if (shouldOfferDeckEstimate()) {
  handsSinceDeckEst = 0;
  openLiveDeckEstimate();
- } else {
- handsSinceDeckEst++;
  }
  }
 
@@ -3594,6 +3738,7 @@
  const val = parseInt(btn.dataset.chip, 10);
  if (roundMoney(state.bet + val) <= state.bankroll) {
  state.bet = roundMoney(state.bet + val);
+ clearBetGrade();
  updateTopStats();
  saveState();
  } else {
@@ -3615,9 +3760,10 @@
  }
  });
 
- document.getElementById('btn-clear-bet').addEventListener('click', () => { state.bet = 0; updateTopStats(); saveState(); });
+ document.getElementById('btn-clear-bet').addEventListener('click', () => { state.bet = 0; clearBetGrade(); updateTopStats(); saveState(); });
  document.getElementById('btn-rebet').addEventListener('click', () => {
  state.bet = Math.min(state.lastBet || 25, Math.floor(state.bankroll / 5) * 5);
+ clearBetGrade();
  updateTopStats();
  saveState();
  });
@@ -4411,8 +4557,27 @@
  el.classList.toggle('show', !!hint);
  }
 
+ function clearBetGrade() {
+ lastBetGrade = '';
+ if (typeof updateBetRecLine === 'function') updateBetRecLine();
+ }
+ function updateBetRecLine(sug) {
+ const recLine = document.getElementById('bet-rec-line');
+ if (!recLine) return;
+ if (!sug && typeof getSuggestedBet === 'function' && typeof getTrueCount === 'function') {
+ try { sug = getSuggestedBet(getTrueCount(), getEstimatedEdge(getTrueCount())); } catch (e) { sug = null; }
+ }
+ const recTxt = (state.featBetRamp && sug)
+ ? ('Recommended: ' + sug.text + (sug.label ? ' · ' + sug.label : ''))
+ : (state.featBetRamp && lastSuggestedAmount ? 'Recommended: ' + formatMoney(lastSuggestedAmount) : '');
+ const parts = [recTxt, lastBetGrade].filter(Boolean);
+ recLine.hidden = parts.length === 0;
+ recLine.textContent = parts.join(' · ');
+ if (lastBetGrade) recLine.classList.add('has-bet-grade');
+ else recLine.classList.remove('has-bet-grade');
+ }
  function maybeGradeBet() {
- if (!state.featBetGrade || !state.featBetRamp) return;
+ if (!state.featBetGrade || !state.featBetRamp) { lastBetGrade = ''; return; }
  const tc = getTrueCount();
  const sug = getSuggestedBet(tc, getEstimatedEdge(tc));
  const units = (state.unitSize > 0) ? roundMoney(state.bet / state.unitSize) : 0;
@@ -4423,11 +4588,10 @@
  recordCategory(state.stats.lifetime, 'bets', g.grade === 'correct');
  if (g.grade !== 'correct') pushMistake({ key: 'Bet ' + units + 'u vs rec ' + rec + 'u @ TC ' + (Number.isInteger(tc) ? tc : tc.toFixed(1)), cat: 'bets' });
  }
- const recLine = document.getElementById('bet-rec-line');
- if (recLine && !recLine.hidden) {
- const msg = g.grade === 'correct' ? 'Bet grade: correct (' + rec + 'u).' : 'Bet grade: ' + g.grade + ' (recommended ' + rec + 'u).';
- recLine.textContent = msg;
- }
+ lastBetGrade = g.grade === 'correct'
+ ? ('Grade: correct (' + rec + 'u)')
+ : ('Grade: ' + g.grade + ' (recommended ' + rec + 'u)');
+ updateBetRecLine(sug);
  }
 
  function dealOtherSeats() {
@@ -4664,8 +4828,7 @@
 
  function shouldOfferDeckEstimate() {
  if (!state.featLiveTray) return false;
- const n = parseInt(state.deckEstInterval, 10) || 0;
- return n > 0 && handsSinceDeckEst >= n;
+ return isPeriodicPromptDue(handsSinceDeckEst, state.deckEstInterval);
  }
 
  function updateLiveTray() {
@@ -4831,14 +4994,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v8')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v9')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v8', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v9', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v8'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v9'); } catch (e) {} }, 2500);
   });
 }
 </script>

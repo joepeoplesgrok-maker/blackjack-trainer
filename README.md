@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v9)
+
+v9 keeps the live shoe and discard bars and fixes mid-hand UX: the deck-estimate prompt now fires after every N completed hands (5, 10, or 15), not N+1. Grade bets stays visible next to the recommended bet after Deal. Tight iPhone SE (320×568) portrait keeps the result banner readable and every split card scrollable. Overflowing split hands show a fade and chevron when more cards sit off-screen. Settings dropdowns and short-landscape hand titles stay fully readable. How It Works lists every Settings → Features toggle, including Grade bets, quizzes, timed decisions, other seats, and heat hints.
+
 ## Feature guide (v8)
 
 The **live shoe and discard bars** sit beside the table during Table Play (on by default). The Shoe bar empties and the Discard bar fills as cards come out, including other seats; both reset on a shuffle. A red mark on the Shoe bar is the cut card. Exact leftover decks stay hidden unless you enable “Show exact decks remaining.” Tap the bars to estimate decks remaining (within 0.5 decks). Feedback shows the true leftover decks and how your guess would have changed the true count. An optional prompt can ask every 5, 10, or 15 hands (off by default). The standalone **Deck Estimate Drill** is still a separate Features toggle.
@@ -43,6 +47,15 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v9
+- Deck-estimate auto-prompt now fires after N completed hands (every 5 / 10 / 15), not N+1.
+- Grade bets remains on screen next to the recommended bet after Deal, and clears when you change the wager.
+- iPhone SE 320×568 portrait: the result banner stays readable after a split, and every split card can be scrolled into view without dealer cards covering it.
+- Overflowing split hands show a fade and chevron cue when more cards sit off the right (or left) edge.
+- Settings selects fit their labels on iPhone and iPad; short-landscape hand titles and results (H1, BUST, WIN) are no longer mid-word truncated.
+- How It Works → What each toggle does now names Grade bets, count quizzes, timed decisions, other seats, and heat hints, matching Settings → Features.
+- Service worker cache bumped to `bj-trainer-v9`.
 
 ### v8
 - Live **Shoe** and **Discard** bars on the Table Play felt (labeled, compact). The shoe empties and the discard fills as cards are dealt — including other seats — and both reset when the shoe is shuffled. A red cut-card mark sits on the shoe bar.
