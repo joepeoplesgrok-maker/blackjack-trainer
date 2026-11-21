@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v11</title>
+<title>Blackjack & Card Counting Trainer Pro v12</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -1307,6 +1307,22 @@
  .table-stage > .table-felt {
  flex: 1 1 auto;
  min-width: 0;
+ overflow-x: hidden;
+ overflow-y: auto;
+ -webkit-overflow-scrolling: touch;
+ }
+ /* v11-2: the history link takes a row under the felt; do not shrink
+    dealer/player cards under the result banner when space is tight. */
+ #tab-play .table-felt > .zone {
+ flex: 0 0 auto;
+ min-height: min-content;
+ }
+ #tab-play .table-felt > .feedback-bar {
+ position: relative;
+ z-index: 3;
+ flex-shrink: 0;
+ margin-top: 2px;
+ margin-bottom: 2px;
  }
  .live-tray {
  flex: 0 0 auto;
@@ -1438,7 +1454,7 @@
  <option value="charts">Charts</option>
  <option value="stats">Stats</option>
  <option value="risk">Risk Tools</option>
- <option value="history">Hand History (this shoe)</option>
+ <option value="history" data-label-full="Hand History (this shoe)" data-label-compact="Hand History">Hand History (this shoe)</option>
  <option value="guide">How It Works</option>
  </select>
  </div>
@@ -2538,6 +2554,54 @@
  for (const c of cards || []) s += hiLoValue(c.rank);
  return s;
  }
+ function cloneShoeCard(c) {
+ return c ? { rank: c.rank, suit: c.suit, shoeId: c.shoeId } : null;
+ }
+ function missingCardsFromShoe(remaining, decks) {
+ const have = {};
+ for (const c of remaining || []) {
+ const k = String(c.rank) + String(c.suit);
+ have[k] = (have[k] || 0) + 1;
+ }
+ const missing = [];
+ for (const c of makeUnshuffledShoe(decks)) {
+ const k = String(c.rank) + String(c.suit);
+ if (have[k] > 0) have[k]--;
+ else missing.push({ rank: c.rank, suit: c.suit });
+ }
+ return missing;
+ }
+ function reconstructDealtAndBurn(remaining, decks, burnCount, dealtCount) {
+ const missing = missingCardsFromShoe(remaining, decks);
+ let nBurn = burnCount != null ? Math.max(0, burnCount | 0) : 0;
+ if (burnCount == null) {
+ if (dealtCount != null) nBurn = Math.max(0, missing.length - (dealtCount | 0));
+ else nBurn = missing.length ? 1 : 0;
+ }
+ if (nBurn > missing.length) nBurn = missing.length;
+ const burnCard = nBurn ? cloneShoeCard(missing[0]) : null;
+ const dealtThisShoe = missing.slice(nBurn).map(cloneShoeCard);
+ return { burnCard, dealtThisShoe };
+ }
+ function composeFullShoeParts(remaining, dealt, burn) {
+ const parts = [];
+ if (burn) parts.push(burn);
+ if (dealt && dealt.length) parts.push.apply(parts, dealt);
+ if (remaining && remaining.length) parts.push.apply(parts, remaining);
+ return parts;
+ }
+ function historyBetCountLine(betTime, showHudNow) {
+ const bt = betTime || {};
+ const bits = [];
+ if (bt.hudOn) {
+ if (bt.rc != null) bits.push('RC ' + (bt.rc > 0 ? '+' : '') + bt.rc);
+ if (bt.tc != null && Number.isFinite(bt.tc)) {
+ bits.push('TC ' + ((bt.tc > 0 ? '+' : '') + (Number.isInteger(bt.tc) ? bt.tc : Number(bt.tc).toFixed(1))));
+ }
+ }
+ if ((bt.trayOn || bt.hudOn) && bt.decks != null) bits.push(Number(bt.decks).toFixed(1) + ' decks');
+ return bits.length ? 'At bet: ' + bits.join(' · ') : '';
+ }
  function chiSquare(observed, expected) {
  let s = 0;
  for (let i = 0; i < observed.length; i++) {
@@ -3460,12 +3524,14 @@
  state.committedShoe = {
  id: currentShoeId,
  seed: currentShoeSeed,
- shoe: (shoe || []).map(c => ({ rank: c.rank, suit: c.suit, shoeId: c.shoeId })),
+ shoe: (shoe || []).map(cloneShoeCard),
  runningCount,
  cardsDealtCount,
  burnCardCount,
  cutCardIndex,
- needsReshuffle: !!needsReshuffle
+ needsReshuffle: !!needsReshuffle,
+ burnCard: burnCard ? cloneShoeCard(burnCard) : null,
+ dealtThisShoe: (dealtThisShoe || []).map(cloneShoeCard)
  };
  state.historyShoeId = currentShoeId;
  }
@@ -3480,6 +3546,14 @@
  burnCardCount = s.burnCardCount != null ? s.burnCardCount : 1;
  cutCardIndex = s.cutCardIndex || Math.floor((state.decks * 52) * getPenetrationForDecks(state.decks));
  needsReshuffle = !!s.needsReshuffle;
+ if (!('burnCard' in s) && !('dealtThisShoe' in s)) {
+ const rec = reconstructDealtAndBurn(shoe, state.decks, burnCardCount, cardsDealtCount);
+ burnCard = rec.burnCard;
+ dealtThisShoe = rec.dealtThisShoe;
+ } else {
+ burnCard = s.burnCard ? cloneShoeCard(s.burnCard) : null;
+ dealtThisShoe = Array.isArray(s.dealtThisShoe) ? s.dealtThisShoe.map(cloneShoeCard) : [];
+ }
  const seedEl = document.getElementById('ui-shoe-seed');
  if (seedEl) seedEl.textContent = currentShoeSeed || '--';
  if (!Array.isArray(state.handHistory)) state.handHistory = [];
@@ -3611,16 +3685,8 @@
  const netTxt = (e.net > 0 ? '+' : '') + formatMoney(e.net);
  const miss = e.hasMistake ? '<span class="history-badge">MISTAKE</span>' : '';
  const betTxt = formatMoney(e.bet) + (e.units ? ' · ' + e.units + 'u' : '');
- const bt = e.betTime || {};
- const countBits = [];
- if (bt.hudOn || state.showHud) {
- const rc = bt.rc;
- const tc = bt.tc;
- if (rc != null) countBits.push('RC ' + (rc > 0 ? '+' : '') + rc);
- if (tc != null && Number.isFinite(tc)) countBits.push('TC ' + ((tc > 0 ? '+' : '') + (Number.isInteger(tc) ? tc : Number(tc).toFixed(1))));
- }
- if ((bt.trayOn || bt.hudOn) && bt.decks != null) countBits.push(Number(bt.decks).toFixed(1) + ' decks');
- const countLine = countBits.length ? '<div class="history-meta">At bet: ' + escapeHtml(countBits.join(' · ')) + '</div>' : '';
+ const countTxt = historyBetCountLine(e.betTime, state.showHud);
+ const countLine = countTxt ? '<div class="history-meta">' + escapeHtml(countTxt) + '</div>' : '';
  const ins = e.insurance;
  let insLine = '';
  if (ins && (ins.offered || ins.taken)) {
@@ -3842,7 +3908,10 @@
  });
  }
  if (typeof window !== 'undefined') {
- window.addEventListener('resize', () => { if (typeof updateHandScrollHints === 'function') updateHandScrollHints(); });
+ window.addEventListener('resize', () => {
+ if (typeof updateHandScrollHints === 'function') updateHandScrollHints();
+ if (typeof syncModeSelectLabels === 'function') syncModeSelectLabels();
+ });
  }
 
  function renderTable() {
@@ -5023,9 +5092,20 @@
  return n > 0 && handsSinceQuiz >= n;
  }
 
+ function syncModeSelectLabels() {
+ const sel = document.getElementById('mode-select');
+ if (!sel) return;
+ const compact = (typeof window !== 'undefined') && window.innerWidth < 360;
+ [...sel.options].forEach(opt => {
+ if (opt.dataset && opt.dataset.labelFull) {
+ opt.textContent = compact && opt.dataset.labelCompact ? opt.dataset.labelCompact : opt.dataset.labelFull;
+ }
+ });
+ }
  function updateModeOptions() {
  const sel = document.getElementById('mode-select');
  if (!sel) return;
+ syncModeSelectLabels();
  const show = { play: true, guide: true, history: true, charts: true, speed: !!state.featSpeed, strat: !!state.featStrat, stats: !!state.featStats, risk: !!state.featRisk };
  [...sel.options].forEach(opt => { opt.hidden = show[opt.value] === false; });
  if (show[sel.value] === false) {
@@ -5657,14 +5737,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v11')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v12')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v11', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v12', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v11'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v12'); } catch (e) {} }, 2500);
   });
 }
 </script>

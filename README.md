@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v12)
+
+v12 keeps the v11 history and split-aces features and fixes four QA items: the header mode label fits on a 320 px phone (it shortens to **Hand History** under 360 px), the result banner no longer tucks under dealer cards on a 360×780 split, `BJ_QA.shoeComposition()` still reports a full pack after a reload or a v11 upgrade, and a history row only shows RC/TC if the count HUD was on when that hand was bet.
+
 ## Feature guide (v11)
 
 v11 adds **Hand History (this shoe)** — a review of every completed round in the current shoe (bet, cards, actions vs basic/deviations, insurance, net, and the count at bet time). The list resets on a new shuffle and survives a reload in the same shoe. A Rules toggle, **Split aces receive one card only**, is on by default; turn it off to play split aces like other split hands. Settings rows no longer let a dropdown paint over its label (v10-1).
@@ -55,6 +59,13 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v12
+- v11-1: the header mode menu no longer clips **Hand History (this shoe)** on a 320 px phone; under 360 px the label shortens to **Hand History**. Every header option is checked at 320 and 360.
+- v11-2: after a split on a 360×780 phone, dealer cards no longer sit under the result banner (the felt scrolls instead of shrinking the cards under the history-link height).
+- v11-3: the dealt cards and burn card are saved with the shoe, and a v11 snapshot that lacked them is reconstructed, so `BJ_QA.shoeComposition()` stays `ok: true` after a reload or upgrade.
+- v11-4: a history row shows "At bet: RC/TC" only if the count HUD was on when that hand was bet — turning the HUD on later does not rewrite older rows.
+- Service worker cache bumped to `bj-trainer-v12`.
 
 ### v11
 - **Hand History (this shoe)** in the mode menu, plus a quick link under the table. Each entry has round #, time, bet and units, player hands (splits/doubles), dealer cards, totals, actions vs the correct basic or deviation play (mistakes marked), insurance, outcome and net, and RC/TC/decks at bet time when those tools were on. Completes only when a round ends (a mid-round reload does not write a partial hand). The list is this shoe only and clears on a shuffle; it is saved so a reload in the same shoe keeps it. Filter to mistakes, or Clear with a confirm.
