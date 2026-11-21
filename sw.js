@@ -1,11 +1,13 @@
-const CACHE_NAME = 'bj-trainer-v4';
+const CACHE_NAME = 'bj-trainer-v5';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
   './icon-180.png',
-  './icon-512.png'
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -24,13 +26,23 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+function isSameOrigin(request) {
+  try {
+    return new URL(request.url, self.location.href).origin === self.location.origin;
+  } catch (e) {
+    return false;
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
     fetch(event.request)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        if (res.ok && isSameOrigin(event.request) && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
         return res;
       })
       .catch(() => caches.match(event.request).then((r) => r || caches.match('./index.html')))

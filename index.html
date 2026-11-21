@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#08120e">
@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v4</title>
+<title>Blackjack & Card Counting Trainer Pro v5</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -49,6 +49,8 @@
  background: var(--bg-dark);
  color: var(--text);
  -webkit-text-size-adjust: 100%;
+ touch-action: manipulation;
+ color-scheme: dark;
  }
 
  body {
@@ -93,24 +95,28 @@
  .brand-icon { color: var(--gold); font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
 
  .mode-select {
- background: var(--panel);
+ appearance: none;
+ -webkit-appearance: none;
+ -moz-appearance: none;
+ background-color: var(--panel);
+ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23e5b94c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.2 1.2 L6 6 L10.8 1.2'/%3E%3C/svg%3E");
+ background-repeat: no-repeat;
+ background-position: right 10px center;
+ background-size: 12px 8px;
  color: var(--gold);
  border: 1px solid var(--gold-dim);
  border-radius: 8px;
- padding: 6px 8px;
+ padding: 8px 32px 8px 10px;
  font-size: 0.88rem;
  font-weight: 700;
  cursor: pointer;
  max-width: 235px;
  width: 100%;
- outline: none;
+ min-height: 44px;
  touch-action: manipulation;
+ color-scheme: dark;
  }
 
- select option {
- background-color: #12231c;
- color: #eef5f1;
- }
 
  .header-actions {
  display: flex;
@@ -124,15 +130,18 @@
  color: var(--text);
  border: 1px solid var(--panel-border);
  border-radius: 8px;
- padding: 6px 9px;
+ padding: 8px 10px;
  font-size: 0.8rem;
  font-weight: 700;
  cursor: pointer;
  display: inline-flex;
  align-items: center;
+ justify-content: center;
  gap: 4px;
  white-space: nowrap;
  touch-action: manipulation;
+ min-height: 44px;
+ min-width: 44px;
  }
  .icon-btn:hover { border-color: var(--gold-dim); }
  .icon-btn.accent { color: var(--gold); border-color: var(--gold-dim); }
@@ -269,7 +278,7 @@
  button:active:not(:disabled) { transform: scale(0.96); }
  button:disabled { opacity: 0.34; cursor: not-allowed; }
 
- .btn { padding: 9px 12px; font-size: 0.86rem; background: #214034; color: var(--text); border: 1px solid #305c4b; }
+ .btn { padding: 10px 12px; font-size: 0.86rem; background: #214034; color: var(--text); border: 1px solid #305c4b; min-height: 44px; }
  .btn:hover:not(:disabled) { background: #2a5243; }
  .btn-gold { background: var(--gold); color: #0b1914; border: none; }
  .btn-gold:hover:not(:disabled) { background: #f0c965; }
@@ -278,20 +287,62 @@
  .btn-blue { background: #2471a3; color: #fff; }
  .btn-purple { background: #7d3c98; color: #fff; }
  .btn-amber { background: #9a620c; color: #fff; }
- .btn-sm { padding: 5px 9px; font-size: 0.78rem; }
+ .btn-sm { padding: 8px 9px; font-size: 0.78rem; min-height: 44px; }
 
- select, input[type="number"], input[type="text"] {
- background: #0b1914;
- color: var(--text);
+ /* Dark, appearance-none selects so iOS/Android/Windows show readable labels */
+ select {
+ appearance: none;
+ -webkit-appearance: none;
+ -moz-appearance: none;
+ background-color: #0b1914;
+ color: #eef5f1;
  border: 1px solid var(--panel-border);
  border-radius: 6px;
- padding: 5px 7px;
- font-size: 0.84rem;
+ padding: 8px 32px 8px 10px;
+ font-size: 16px;
+ font-weight: 700;
+ line-height: 1.2;
+ min-height: 44px;
+ touch-action: manipulation;
+ color-scheme: dark;
+ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23e5b94c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.2 1.2 L6 6 L10.8 1.2'/%3E%3C/svg%3E");
+ background-repeat: no-repeat;
+ background-position: right 10px center;
+ background-size: 12px 8px;
+ }
+ select option,
+ select optgroup {
+ background-color: #12231c;
+ color: #eef5f1;
  }
 
- /* Prevent iOS Safari auto-zoom on text/number inputs */
  input[type="number"], input[type="text"] {
+ background: #0b1914;
+ color: #eef5f1;
+ border: 1px solid var(--panel-border);
+ border-radius: 6px;
+ padding: 8px 10px;
  font-size: 16px;
+ min-height: 44px;
+ color-scheme: dark;
+ }
+
+ :focus {
+ outline: none;
+ }
+ :focus-visible {
+ outline: 2px solid var(--gold);
+ outline-offset: 2px;
+ }
+
+ @media (prefers-reduced-motion: reduce) {
+ *, *::before, *::after {
+ animation-duration: 0.01ms !important;
+ animation-iteration-count: 1 !important;
+ transition-duration: 0.01ms !important;
+ scroll-behavior: auto !important;
+ }
+ button:active:not(:disabled) { transform: none; }
  }
 
  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -521,7 +572,7 @@
  gap: 5px;
  }
  .action-grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
- .action-grid .btn { padding: 12px 2px; font-size: 0.84rem; }
+ .action-grid .btn { padding: 10px 2px; font-size: 0.84rem; min-height: 44px; }
 
  .ins-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
@@ -662,7 +713,7 @@
  margin-bottom: 8px;
  }
  .deck-pill {
- padding: 7px 6px;
+ padding: 8px 6px;
  font-size: 0.78rem;
  font-weight: 800;
  border-radius: 8px;
@@ -670,6 +721,8 @@
  color: var(--muted);
  border: 1px solid var(--panel-border);
  text-align: center;
+ min-height: 44px;
+ touch-action: manipulation;
  }
  .deck-pill.active {
  background: var(--gold);
@@ -763,7 +816,7 @@
  font-weight: 700;
  }
 
- /* Short phone screens (e.g. iPhone SE / compact Android) */
+ /* Short phone screens (e.g. iPhone SE / compact Android) — keep 44px tap targets */
  @media (max-height: 700px) {
  .card { width: 52px; height: 74px; padding: 3px 4px; }
  .card-top, .card-bot { font-size: 0.78rem; }
@@ -771,22 +824,74 @@
  .card.large { width: 70px; height: 100px; }
  .card.large .card-center { font-size: 1.85rem; }
  .cards-row { min-height: 74px; }
- .chip { width: 38px; height: 38px; font-size: 0.72rem; }
+ .chip { width: 44px; height: 44px; font-size: 0.72rem; }
  .table-felt { padding: 7px; }
- .action-grid .btn { padding: 10px 2px; font-size: 0.8rem; }
+ .action-grid .btn { padding: 10px 2px; font-size: 0.8rem; min-height: 44px; }
+ }
+
+ /* Very short landscape (phone rotated): compact chrome, keep 44px targets.
+    Lay the felt out as dealer | player so the two hands do not stack/overlap. */
+ @media (max-height: 500px) {
+ header { padding: 4px 8px; padding-top: max(4px, env(safe-area-inset-top, 4px)); }
+ .strip { padding: 3px 6px; }
+ .stat-cell { padding: 2px 3px; }
+ .stat-cell .label { font-size: 0.55rem; }
+ .stat-cell .val { font-size: 0.78rem; }
+ .controls-bar { padding: 6px; }
+ .chips-wrap { flex-direction: row; justify-content: space-between; align-items: center; gap: 6px; }
+ .bet-actions-row { width: auto; flex: 1; min-width: 0; }
+ .card, .card.large { width: 40px; height: 56px; padding: 2px 3px; }
+ .card-top, .card-bot { font-size: 0.65rem; }
+ .card-center, .card.large .card-center { font-size: 1.05rem; }
+ .cards-row { min-height: 56px; }
+ .shoe-bar-wrap { height: 3px; margin: 2px 0 0; }
+ .zone-title { font-size: 0.62rem; margin-bottom: 2px; }
+ /* Badge is redundant with the feedback bar and otherwise collides on 340px-tall phones. */
+ .hand-result { display: none; }
+ #tab-play .player-hands { padding: 0; gap: 4px; }
+ #tab-play .player-hand-box { padding: 0 4px; border-width: 1px; min-width: 0; background: transparent; }
+ #tab-play .table-felt {
+ position: relative;
+ flex-direction: row;
+ flex-wrap: nowrap;
+ align-items: center;
+ justify-content: space-around;
+ gap: 8px;
+ padding: 4px 6px 28px;
+ overflow: hidden;
+ }
+ #tab-play .table-felt > .zone {
+ flex: 1 1 0;
+ min-width: 0;
+ width: auto !important;
+ }
+ #tab-play .table-felt > .feedback-bar {
+ position: absolute;
+ left: 6px;
+ right: 6px;
+ bottom: 4px;
+ width: auto;
+ max-width: none;
+ min-height: 22px;
+ padding: 2px 8px;
+ font-size: 0.7rem;
+ z-index: 2;
+ }
  }
 
  /* Desktop / Windows / Tablet enhancements */
  @media (min-width: 720px) {
  main { padding: 10px 14px 12px; }
- .card { width: 70px; height: 100px; }
- .card-center { font-size: 1.85rem; }
- .card.large { width: 96px; height: 136px; }
- .card.large .card-center { font-size: 2.6rem; }
  .chips-wrap { flex-direction: row; justify-content: space-between; align-items: center; }
  .bet-actions-row { width: 320px; }
  .guide-body { padding: 14px 16px 16px; }
  table.strat-table th, table.strat-table td { padding: 6px 4px; }
+ }
+ @media (min-width: 720px) and (min-height: 540px) {
+ .card { width: 70px; height: 100px; }
+ .card-center { font-size: 1.85rem; }
+ .card.large { width: 96px; height: 136px; }
+ .card.large .card-center { font-size: 2.6rem; }
  }
 </style>
 </head>
@@ -1008,14 +1113,14 @@
  </div>
 
  <div class="rule-mini-bar">
- <select id="chart-opt-decks" aria-label="All deck counts" style="padding:3px 6px; font-size:0.75rem;">
+ <select id="chart-opt-decks" aria-label="All deck counts">
  <option value="1">1D</option>
  <option value="2">2D (Double)</option>
  <option value="4">4D</option>
  <option value="6" selected>6D</option>
  <option value="8">8D</option>
  </select>
- <select id="chart-opt-s17" aria-label="Soft 17 rule" style="padding:3px 6px; font-size:0.75rem;">
+ <select id="chart-opt-s17" aria-label="Soft 17 rule">
  <option value="S17" selected>S17</option>
  <option value="H17">H17</option>
  </select>
@@ -1362,8 +1467,10 @@
 
  function formatMoney(v) {
  const clean = roundMoney(v);
- const hasCents = Math.abs(clean % 1) > 0.001;
- return '$' + clean.toLocaleString(undefined, {
+ const sign = clean < 0 ? '-' : '';
+ const abs = Math.abs(clean);
+ const hasCents = Math.abs(abs % 1) > 0.001;
+ return sign + '$' + abs.toLocaleString(undefined, {
  minimumFractionDigits: hasCents ? 2 : 0,
  maximumFractionDigits: 2
  });
@@ -1585,7 +1692,7 @@
 
  // Hard Total Deviations (exclude 8,8 which follows pair rule)
  if (!ev.isSoft && !(isPair && pairKey === '8')) {
- if (ev.total === 16 && up === 10 && !canSurrender && effectiveRc > 0) return { action: 'S', note: 'I18 #2: Stand 16 vs 10 when RC > 0' };
+ if (ev.total === 16 && up === 10 && !canSurrender && tc >= 0) return { action: 'S', note: 'I18 #2: Stand 16 vs 10 at TC ≥ 0' };
  if (ev.total === 15 && up === 10 && !canSurrender && tc >= 4) return { action: 'S', note: 'I18 #3: Stand 15 vs 10 at TC ≥ +4' };
  if (ev.total === 16 && up === 9 && !canSurrender && tc >= 5) return { action: 'S', note: 'I18 #13: Stand 16 vs 9 at TC ≥ +5' };
  if (ev.total === 10 && up === 10 && canDouble && tc >= 4) return { action: 'D', note: 'I18 #6: Double 10 vs 10 at TC ≥ +4' };
@@ -1610,7 +1717,7 @@
  if (ev.total === 12 && up === 3 && tc >= 2) return { action: 'S', note: 'I18 #7: Stand 12 vs 3 at TC ≥ +2' };
  if (ev.total === 12 && up === 2 && tc >= 3) return { action: 'S', note: 'I18 #8: Stand 12 vs 2 at TC ≥ +3' };
  if (ev.total === 13 && up === 2 && tc <= -1) return { action: 'H', note: 'I18 #14: Hit 13 vs 2 at TC ≤ -1' };
- if (ev.total === 12 && up === 4 && effectiveRc < 0) return { action: 'H', note: 'I18 #15: Hit 12 vs 4 when RC < 0' };
+ if (ev.total === 12 && up === 4 && tc <= 0) return { action: 'H', note: 'I18 #15: Hit 12 vs 4 at TC ≤ 0' };
  if (ev.total === 12 && up === 5 && tc <= -2) return { action: 'H', note: 'I18 #16: Hit 12 vs 5 at TC ≤ -2' };
  if (ev.total === 12 && up === 6 && tc <= -1) return { action: 'H', note: 'I18 #17: Hit 12 vs 6 at TC ≤ -1' };
  if (ev.total === 13 && up === 3 && tc <= -2) return { action: 'H', note: 'I18 #18: Hit 13 vs 3 at TC ≤ -2' };
@@ -1674,6 +1781,9 @@
  let cardsDealtCount = 0;
  let burnCardCount = 0;
  let needsReshuffle = false;
+ let currentShoeId = 0;
+ let holeCardShoeId = 0;
+ let midHandShuffle = false;
 
  let phase = 'betting';
  let dealerHand = [];
@@ -1710,11 +1820,12 @@
  function buildShoe(customSeed = '') {
  currentShoeSeed = (customSeed && customSeed.trim()) ? customSeed.trim() : generateRandomSeedString();
  const shoeRng = createSeededRng(currentShoeSeed);
+ currentShoeId++;
 
  shoe = [];
  for (let d = 0; d < state.decks; d++) {
  for (const s of SUITS) {
- for (const r of RANKS) shoe.push({ rank: r, suit: s });
+ for (const r of RANKS) shoe.push({ rank: r, suit: s, shoeId: currentShoeId });
  }
  }
  fisherYatesShuffle(shoe, shoeRng);
@@ -1738,7 +1849,15 @@
  }
 
  function drawCard(countImmediately = true) {
- if (shoe.length === 0) buildShoe();
+ if (shoe.length === 0) {
+ const midHand = (phase === 'playing' || phase === 'insurance' || phase === 'dealer');
+ // Casino practice is to finish the current hand, then shuffle. If the shoe is
+ // exhausted mid-hand anyway, cut a fresh shoe to finish dealing. The running
+ // count resets for the new shoe; cards already on the table (including a hidden
+ // hole card from the previous shoe) are not carried into the new count.
+ buildShoe();
+ if (midHand) midHandShuffle = true;
+ }
  const card = shoe.pop();
  cardsDealtCount++;
  if (cardsDealtCount + burnCardCount >= cutCardIndex) needsReshuffle = true;
@@ -1748,7 +1867,8 @@
  }
 
  function getDecksRemaining() {
- const unseen = shoe.length + (holeHidden && dealerHand.length >= 2 ? 1 : 0) + burnCardCount;
+ const holeUnseen = holeHidden && dealerHand.length >= 2 && holeCardShoeId === currentShoeId;
+ const unseen = shoe.length + (holeUnseen ? 1 : 0) + burnCardCount;
  return Math.max(0.25, unseen / 52);
  }
 
@@ -1967,6 +2087,7 @@
  const d2 = drawCard(false);
 
  dealerHand = [d1, d2];
+ holeCardShoeId = d2.shoeId || currentShoeId;
  playerHands = [{ cards: [p1, p2], bet: state.bet, doubled: false, fromSplit: false, surrendered: false, finished: false, result: '', resultText: '' }];
  activeHandIdx = 0;
 
@@ -1991,7 +2112,9 @@
  function revealHoleCard() {
  if (holeHidden && dealerHand.length >= 2) {
  holeHidden = false;
- runningCount += hiLoValue(dealerHand[1].rank);
+ // Only count the hole card if it came from the current shoe. After a rare
+ // mid-hand reshuffle, an old hole card must not pollute the new running count.
+ if (holeCardShoeId === currentShoeId) runningCount += hiLoValue(dealerHand[1].rank);
  updateHud();
  }
  }
@@ -2184,11 +2307,21 @@
  });
 
  phase = 'done';
- if (!state.coach || playerHands.length > 1) {
- if (netSummary > 0) setFeedback(`Round won (+${formatMoney(netSummary)}).`, 'good');
- else if (netSummary < 0) setFeedback(`Dealer wins (-${formatMoney(Math.abs(netSummary))}).`, 'warn');
- else setFeedback('Round pushed.', 'info');
+ const outcomeMsg = netSummary > 0
+ ? `Round won (+${formatMoney(netSummary)}).`
+ : netSummary < 0
+ ? `Dealer wins (-${formatMoney(Math.abs(netSummary))}).`
+ : 'Round pushed.';
+ const outcomeCls = netSummary > 0 ? 'good' : netSummary < 0 ? 'warn' : 'info';
+ const coachEl = document.getElementById('play-feedback');
+ const prior = (state.coach && playerHands.length === 1 && coachEl) ? coachEl.textContent.trim() : '';
+ const priorCls = coachEl && prior ? (coachEl.className.includes('warn') ? 'warn' : coachEl.className.includes('good') ? 'good' : outcomeCls) : outcomeCls;
+ let combined = prior ? (prior.replace(/[. ]+$/, '') + '. ' + outcomeMsg) : outcomeMsg;
+ if (midHandShuffle) {
+ combined += ' New shoe shuffled mid-hand to finish dealing; count reset for the fresh shoe.';
+ midHandShuffle = false;
  }
+ setFeedback(combined, prior ? priorCls : outcomeCls);
  finishRound();
  }
 
@@ -2274,10 +2407,11 @@
  }
  });
 
- document.getElementById('btn-clear-bet').addEventListener('click', () => { state.bet = 0; updateTopStats(); });
+ document.getElementById('btn-clear-bet').addEventListener('click', () => { state.bet = 0; updateTopStats(); saveState(); });
  document.getElementById('btn-rebet').addEventListener('click', () => {
  state.bet = Math.min(state.lastBet || 25, Math.floor(state.bankroll / 5) * 5);
  updateTopStats();
+ saveState();
  });
  document.getElementById('btn-quick-reload').addEventListener('click', () => {
  state.bankroll = 1000;
@@ -2569,7 +2703,7 @@
  let sdCurrent = null;
 
  const DEV_SCENARIOS = [
- { p: ['10','6'], u: '10', surr: false, tcRange: [-2, 3], skipZero: true }, // 16 vs 10 (I18 #2)
+ { p: ['10','6'], u: '10', surr: false, tcRange: [-2, 3] }, // 16 vs 10 (I18 #2)
  { p: ['10','5'], u: '10', surr: false, tcRange: [1, 6] }, // 15 vs 10 (I18 #3)
  { p: ['10','10'], u: '5', surr: false, tcRange: [2, 7] }, // 10,10 vs 5 (I18 #4)
  { p: ['10','10'], u: '6', surr: false, tcRange: [2, 6] }, // 10,10 vs 6 (I18 #5)
@@ -2582,7 +2716,7 @@
  { p: ['6','3'], u: '7', surr: false, tcRange: [1, 5] }, // 9 vs 7 (I18 #12)
  { p: ['10','6'], u: '9', surr: false, tcRange: [3, 7] }, // 16 vs 9 (I18 #13)
  { p: ['10','3'], u: '2', surr: false, tcRange: [-3, 1] }, // 13 vs 2 (I18 #14)
- { p: ['10','2'], u: '4', surr: false, tcRange: [-2, 2], skipZero: true }, // 12 vs 4 (I18 #15)
+ { p: ['10','2'], u: '4', surr: false, tcRange: [-2, 2] }, // 12 vs 4 (I18 #15)
  { p: ['10','2'], u: '5', surr: false, tcRange: [-4, 0] }, // 12 vs 5 (I18 #16)
  { p: ['10','2'], u: '6', surr: false, tcRange: [-3, 1] }, // 12 vs 6 (I18 #17)
  { p: ['10','3'], u: '3', surr: false, tcRange: [-4, 0] }, // 13 vs 3 (I18 #18)
@@ -2781,7 +2915,7 @@
 
  const i18Rows = [
  ['1', 'Insurance / Even $', `TC ≥ +${insIdx}`, 'Take Ins', 'D', 'No', ''],
- ['2', '16 vs 10', 'RC > 0', 'Stand', 'S', 'Hit', 'H'],
+ ['2', '16 vs 10', 'TC ≥ 0', 'Stand', 'S', 'Hit', 'H'],
  ['3', '15 vs 10', 'TC ≥ +4', 'Stand', 'S', 'Hit', 'H'],
  ['4', '10,10 vs 5', 'TC ≥ +5', 'Split', 'P', 'Stand', 'S'],
  ['5', '10,10 vs 6', 'TC ≥ +4', 'Split', 'P', 'Stand', 'S'],
@@ -2794,7 +2928,7 @@
  ['12', '9 vs 7', 'TC ≥ +3', 'Double', 'D', 'Hit', 'H'],
  ['13', '16 vs 9', 'TC ≥ +5', 'Stand', 'S', 'Hit', 'H'],
  ['14', '13 vs 2', 'TC ≤ -1', 'Hit', 'H', 'Stand', 'S'],
- ['15', '12 vs 4', 'RC < 0', 'Hit', 'H', 'Stand', 'S'],
+ ['15', '12 vs 4', 'TC ≤ 0', 'Hit', 'H', 'Stand', 'S'],
  ['16', '12 vs 5', 'TC ≤ -2', 'Hit', 'H', 'Stand', 'S'],
  ['17', '12 vs 6', 'TC ≤ -1', 'Hit', 'H', 'Stand', 'S'],
  ['18', '13 vs 3', 'TC ≤ -2', 'Hit', 'H', 'Stand', 'S']
@@ -2894,6 +3028,23 @@
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+  // Reload once when a new worker takes over an already-controlled page.
+  // First visit has no controller, so the initial claim does not reload.
+  // A same-tick flag plus sessionStorage prevent a reload loop; the guard
+  // is cleared shortly after load so a later update can refresh too.
+  if (navigator.serviceWorker.controller) {
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v5')) return;
+      reloading = true;
+      sessionStorage.setItem('bj-sw-reloaded-v5', '1');
+      location.reload();
+    });
+  }
+  window.addEventListener('load', () => {
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v5'); } catch (e) {} }, 2500);
   });
 }
 </script>
