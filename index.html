@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v13.2</title>
+<title>Blackjack & Card Counting Trainer Pro v13.3</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -784,6 +784,8 @@
  }
  .modal h3 { margin: 0 0 10px; color: var(--gold); font-size: 1.02rem; }
 
+ /* v13.3 / bug 1: display:grid/flex on setting rows must not override hidden. */
+ [hidden] { display: none !important; }
  .setting-row {
  display: grid;
  grid-template-columns: minmax(0, 1fr) auto;
@@ -1514,7 +1516,7 @@
 <header>
  <div class="mode-select-wrap">
  <span class="brand-icon">♠</span>
- <select id="mode-select" class="mode-select" aria-label="Select training mode">
+ <select id="mode-select" class="mode-select" aria-label="Select training mode" autocomplete="off">
  <option value="play">Table Play</option>
  <option value="speed">Speed Count</option>
  <option value="strat">Strategy Drill</option>
@@ -2395,7 +2397,7 @@
 
  const PAGE_SETTING_KEYS = {
  play: ['decks','s17','das','ls','splitAcesOneCard','betStrat','showHud','showTags','coach','featI18','featFab4','featIns','tcRounding','featBetRamp','featBetGrade','unitSize','spreadMin','spreadMax','featQuiz','quizInterval','featLiveTray','featShowExactDecks','featShowTotals','deckEstInterval','featDeckEst','featSeats','otherSeats','featHeat'],
- speed: ['decks','batch','mode','interval','showTags'],
+ speed: ['decks','batch','mode','interval','showTags','featDeckEst'],
  strat: ['decks','s17','das','ls','splitAcesOneCard','featI18','featFab4','featIns','featTimed','decisionSec'],
  charts: ['decks','s17','das','ls','splitAcesOneCard'],
  stats: [],
@@ -2408,7 +2410,7 @@
 
  function defaultPageSettings() {
  return {
- speed: { decks: 1, batch: 1, mode: 'manual', interval: 1000, showTags: false },
+ speed: { decks: 1, batch: 1, mode: 'manual', interval: 1000, showTags: false, featDeckEst: false },
  strat: { decks: 6, s17: true, das: true, ls: true, splitAcesOneCard: true, featI18: true, featFab4: true, featIns: true, featTimed: false, decisionSec: 5 },
  charts: { decks: 6, s17: true, das: true, ls: true, splitAcesOneCard: true },
  stats: {},
@@ -2425,7 +2427,7 @@
  if (s[k] !== undefined) d[page][k] = s[k];
  }
  };
- fill('speed', ['decks','showTags']);
+ fill('speed', ['decks','showTags','featDeckEst']);
  fill('strat', PAGE_SETTING_KEYS.strat);
  fill('charts', PAGE_SETTING_KEYS.charts);
  fill('risk', PAGE_SETTING_KEYS.risk);
@@ -2528,6 +2530,31 @@
  if ((seen || 0) > 0) return false; // mid-shoe pause or shoe ended — Deal continues or New Shoe
  return (remaining || 0) > 0;
  }
+ function speedFreezeElapsed(elapsedMs, running, startTime, now) {
+ const t = now != null ? now : Date.now();
+ if (running && startTime) return Math.max(0, t - startTime);
+ return elapsedMs || 0;
+ }
+ function speedResumeStartTime(elapsedMs, now) {
+ const t = now != null ? now : Date.now();
+ return t - (elapsedMs || 0);
+ }
+ function speedBestEligible(seen, total, elapsedMs) {
+ return seen === total && total > 0 && (elapsedMs || 0) > 0;
+ }
+ function playDecksChanged(prevDecks, nextDecks) {
+ return Number(prevDecks) !== Number(nextDecks);
+ }
+ function pageForSettingWrite(page, key) {
+ const keys = PAGE_SETTING_KEYS[page] || [];
+ return keys.indexOf(key) !== -1 ? page : null;
+ }
+ function settingAppliesToPage(pagesAttr, page) {
+ const pages = String(pagesAttr || '').split(/[,\s]+/).filter(Boolean);
+ if (!pages.length) return false;
+ if (pages.indexOf('all') !== -1 || pages.indexOf('app') !== -1) return true;
+ return pages.indexOf(page) !== -1;
+ }
 
  const defaultState = {
  bankroll: 1000,
@@ -2580,6 +2607,7 @@
  decisionSec: 5,
  otherSeats: 0,
  handHistory: [],
+ lastMode: 'play',
  historyShoeId: 0,
  committedShoe: null,
  stats: { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} }
@@ -2600,6 +2628,7 @@
  if (!Array.isArray(s.handHistory)) s.handHistory = [];
  if (!s.historyShoeId) s.historyShoeId = 0;
  if (!s.committedShoe || typeof s.committedShoe !== 'object') s.committedShoe = null;
+ if (!s.lastMode) s.lastMode = 'play';
  if (!saved.pageSettings || typeof saved.pageSettings !== 'object') s.pageSettings = buildPageSettingsFromLegacy(saved);
  else s.pageSettings = mergePageSettings(saved.pageSettings);
  if (!s.stats || s.stats.v !== 1) {
@@ -3639,20 +3668,28 @@
  const modeSelect = document.getElementById('mode-select');
  const quizBtn = document.getElementById('btn-check-count');
 
- modeSelect.addEventListener('change', () => {
- if (activeTab === 'speed' && modeSelect.value !== 'speed') {
- spStopTimers();
- spRunning = false;
- }
- activeTab = modeSelect.value;
+ function applyActiveTab(tab, opts) {
+ const save = !opts || opts.save !== false;
+ activeTab = tab || 'play';
+ if (modeSelect && modeSelect.value !== activeTab) modeSelect.value = activeTab;
  document.querySelectorAll('.tab-view').forEach(v => v.classList.toggle('active', v.id === 'tab-' + activeTab));
  quizBtn.style.display = (activeTab === 'play' && state.featQuiz) ? 'inline-flex' : 'none';
- if (activeTab === 'charts') renderCharts();
+ if (activeTab === 'charts' && typeof renderCharts === 'function') renderCharts();
  if (activeTab === 'strat') { updateStratRulesLabel(); sdNextHand(); }
- if (activeTab === 'stats') renderStatsTab();
- if (activeTab === 'risk') renderRiskTab();
- if (activeTab === 'history') renderHistory();
- if (activeTab === 'speed') syncDeckEstButton();
+ if (activeTab === 'stats' && typeof renderStatsTab === 'function') renderStatsTab();
+ if (activeTab === 'risk' && typeof renderRiskTab === 'function') renderRiskTab();
+ if (activeTab === 'history' && typeof renderHistory === 'function') renderHistory();
+ if (activeTab === 'speed' && typeof syncDeckEstButton === 'function') syncDeckEstButton();
+ if (save && typeof state !== 'undefined' && state) { state.lastMode = activeTab; if (typeof saveState === 'function') saveState(); }
+ }
+ modeSelect.addEventListener('change', () => {
+ if (activeTab === 'speed' && modeSelect.value !== 'speed') {
+ if (typeof spFreezeElapsed === 'function') spFreezeElapsed();
+ spStopTimers();
+ spRunning = false;
+ if (typeof spUpdateStats === 'function') spUpdateStats();
+ }
+ applyActiveTab(modeSelect.value);
  });
 
  const settingsModal = document.getElementById('settings-modal');
@@ -3664,7 +3701,8 @@
  stats: 'Stats uses the hands you play at the table and in Strategy Drill. Reset session and lifetime logs here or in App settings.'
  };
  function settingsTargetPage() {
- return (settingsModal && settingsModal.classList.contains('open') && settingsContextPage) ? settingsContextPage : 'play';
+ if (typeof settingsContextPage !== 'undefined' && settingsContextPage) return settingsContextPage;
+ return (typeof activeTab !== 'undefined' && activeTab) ? activeTab : 'play';
  }
  function syncSettingsVisibility(page) {
  document.querySelectorAll('#settings-modal [data-settings-pages]').forEach(el => {
@@ -4858,6 +4896,7 @@
  if ((mid || key === 'decks') && typeof spResetToReady === 'function') spResetToReady();
  else if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
  }
+ if (key === 'featDeckEst' && typeof syncDeckEstButton === 'function') syncDeckEstButton();
  if (page === 'risk' && typeof renderRiskTab === 'function') renderRiskTab();
  if (page === 'play' && typeof renderRiskTab === 'function' && activeTab === 'risk') renderRiskTab();
  }
@@ -4879,8 +4918,8 @@
 
  function writeFromControl(key, value) {
  const page = settingsTargetPage();
- const keys = PAGE_SETTING_KEYS[page] || [];
- const target = keys.indexOf(key) !== -1 ? page : 'play';
+ const target = typeof pageForSettingWrite === 'function' ? pageForSettingWrite(page, key) : ((PAGE_SETTING_KEYS[page] || []).indexOf(key) !== -1 ? page : null);
+ if (!target) return;
  writePageSetting(target, key, value);
  afterPageSettingChanged(target, key);
  }
@@ -4938,8 +4977,11 @@
  if (typeof spSyncDealButton === 'function') spSyncDealButton();
  }
  function spElapsedSeconds() {
- if (spRunning && spStartTime) return (Date.now() - spStartTime) / 1000;
- return (spElapsedMs || 0) / 1000;
+ return speedFreezeElapsed(spElapsedMs, spRunning, spStartTime, Date.now()) / 1000;
+ }
+ function spFreezeElapsed() {
+ spElapsedMs = speedFreezeElapsed(spElapsedMs, spRunning, spStartTime, Date.now());
+ if (spRunning) spStartTime = 0;
  }
  function spUpdateStats() {
  document.getElementById('sp-seen').textContent = spSeen + '/' + spTotal();
@@ -5026,7 +5068,7 @@
  }
  function spResumeShoe() {
  const st = spCfg();
- spStartTime = Date.now() - (spElapsedMs || 0);
+ spStartTime = speedResumeStartTime(spElapsedMs, Date.now());
  spRunning = true;
  if (!spTimerId) spTimerId = setInterval(spUpdateStats, 100);
  if (st.mode === 'auto') {
@@ -5094,15 +5136,13 @@
  spUpdateStats();
 
  if (spDeck.length === 0) {
- spStopTimers();
- spRunning = false;
  spPromptCheck(true);
  }
  spSyncDealButton();
  }
 
  function spPromptCheck(deckDone = false) {
- if (spRunning && spStartTime) spElapsedMs = Date.now() - spStartTime;
+ spFreezeElapsed();
  spStopTimers();
  spRunning = false;
  const fb = document.getElementById('sp-feedback');
@@ -5124,7 +5164,7 @@
  if (guess === spCount) {
  fb.className = 'feedback-bar good';
  fb.textContent = `✓ Correct! RC = ${spCount} (${spSeen} cards in ${elapsed.toFixed(1)}s = ${cps.toFixed(2)} c/s).`;
- if (spSeen === spTotal()) {
+ if (speedBestEligible(spSeen, spTotal(), Math.round(elapsed * 1000))) {
  const ms = Math.round(elapsed * 1000);
  if (!state.speedBestMs || ms < state.speedBestMs) state.speedBestMs = ms;
  if (cps > state.speedBestCps) state.speedBestCps = cps;
@@ -5548,12 +5588,16 @@
  function syncModeSelectLabels() {
  const sel = document.getElementById('mode-select');
  if (!sel) return;
- const compact = (typeof window !== 'undefined') && window.innerWidth < 360;
+ const compact = (typeof window !== 'undefined') && window.innerWidth <= 400;
  [...sel.options].forEach(opt => {
  if (opt.dataset && opt.dataset.labelFull) {
  opt.textContent = compact && opt.dataset.labelCompact ? opt.dataset.labelCompact : opt.dataset.labelFull;
  }
  });
+ const cur = sel.options[sel.selectedIndex];
+ if (cur && cur.dataset && cur.dataset.labelCompact && sel.scrollWidth > sel.clientWidth + 1) {
+ cur.textContent = cur.dataset.labelCompact;
+ }
  }
  function updateModeOptions() {
  const sel = document.getElementById('mode-select');
@@ -5566,7 +5610,7 @@
  sel.dispatchEvent(new Event('change'));
  }
  const dep = document.getElementById('deck-est-panel');
- if (dep) dep.hidden = !state.featDeckEst;
+ if (dep) dep.hidden = !(typeof deckEstimateEnabled === 'function' ? deckEstimateEnabled() : state.featDeckEst);
  const quizBtnEl = document.getElementById('btn-check-count');
  if (quizBtnEl) {
  const mode = sel.value;
@@ -5577,7 +5621,7 @@
  }
 
  function syncFeatureToggles() {
- const page = (typeof settingsContextPage !== 'undefined' && settingsModal && settingsModal.classList.contains('open')) ? settingsContextPage : 'play';
+ const page = (typeof settingsContextPage !== 'undefined' && settingsContextPage) ? settingsContextPage : ((typeof activeTab !== 'undefined' && activeTab) ? activeTab : 'play');
  const cfg = getPageSettings(page);
  const map = {
  'feat-i18': 'featI18', 'feat-fab4': 'featFab4', 'feat-ins': 'featIns',
@@ -5693,9 +5737,11 @@
  const applyAllBtn = document.getElementById('btn-apply-settings-all');
  if (applyAllBtn) applyAllBtn.addEventListener('click', () => {
  const page = settingsContextPage || activeTab || 'play';
+ const prevPlayDecks = state.decks;
+ const prevSpeed = (typeof getPageSettings === 'function') ? Object.assign({}, getPageSettings('speed')) : {};
  const result = applySettingsToAllPages(page);
- // play fields already written by applySettingsToAllPages
- if (page !== 'play' && result.byPage.play && result.byPage.play.indexOf('decks') !== -1) {
+ const nextPlayDecks = state.decks;
+ if (page !== 'play' && result.byPage && result.byPage.play && result.byPage.play.indexOf('decks') !== -1 && playDecksChanged(prevPlayDecks, nextPlayDecks)) {
  resetTableAndBuildShoe('', 'Table Play shoe rebuilt as ' + state.decks + 'D (applied from another page).');
  }
  saveState();
@@ -5705,7 +5751,10 @@
  if (typeof renderRiskTab === 'function') renderRiskTab();
  if (typeof renderTable === 'function') renderTable();
  if (typeof updateHud === 'function') updateHud();
- if (result.byPage && result.byPage.speed && typeof spResetToReady === 'function') spResetToReady();
+ const speedNow = (typeof getPageSettings === 'function') ? getPageSettings('speed') : {};
+ const speedChanged = !!(result.byPage && result.byPage.speed && result.byPage.speed.some(k => prevSpeed[k] !== speedNow[k]));
+ const speedMid = (typeof spRunning !== 'undefined' && (spRunning || (typeof spSeen !== 'undefined' && spSeen > 0)));
+ if (speedChanged && speedMid && typeof spResetToReady === 'function') spResetToReady();
  else if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
  const msg = document.getElementById('settings-apply-msg');
  if (msg) {
@@ -6016,9 +6065,13 @@
  sel.dispatchEvent(new Event('change'));
  }
 
+ function deckEstimateEnabled() {
+ const speed = (typeof getPageSettings === 'function') ? getPageSettings('speed') : {};
+ return !!(state.featDeckEst || speed.featDeckEst);
+ }
  function syncDeckEstButton() {
  const p = document.getElementById('deck-est-panel');
- if (p) p.hidden = !state.featDeckEst;
+ if (p) p.hidden = !deckEstimateEnabled();
  updateLiveTray();
  }
 
@@ -6085,9 +6138,12 @@
  }
 
  function openDeckEstimate() {
- if (!state.featDeckEst) return;
+ const speed = (typeof getPageSettings === 'function') ? getPageSettings('speed') : {};
+ const enabled = (typeof deckEstimateEnabled === 'function') ? deckEstimateEnabled() : !!(state.featDeckEst || speed.featDeckEst);
+ if (!enabled) return;
  deMode = 'drill';
- const total = state.decks * 52;
+ const decks = (speed.decks != null ? speed.decks : state.decks) || 1;
+ const total = decks * 52;
  const used = Math.floor(total * (0.25 + Math.random() * 0.55));
  const remaining = Math.max(0, total - used);
  deKind = Math.random() < 0.5 ? 'remaining' : 'played';
@@ -6099,7 +6155,7 @@
  const lab = document.getElementById('de-q-label');
  if (lab) lab.textContent = deKind === 'remaining' ? 'Decks remaining' : 'Decks played';
  const pr = document.getElementById('de-prompt');
- if (pr) pr.textContent = 'A ' + state.decks + '-deck shoe. The tray shows cards already used. Estimate decks ' + deKind + ' (within 0.5 is correct).';
+ if (pr) pr.textContent = 'A ' + decks + '-deck shoe. The tray shows cards already used. Estimate decks ' + deKind + ' (within 0.5 is correct).';
  const title = document.getElementById('de-title');
  if (title) title.textContent = 'Deck Estimation';
  const res = document.getElementById('de-result');
@@ -6200,6 +6256,16 @@
  updateTopStats();
  if (typeof spResetToReady === 'function') spResetToReady();
  else if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
+ const savedTab = (state && state.lastMode && document.getElementById('tab-' + state.lastMode)) ? state.lastMode : 'play';
+ applyActiveTab(savedTab, { save: false });
+ window.addEventListener('pageshow', () => {
+ const tab = (state && state.lastMode && document.getElementById('tab-' + state.lastMode)) ? state.lastMode : activeTab;
+ applyActiveTab(tab, { save: false });
+ });
+ setTimeout(() => {
+ const tab = (state && state.lastMode && document.getElementById('tab-' + state.lastMode)) ? state.lastMode : activeTab;
+ applyActiveTab(tab, { save: false });
+ }, 0);
  renderTable();
  updateHistoryCount();
 
@@ -6240,14 +6306,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v13-2')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v13-3')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v13-2', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v13-3', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v13-2'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v13-3'); } catch (e) {} }, 2500);
   });
 }
 </script>

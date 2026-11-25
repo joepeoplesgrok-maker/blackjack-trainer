@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v13.3)
+
+v13.3 fixes Jerry's v13.2 QA bugs: per-page Settings now hide options that don't belong on that page; Speed Count keeps accumulated run time across pauses and at shoe end (and only then records Best); Apply to all no longer rebuilds the Table shoe unless Play's decks actually change; Strategy and Risk settings show their own values.
+
 ## Feature guide (v13.2)
 
 Speed Count keeps a large full-width **Deal** button on the top row. The bottom row is three equal buttons: **New Shoe**, **Start**, and **Check Count**. New Shoe reshuffles and resets the count, cards seen, and timer to 0, then waits at Ready — the timer does not start until you press Start. Deal, felt tap, and Space do not start a run. Changing Speed settings mid-run returns to Ready.
@@ -71,6 +75,13 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v13.3
+- Per-page Settings only show the current page's options (`[hidden]` is no longer overridden by `display: grid`). A control that does not belong on the page cannot write Table Play values.
+- Speed Count accumulates active time across mid-shoe Check pauses, tab switches, and shoe end, so the result and Best use the real run time (not 0.0s or a pre-pause fragment).
+- Apply to all rebuilds the Table Play shoe only when Play's deck count actually changes; otherwise history and the current shoe stay put. A Speed run returns to Ready only if Speed's values actually changed mid-run.
+- Strategy and Risk settings show their own stored values when reopened. Speed's Deck Estimate Drill uses Speed's deck count. The header mode stays in sync after a Firefox reload. The History label stays complete at 360 px (compact "Hand History" when the full label would clip).
+- Service worker cache bumped to `bj-trainer-v13-3`.
 
 ### v13.2
 - Speed Count: **New Shoe** and **Start** are separate. New Shoe goes to an idle Ready state (timer at 0, no card dealt). **Start** begins the timer and deals the first card(s). Deal stays the large top button but is disabled until Start (hint: "Press Start when ready"), during Auto, after the shoe ends, and while the count prompt is open. After a mid-shoe Check, Deal continues the same shoe without resetting the timer to 0. Changing Speed settings mid-run returns to Ready.
