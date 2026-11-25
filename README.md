@@ -23,7 +23,7 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 
 ## Feature guide (v14)
 
-v14.0 adds realistic Table Play dealing and seat choice on top of every v13.3 feature. Cards appear in place at a per-page **Deal pace** (Instant / Fast / Normal / Slow; Normal by default; instant when the device requests reduced motion). Deal order is left to right, first base to third base, then the dealer, twice, with the hole card face down and uncounted until the dealer’s turn. Pick **Your seat** when other players are at the table; they act in seat order with basic strategy. Busts are swept at once, and the whole layout is swept at the end of the round so you have to count while the cards are visible. **Last-round review** (off by default) keeps the finished hands until the next Deal — the v13.3 linger. A hidden **#selftest** page runs shoe-composition, strategy, deal-order, burn, and hole-card checks for this build. Features 4–9 (mistake replay, progress charts, random TC quizzes, index prompts, distraction mode, and export/import) are not in 14.0 and will follow as v14.x. Feature 5 from the original roadmap (RSA / 6:5 / early surrender) is still not in the app.
+v14.0 adds realistic Table Play dealing and seat choice on top of every v13.3 feature. Cards appear in place at a per-page **Deal pace** (Instant / Fast / Normal / Slow; Normal by default; instant when the device requests reduced motion). Deal order is left to right, first base to third base, then the dealer, twice, with the hole card face down and uncounted until the dealer’s turn. Pick **Your seat** when other players are at the table; they act in seat order with basic strategy. Busts are swept at once, and the whole layout is swept at the end of the round so you have to count while the cards are visible. **Last-round review** (off by default) keeps the finished hands until the next Deal — the v13.3 linger. A hidden **#selftest** page runs shoe-composition, strategy, deal-order, burn, and hole-card checks for this build. v14.1 adds those deferred features (mistake replay, progress charts, random mid-shoe TC quizzes, index prompts, distraction mode, and export/import); all of them stay off until you enable them. Feature 5 from the original roadmap (RSA / 6:5 / early surrender) is still not in the app.
 
 
 v13.3 fixes Jerry's v13.2 QA bugs: per-page Settings now hide options that don't belong on that page; Speed Count keeps accumulated run time across pauses and at shoe end (and only then records Best); Apply to all no longer rebuilds the Table shoe unless Play's decks actually change; Strategy and Risk settings show their own values.
@@ -78,6 +78,15 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v14.1
+- **Mistake review / replay** on Stats: missed Table Play and Strategy Drill decisions (and graded bets) are listed with a Replay button that opens the Strategy Drill on that hand.
+- **Progress charts** on Stats plot accuracy, Speed Count pace, and true-count quiz error over recent sessions.
+- **Random mid-shoe true-count quizzes** (off by default) can pause once, twice, or 1–3 times per shoe, independent of the existing between-hand quizzes.
+- **Index-play prompts** in Table Play (off by default): when an Illustrious 18 or Fab 4 deviation applies, a still, unanimated prompt under the hands shows the index and the recommended action.
+- **Casino distraction mode** (off by default) shows a table clock and, if you opt in, generated ambient noise that works offline. While it is on, the initial deal uses Fast pace; the dealer’s hole and hits still follow the Deal pace you chose (0.9 s at Normal).
+- **Export / Import** of settings and stats as JSON, from Stats and from Settings. The live shoe is not included.
+- Default behavior matches v14.0.3 until you turn a new option on. Existing cards still stay in place, and the dealer cadence from v14.0.3 is unchanged. Cache `bj-trainer-v14-1`.
 
 ### v14.0.3
 - Cards already on the table stay in the same DOM node. A new card is only appended; existing cards are not rebuilt, re-inserted, or re-animated, so they no longer “pop” on each deal step.

@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14.0.3</title>
+<title>Blackjack & Card Counting Trainer Pro v14.1</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -1297,6 +1297,17 @@
  #selftest-results .ok { color: #7dcea0; }
  #selftest-results .fail { color: #e07a7a; }
  .last-round-flag { font-size: 0.68rem; color: var(--gold); text-align: center; letter-spacing: 0.3px; margin: 0 0 4px; }
+ #index-prompt { width: 100%; max-width: 520px; margin: 6px auto 0; padding: 6px 10px; border: 1px solid var(--gold); border-radius: 8px; background: rgba(20,28,18,0.55); color: var(--gold); font-size: 0.78rem; font-weight: 650; text-align: center; animation: none; transition: none; }
+ #index-prompt[hidden] { display: none !important; }
+ #table-clock { font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--gold); letter-spacing: 0.4px; text-align: right; min-width: 4.5rem; }
+ #table-clock-cell[hidden] { display: none !important; }
+ .progress-charts { display: grid; gap: 10px; width: 100%; }
+ .progress-charts canvas { width: 100%; height: 120px; background: rgba(0,0,0,0.25); border-radius: 8px; }
+ .mistake-log { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+ .mistake-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; background: rgba(0,0,0,0.25); border: 1px solid var(--panel-border); border-radius: 8px; padding: 8px 10px; }
+ .mistake-row .mr-main { font-size: 0.78rem; line-height: 1.35; }
+ .mistake-row .mr-meta { font-size: 0.68rem; color: var(--muted); }
+ .data-io { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
  .other-seat {
  background: rgba(0,0,0,0.25);
  border: 1px solid var(--panel-border);
@@ -1579,6 +1590,7 @@
  <div class="stat-cell"><span class="label">Bet</span><span class="val" id="ui-bet">$25</span></div>
  <div class="stat-cell"><span class="label">Play Acc</span><span class="val" id="ui-play-acc">--</span></div>
  <div class="stat-cell"><span class="label" id="ui-game-tag">6D · S17</span><span class="val" id="ui-hands-played">0 h</span></div>
+ <div class="stat-cell" id="table-clock-cell" hidden><span class="label">Clock</span><span class="val" id="table-clock">--:--</span></div>
  </div>
  <div id="count-hud" class="hud-divider">
  <div class="stats-grid cols-5">
@@ -1638,6 +1650,7 @@
  <div class="zone" style="width:100%;">
  <div class="player-hands" id="player-hands"></div>
  </div>
+ <div id="index-prompt" hidden role="status"></div>
  </div>
  </div>
 
@@ -1929,13 +1942,26 @@
  <div id="st-cats" style="width:100%;"></div>
  <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Bankroll (this device)</h3>
  <canvas id="bankroll-chart" width="600" height="160" aria-label="Bankroll history chart"></canvas>
+ <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Progress over sessions</h3>
+ <div class="progress-charts">
+  <canvas id="acc-chart" width="600" height="120" aria-label="Decision accuracy over time"></canvas>
+  <canvas id="speed-chart" width="600" height="120" aria-label="Speed Count cards per second over time"></canvas>
+  <canvas id="tc-chart" width="600" height="120" aria-label="True-count quiz error over time"></canvas>
+ </div>
  <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Most-missed situations</h3>
  <ul class="miss-list" id="st-missed" style="width:100%;"></ul>
+ <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Mistake log</h3>
+ <div class="mistake-log" id="st-mistake-list"></div>
  <div class="ins-grid" style="width:100%;">
  <button class="btn btn-gold" id="btn-review-mistakes" type="button">Review mistakes as quizzes</button>
  <button class="btn" id="btn-reset-stats-tab" type="button">Reset stats &amp; logs</button>
  </div>
- <p class="feat-note" id="st-review-status">Turn off “Stats tracking” in Settings to stop recording. Logs are capped and stored only on this device.</p>
+ <div class="data-io" style="margin-top:6px;">
+  <button class="btn" id="btn-export-data" type="button">Export settings &amp; stats</button>
+  <button class="btn" id="btn-import-data" type="button">Import backup…</button>
+  <input type="file" id="inp-import-data" accept="application/json,.json" hidden>
+ </div>
+ <p class="feat-note" id="st-review-status">Turn off “Stats tracking” in Settings to stop recording. Logs are capped and stored only on this device. Export writes a JSON file you can import later on this or another device.</p>
  </div>
  </section>
 
@@ -2057,6 +2083,16 @@
  </details>
 
  <details class="guide-block">
+ <summary>Progress, index prompts, quizzes, and backups</summary>
+ <div class="guide-block-body">
+ <p><strong>Mistake log</strong> on Stats lists wrong plays and bets with the correct action. Replay opens that decision in Strategy Drill. Review mistakes as quizzes still walks the recent log.</p>
+ <p><strong>Progress charts</strong> track decision accuracy, Speed Count cards/second, and true-count quiz error across sessions. They are plain line charts, stored only on this device.</p>
+ <p><strong>Index-play prompts</strong> appear during Table Play when a deviation applies so you can practice the index before you act. Mid-shoe TC quizzes, when enabled, pause at a random depth in the shoe. Casino distraction mode is optional and off by default; any ambient noise is generated locally and works offline.</p>
+ <p><strong>Export settings &amp; stats</strong> writes a JSON file you can import later. Import replaces stored settings and stats after a confirm; it does not include the live shoe.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
  <summary>Stats and mistake review</summary>
  <div class="guide-block-body">
  <p>When stats tracking is on, the app records session and lifetime accuracy for hard totals, soft totals, pairs, deviations, bets, and insurance, plus a bankroll history chart and your most-missed matchups. <strong>Review mistakes</strong> replays logged errors as strategy quizzes. Data stays in this browser (versioned localStorage) and the mistake log is capped. Use Reset stats &amp; logs to clear it.</p>
@@ -2118,6 +2154,9 @@
  <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count. <strong>Your seat</strong> places you at first base through third base.</li>
  <li><strong>Deal pace</strong> — Instant, Fast, Normal (default), or Slow. Cards appear in place; nothing animates.</li>
  <li><strong>Last-round review</strong> (off by default) — keep the finished hands on the felt until the next Deal. Off: cards are swept at the end of the round (and after a countable beat on a bust).</li>
+ <li><strong>Index-play prompts</strong> (off by default) — when an Illustrious 18 or Fab 4 deviation applies, Table Play shows the index and the recommended action (for example, 16 vs 10, stand at TC ≥ 0).</li>
+ <li><strong>Mid-shoe true-count quizzes</strong> (off by default) — optional RC/TC prompts at random points in the shoe, once, twice, or 1–3 times per shoe, in addition to the existing between-hand quizzes.</li>
+ <li><strong>Casino distraction mode</strong> (off by default) — a faster deal and an on-screen clock. <strong>Ambient noise</strong> is generated on this device (no download) and stays off until you enable it.</li>
  <li><strong>Heat hints</strong> — an educational warning when a bet jumps more than 2× or leaps from a small wager to the top of the spread.</li>
  <li><strong>Show card totals</strong> (on by default) — the total pills next to the dealer, your hand, every split hand, and other seats. Turn it off to practice adding the cards yourself. Busts and blackjacks are still announced; the coach will not name the total. Tap a hidden total to peek at it for the rest of the round.</li>
  </ul>
@@ -2302,9 +2341,21 @@
 </select>
 </div>
 <div class="setting-row" data-settings-pages="play"><span class="lbl">Last-round review (keep cards until next Deal)</span><input type="checkbox" id="feat-last-round-review" aria-label="Keep last round cards visible until the next deal"></div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Index-play prompts (Table Play)</span><input type="checkbox" id="feat-index-prompts" aria-label="Show index-play prompts when a deviation applies"></div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Random mid-shoe true-count quizzes</span><input type="checkbox" id="feat-shoe-quiz" aria-label="Enable random mid-shoe true-count quizzes"></div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Mid-shoe quiz frequency</span>
+<select id="opt-shoe-quiz-freq" aria-label="Mid-shoe true-count quiz frequency">
+<option value="1" selected>Once per shoe</option>
+<option value="2">Twice per shoe</option>
+<option value="random">Random (1–3 per shoe)</option>
+</select>
+</div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Casino distraction mode (faster deal, clock)</span><input type="checkbox" id="feat-distract" aria-label="Enable casino distraction mode"></div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Ambient noise (generated on this device, off by default)</span><input type="checkbox" id="feat-distract-noise" aria-label="Enable generated ambient noise"></div>
 <div class="setting-row" data-settings-pages="play"><span class="lbl">Heat hints (educational)</span><input type="checkbox" id="feat-heat" aria-label="Enable heat hints"></div>
  <div class="ins-grid" style="margin-top:10px;" data-settings-pages="play,stats,app">
  <button class="btn" id="btn-reset-stats" type="button">Reset stats &amp; logs</button>
+ <button class="btn" id="btn-export-data-settings" type="button">Export settings &amp; stats</button>
  </div>
  </div>
  </details>
@@ -2475,7 +2526,7 @@
 
 
  const PAGE_SETTING_KEYS = {
- play: ['decks','s17','das','ls','splitAcesOneCard','betStrat','showHud','showTags','coach','featI18','featFab4','featIns','tcRounding','featBetRamp','featBetGrade','unitSize','spreadMin','spreadMax','featQuiz','quizInterval','featLiveTray','featShowExactDecks','featShowTotals','deckEstInterval','featDeckEst','featSeats','otherSeats','playerSeat','dealPace','featLastRoundReview','featHeat'],
+ play: ['decks','s17','das','ls','splitAcesOneCard','betStrat','showHud','showTags','coach','featI18','featFab4','featIns','tcRounding','featBetRamp','featBetGrade','unitSize','spreadMin','spreadMax','featQuiz','quizInterval','featLiveTray','featShowExactDecks','featShowTotals','deckEstInterval','featDeckEst','featSeats','otherSeats','playerSeat','dealPace','featLastRoundReview','featIndexPrompts','featShoeQuiz','shoeQuizFreq','featDistract','featDistractNoise','featHeat'],
  speed: ['decks','batch','mode','interval','showTags','featDeckEst'],
  strat: ['decks','s17','das','ls','splitAcesOneCard','featI18','featFab4','featIns','featTimed','decisionSec'],
  charts: ['decks','s17','das','ls','splitAcesOneCard'],
@@ -2485,7 +2536,7 @@
  guide: []
  };
  const PAGE_SETTING_LABELS = { play: 'Table Play', speed: 'Speed Count', strat: 'Strategy Drill', charts: 'Charts', stats: 'Stats', risk: 'Risk Tools', history: 'Hand History', guide: 'How It Works' };
- const SETTING_KEY_LABELS = { decks: 'Decks', s17: 'Dealer soft 17', das: 'DAS', ls: 'Late surrender', splitAcesOneCard: 'Split aces one card', betStrat: 'Betting strategy', showHud: 'Count HUD', showTags: 'Hi-Lo tags', coach: 'Live coach', featI18: 'Illustrious 18', featFab4: 'Fab 4', featIns: 'Insurance index', tcRounding: 'True-count rounding', featBetRamp: 'Bet ramp', featBetGrade: 'Grade bets', unitSize: 'Unit size', spreadMin: 'Spread min', spreadMax: 'Spread max', featQuiz: 'Count quizzes', quizInterval: 'Quiz frequency', featLiveTray: 'Live shoe bars', featShowExactDecks: 'Exact decks', featShowTotals: 'Card totals', deckEstInterval: 'Deck-estimate prompt', featDeckEst: 'Deck-estimate drill', featSeats: 'Other seats', otherSeats: 'Other-seat count', playerSeat: 'Your seat', dealPace: 'Deal pace', featLastRoundReview: 'Last-round review', featHeat: 'Heat hints', featTimed: 'Timed decisions', decisionSec: 'Seconds per decision', batch: 'Cards per step', mode: 'Deal mode', interval: 'Auto interval' };
+ const SETTING_KEY_LABELS = { decks: 'Decks', s17: 'Dealer soft 17', das: 'DAS', ls: 'Late surrender', splitAcesOneCard: 'Split aces one card', betStrat: 'Betting strategy', showHud: 'Count HUD', showTags: 'Hi-Lo tags', coach: 'Live coach', featI18: 'Illustrious 18', featFab4: 'Fab 4', featIns: 'Insurance index', tcRounding: 'True-count rounding', featBetRamp: 'Bet ramp', featBetGrade: 'Grade bets', unitSize: 'Unit size', spreadMin: 'Spread min', spreadMax: 'Spread max', featQuiz: 'Count quizzes', quizInterval: 'Quiz frequency', featLiveTray: 'Live shoe bars', featShowExactDecks: 'Exact decks', featShowTotals: 'Card totals', deckEstInterval: 'Deck-estimate prompt', featDeckEst: 'Deck-estimate drill', featSeats: 'Other seats', otherSeats: 'Other-seat count', playerSeat: 'Your seat', dealPace: 'Deal pace', featLastRoundReview: 'Last-round review', featIndexPrompts: 'Index-play prompts', featShoeQuiz: 'Mid-shoe TC quizzes', shoeQuizFreq: 'Mid-shoe quiz frequency', featDistract: 'Casino distraction mode', featDistractNoise: 'Ambient noise', featHeat: 'Heat hints', featTimed: 'Timed decisions', decisionSec: 'Seconds per decision', batch: 'Cards per step', mode: 'Deal mode', interval: 'Auto interval' };
 
  function defaultPageSettings() {
  return {
@@ -2710,6 +2761,58 @@
  return { seats: seats, dealer: dealer, steps: seq };
  }
  function burnCardAffectsRunningCount() { return false; }
+function formatIndexPrompt(note, tc) {
+ if (!note) return '';
+ const n = Number(tc);
+ const tcTxt = Number.isFinite(n) ? ((n >= 0 ? '+' : '') + (Math.round(n * 10) / 10)) : '—';
+ return 'Index play: ' + note + ' · TC ' + tcTxt;
+ }
+ function indexPromptShouldShow(featOn, deviationsOn, note) {
+ return !!(featOn && deviationsOn && note);
+ }
+ function scheduleShoeQuizPoints(dealt, cutIndex, freq, randFn) {
+ const rand = typeof randFn === 'function' ? randFn : Math.random;
+ const n = freq === 'random' ? (1 + Math.floor(rand() * 3)) : Math.max(1, parseInt(freq, 10) || 1);
+ const lo = Math.max(0, (dealt | 0) + 8);
+ const hi = Math.max(lo + 1, (cutIndex | 0) - 6);
+ const pts = [];
+ let guard = 0;
+ while (pts.length < n && guard++ < 40) {
+ const p = lo + Math.floor(rand() * Math.max(1, hi - lo));
+ if (pts.indexOf(p) === -1) pts.push(p);
+ }
+ pts.sort((a, b) => a - b);
+ return pts;
+ }
+ function shouldOfferShoeQuiz(enabled, points, dealt, asked) {
+ if (!enabled || !points || !points.length) return false;
+ const askedMap = asked || {};
+ for (let i = 0; i < points.length; i++) {
+ if (dealt >= points[i] && !askedMap[points[i]]) return points[i];
+ }
+ return false;
+ }
+ function pushProgressPoint(list, point, cap) {
+ const arr = Array.isArray(list) ? list.slice() : [];
+ arr.push(point);
+ const max = cap || 200;
+ if (arr.length > max) arr.splice(0, arr.length - max);
+ return arr;
+ }
+ function buildExportPayload(st, nowIso) {
+ const s = st || {};
+ const copy = {};
+ const skip = { committedShoe: 1 };
+ Object.keys(s).forEach(k => { if (!skip[k]) copy[k] = s[k]; });
+ return { app: 'bj-trainer', format: 1, exportedAt: nowIso || '', schemaVersion: s.schemaVersion, state: copy };
+ }
+ function parseImportPayload(obj) {
+ if (!obj || typeof obj !== 'object') throw new Error('Not a trainer backup');
+ if (obj.app && obj.app !== 'bj-trainer') throw new Error('Not a trainer backup');
+ const src = obj.state && typeof obj.state === 'object' ? obj.state : obj;
+ if (!src || typeof src !== 'object') throw new Error('Backup has no settings');
+ return src;
+ }
  function deckEstimateDrillVisible(speedFeatDeckEst, playFeatDeckEst) {
  // The drill button lives on Speed Count and follows only Speed's toggle.
  return !!speedFeatDeckEst;
@@ -2865,7 +2968,7 @@
  sdBest: 0,
  speedBestCps: 0,
  speedBestMs: 0,
- schemaVersion: 11,
+ schemaVersion: 12,
  pageSettings: defaultPageSettings(),
  featI18: true,
  featFab4: true,
@@ -2894,11 +2997,16 @@
  playerSeat: 0,
  dealPace: 'normal',
  featLastRoundReview: false,
+ featIndexPrompts: false,
+ featShoeQuiz: false,
+ shoeQuizFreq: '1',
+ featDistract: false,
+ featDistractNoise: false,
  handHistory: [],
  lastMode: 'play',
  historyShoeId: 0,
  committedShoe: null,
- stats: { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} }
+ stats: { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {}, progress: { acc: [], speed: [], tc: [] } }
  };
 
  function migrateState(saved) {
@@ -2907,10 +3015,18 @@
  if (saved.featI18 === undefined && saved.devCoach === 'basic') {
  s.featI18 = false; s.featFab4 = false; s.featIns = false;
  }
- s.schemaVersion = 11;
+ s.schemaVersion = 12;
  if (saved.dealPace === undefined) s.dealPace = 'normal';
  if (saved.playerSeat === undefined) s.playerSeat = 0;
  if (saved.featLastRoundReview === undefined) s.featLastRoundReview = false;
+ if (saved.featIndexPrompts === undefined) s.featIndexPrompts = false;
+ if (saved.featShoeQuiz === undefined) s.featShoeQuiz = false;
+ if (saved.shoeQuizFreq === undefined) s.shoeQuizFreq = '1';
+ if (saved.featDistract === undefined) s.featDistract = false;
+ if (saved.featDistractNoise === undefined) s.featDistractNoise = false;
+ if (!s.stats || typeof s.stats !== 'object') s.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {}, progress: { acc: [], speed: [], tc: [] } };
+ if (!s.stats.progress || typeof s.stats.progress !== 'object') s.stats.progress = { acc: [], speed: [], tc: [] };
+ ['acc','speed','tc'].forEach(k => { if (!Array.isArray(s.stats.progress[k])) s.stats.progress[k] = []; });
  if (saved.featLiveTray === undefined) s.featLiveTray = true;
  if (saved.featShowExactDecks === undefined) s.featShowExactDecks = false;
  if (saved.featShowTotals === undefined) s.featShowTotals = true;
@@ -4057,6 +4173,7 @@
  if (activeTab === 'risk' && typeof renderRiskTab === 'function') renderRiskTab();
  if (activeTab === 'history' && typeof renderHistory === 'function') renderHistory();
  if (activeTab === 'speed' && typeof syncDeckEstButton === 'function') syncDeckEstButton();
+ if (typeof syncDistractUI === 'function') syncDistractUI();
  if (save && typeof state !== 'undefined' && state) { state.lastMode = activeTab; if (typeof saveState === 'function') saveState(); }
  }
  modeSelect.addEventListener('change', () => {
@@ -4212,6 +4329,7 @@
  state.historyShoeId = currentShoeId;
  currentRoundLog = null;
  if (typeof applyQueuedDraws === 'function') applyQueuedDraws();
+ if (typeof armShoeQuizzes === 'function') armShoeQuizzes();
  if (typeof snapshotCommittedShoe === 'function') snapshotCommittedShoe();
  if (typeof updateHistoryCount === 'function') updateHistoryCount();
  if (typeof renderHistory === 'function' && activeTab === 'history') renderHistory();
@@ -4783,6 +4901,8 @@
 
  updateTopStats();
  updateHud();
+ if (typeof syncIndexPrompt === 'function') syncIndexPrompt();
+ if (typeof syncDistractUI === 'function') syncDistractUI();
  if (typeof recordTablePaint === 'function') recordTablePaint('renderTable');
  }
 
@@ -4959,6 +5079,8 @@
  state.playTotal++;
  const isCorrect = action === dec.action;
  if (isCorrect) state.playCorrect++;
+ dec.chosen = action;
+ dec.tc = getTrueCount();
  if (state.featStats) recordPlayOutcome(h.cards, dealerHand[0] && dealerHand[0].rank, isCorrect, dec);
  if (typeof logRoundAction === 'function') logRoundAction(action, dec, isCorrect, activeHandIdx);
  saveState();
@@ -5170,6 +5292,8 @@
  handsSinceQuiz = 0;
  scheduleNextQuiz();
  openCountQuiz();
+ } else if (typeof maybeOfferShoeQuiz === 'function' && maybeOfferShoeQuiz()) {
+ /* mid-shoe TC quiz */
  } else if (shouldOfferDeckEstimate()) {
  handsSinceDeckEst = 0;
  openLiveDeckEstimate();
@@ -5178,8 +5302,9 @@
 
  /* ==================== COUNT QUIZ MODAL ==================== */
  const quizModal = document.getElementById('quiz-modal');
- function openCountQuiz() {
- if (!state.featQuiz) return;
+ function openCountQuiz(fromShoe) {
+ if (!fromShoe && !state.featQuiz && !state.featShoeQuiz) return;
+ if (fromShoe && !state.featShoeQuiz && !state.featQuiz) return;
  document.getElementById('quiz-rc').value = '';
  document.getElementById('quiz-tc').value = '';
  document.getElementById('quiz-result').style.display = 'none';
@@ -5202,6 +5327,10 @@
  } else {
  res.className = 'feedback-bar warn';
  res.textContent = 'Actual: RC = ' + runningCount + ', TC = ' + shownTxt + '.';
+ }
+ if (state.featStats && typeof recordTcProgress === 'function') {
+ const err = Number.isFinite(gTc) ? Math.abs(gTc - shown) : 1;
+ recordTcProgress(err);
  }
  }
 
@@ -5416,6 +5545,9 @@
  if (key === 'decks') {
  resetTableAndBuildShoe('', 'Switched to ' + state.decks + '-Deck shoe (' + Math.round(getPenetrationForDecks(state.decks) * 100) + '% pen, 1 burned).');
  }
+ if (key === 'featDistract' || key === 'featDistractNoise') { if (typeof syncDistractUI === 'function') syncDistractUI(); }
+ if (key === 'featIndexPrompts' && typeof syncIndexPrompt === 'function') syncIndexPrompt();
+ if (key === 'featShoeQuiz' && typeof armShoeQuizzes === 'function') armShoeQuizzes();
  if (key === 'otherSeats' || key === 'playerSeat' || key === 'featSeats') {
  const c = clampPlayerSeat(state.playerSeat || 0, state.featSeats ? (state.otherSeats || 0) : 0);
  if (state.playerSeat !== c.playerSeat) state.playerSeat = c.playerSeat;
@@ -5703,6 +5835,7 @@
  const ms = Math.round(elapsed * 1000);
  if (!state.speedBestMs || ms < state.speedBestMs) state.speedBestMs = ms;
  if (cps > state.speedBestCps) state.speedBestCps = cps;
+ if (typeof recordSpeedProgress === 'function') recordSpeedProgress(cps);
  saveState();
  spUpdateStats();
  }
@@ -6124,7 +6257,9 @@
  try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
  }
  function currentDealPaceMs() {
- return dealPaceMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
+ let pace = state.dealPace || 'normal';
+ if (state.featDistract && pace !== 'instant') pace = 'fast';
+ return dealPaceMs(pace, { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
  }
  function currentStepDelayMs() {
  const ms = currentDealPaceMs();
@@ -6259,7 +6394,7 @@
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
  'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
- 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-heat': 'featHeat'
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-index-prompts': 'featIndexPrompts', 'feat-shoe-quiz': 'featShoeQuiz', 'feat-distract': 'featDistract', 'feat-distract-noise': 'featDistractNoise', 'feat-heat': 'featHeat'
  };
  Object.keys(map).forEach(id => {
  const el = document.getElementById(id);
@@ -6286,6 +6421,7 @@
  if (typeof syncSeatSelect === 'function') syncSeatSelect();
  const lr = document.getElementById('feat-last-round-review');
  if (lr) lr.checked = !!pick('featLastRoundReview', state.featLastRoundReview);
+ const sq = document.getElementById('opt-shoe-quiz-freq'); if (sq) sq.value = String(pick('shoeQuizFreq', state.shoeQuizFreq || '1'));
  }
 
  function syncSeatSelect() {
@@ -6315,7 +6451,7 @@
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
  'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
- 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-heat': 'featHeat'
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-index-prompts': 'featIndexPrompts', 'feat-shoe-quiz': 'featShoeQuiz', 'feat-distract': 'featDistract', 'feat-distract-noise': 'featDistractNoise', 'feat-heat': 'featHeat'
  };
  Object.keys(boolMap).forEach(id => {
  const el = document.getElementById(id);
@@ -6399,8 +6535,40 @@
  if (dpEl) dpEl.addEventListener('change', () => {
  writeFromControl('dealPace', dpEl.value || 'normal');
  });
+ const sqf = document.getElementById('opt-shoe-quiz-freq');
+ if (sqf) sqf.addEventListener('change', () => writeFromControl('shoeQuizFreq', sqf.value || '1'));
  document.getElementById('btn-reset-stats')?.addEventListener('click', resetAllStats);
  document.getElementById('btn-reset-stats-tab')?.addEventListener('click', resetAllStats);
+ document.addEventListener('visibilitychange', () => { if (typeof syncDistractUI === 'function') syncDistractUI(); });
+ function bindExportImport(btnId, inputId) {
+ const btn = document.getElementById(btnId);
+ if (btn) btn.addEventListener('click', () => exportTrainerData());
+ const inp = inputId ? document.getElementById(inputId) : null;
+ const imp = document.getElementById('btn-import-data');
+ if (imp && inp) {
+ imp.addEventListener('click', () => inp.click());
+ inp.addEventListener('change', () => {
+ const f = inp.files && inp.files[0];
+ if (!f) return;
+ const reader = new FileReader();
+ reader.onload = () => {
+ try {
+ const obj = JSON.parse(String(reader.result || ''));
+ if (!confirm('Import this backup? Current settings and stats on this device will be replaced. The live shoe is not part of the backup.')) return;
+ importTrainerData(obj);
+ } catch (err) {
+ const st = document.getElementById('st-review-status');
+ if (st) st.textContent = 'Import failed: ' + (err && err.message ? err.message : 'invalid file');
+ }
+ inp.value = '';
+ };
+ reader.readAsText(f);
+ });
+ }
+ }
+ bindExportImport('btn-export-data', 'inp-import-data');
+ const exp2 = document.getElementById('btn-export-data-settings');
+ if (exp2) exp2.addEventListener('click', () => exportTrainerData());
  const applyAllBtn = document.getElementById('btn-apply-settings-all');
  if (applyAllBtn) applyAllBtn.addEventListener('click', () => {
  const page = settingsContextPage || activeTab || 'play';
@@ -6483,7 +6651,7 @@
  if (state.featStats) {
  recordCategory(state.stats.session, 'bets', g.grade === 'correct');
  recordCategory(state.stats.lifetime, 'bets', g.grade === 'correct');
- if (g.grade !== 'correct') pushMistake({ key: 'Bet ' + units + 'u vs rec ' + rec + 'u @ TC ' + (Number.isInteger(tc) ? tc : tc.toFixed(1)), cat: 'bets' });
+ if (g.grade !== 'correct') pushMistake({ key: 'Bet ' + units + 'u vs rec ' + rec + 'u @ TC ' + (Number.isInteger(tc) ? tc : tc.toFixed(1)), cat: 'bets', kind: 'bet', chosen: units + 'u', action: rec + 'u', tc: tc });
  }
  lastBetGrade = g.grade === 'correct'
  ? ('Grade: correct (' + rec + 'u)')
@@ -6683,7 +6851,11 @@
  wrap.hidden = !show;
  const pZone0 = document.getElementById('player-hands');
  const pWrap0 = pZone0 && pZone0.closest('.zone');
- if (!show) { if (pWrap0) pWrap0.hidden = false; return; }
+ if (!show) {
+ if (pWrap0) pWrap0.hidden = false;
+ [...wrap.querySelectorAll(':scope > .table-seat')].forEach(box => box.remove());
+ return;
+ }
  const pZone = document.getElementById('player-hands');
  const liveIndexes = {};
  layout.forEach(s => {
@@ -6764,7 +6936,8 @@
  const cat = (dec && dec.note) ? 'deviations' : (isPair ? 'pairs' : (ev.isSoft ? 'soft' : 'hard'));
  recordCategory(state.stats.session, cat, correct);
  recordCategory(state.stats.lifetime, cat, correct);
- if (!correct) pushMistake({ key: situationKey(cards, upRank, dec), cat, cards: cards.map(c => ({ rank: c.rank, suit: c.suit })), up: upRank, action: dec && dec.action });
+ if (!correct) pushMistake({ key: situationKey(cards, upRank, dec), cat, cards: cards.map(c => ({ rank: c.rank, suit: c.suit })), up: upRank, action: dec && dec.action, chosen: (dec && dec.chosen) || null, tc: (dec && dec.tc) != null ? dec.tc : getTrueCount(), kind: 'play' });
+ if (typeof recordAccuracyProgress === 'function') recordAccuracyProgress();
  }
 
  function pushMistake(m) {
@@ -6782,7 +6955,7 @@
  }
 
  function resetAllStats() {
- state.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {} };
+ state.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {}, progress: { acc: [], speed: [], tc: [] } };
  state.playCorrect = 0; state.playTotal = 0;
  saveState();
  renderStatsTab();
@@ -6821,6 +6994,13 @@
  miss.innerHTML = top.length ? top.map(x => '<li><span>' + x.key + '</span><span>' + x.n + '</span></li>').join('') : '<li>No mistakes logged yet.</li>';
  }
  drawBankrollChart();
+ const prog = (typeof ensureProgress === 'function') ? ensureProgress() : { acc: [], speed: [], tc: [] };
+ if (typeof drawLineChart === 'function') {
+ drawLineChart('acc-chart', prog.acc, 'acc', 'Decision accuracy', 'Play some hands to see accuracy over time.');
+ drawLineChart('speed-chart', prog.speed, 'cps', 'Speed Count c/s', 'Finish a Speed Count shoe to see cards/sec over time.');
+ drawLineChart('tc-chart', prog.tc, 'err', 'TC quiz error', 'Take a true-count quiz to see error over time.');
+ }
+ if (typeof renderMistakeList === 'function') renderMistakeList();
  }
 
  function drawBankrollChart() {
@@ -6885,7 +7065,230 @@
  if (note) note.textContent = 'Estimates only. Frequencies from ' + tcFreqCache[cacheKey].hands + ' simulated hands at this penetration. Variance assumed ≈ 1.3 units² per unit wagered.';
  }
 
- function startMistakeReview() {
+ function ensureProgress() {
+ if (!state.stats) return { acc: [], speed: [], tc: [] };
+ if (!state.stats.progress || typeof state.stats.progress !== 'object') state.stats.progress = { acc: [], speed: [], tc: [] };
+ ['acc','speed','tc'].forEach(k => { if (!Array.isArray(state.stats.progress[k])) state.stats.progress[k] = []; });
+ return state.stats.progress;
+ }
+ function recordAccuracyProgress() {
+ if (!state.featStats) return;
+ const tot = state.playTotal || 0;
+ if (!tot) return;
+ const p = ensureProgress();
+ p.acc = pushProgressPoint(p.acc, { t: Date.now(), acc: (state.playCorrect || 0) / tot }, 200);
+ }
+ function recordSpeedProgress(cps) {
+ if (!state.featStats || !Number.isFinite(cps)) return;
+ const p = ensureProgress();
+ p.speed = pushProgressPoint(p.speed, { t: Date.now(), cps: cps }, 200);
+ }
+ function recordTcProgress(err) {
+ if (!state.featStats) return;
+ const p = ensureProgress();
+ p.tc = pushProgressPoint(p.tc, { t: Date.now(), err: Number(err) || 0 }, 200);
+ }
+
+ let shoeQuizPoints = [];
+ let shoeQuizAsked = {};
+ function armShoeQuizzes() {
+ shoeQuizPoints = [];
+ shoeQuizAsked = {};
+ if (!state.featShoeQuiz) return;
+ shoeQuizPoints = scheduleShoeQuizPoints(cardsDealtCount, cutCardIndex, state.shoeQuizFreq || '1', Math.random);
+ }
+ function maybeOfferShoeQuiz() {
+ const hit = shouldOfferShoeQuiz(!!state.featShoeQuiz, shoeQuizPoints, cardsDealtCount, shoeQuizAsked);
+ if (hit === false) return false;
+ shoeQuizAsked[hit] = true;
+ openCountQuiz(true);
+ return true;
+ }
+
+ function syncIndexPrompt() {
+ const el = document.getElementById('index-prompt');
+ if (!el) return;
+ const showBase = indexPromptShouldShow(!!state.featIndexPrompts, !!(state.featI18 || state.featFab4), true);
+ if (!showBase || phase !== 'playing' || !playerHands[activeHandIdx] || !dealerHand[0]) {
+ el.hidden = true;
+ el.textContent = '';
+ return;
+ }
+ const h = playerHands[activeHandIdx];
+ if (!h.cards || !h.cards.length || h.finished) { el.hidden = true; el.textContent = ''; return; }
+ const aceStand = splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard);
+ const dec = getOptimalDecision(h.cards, dealerHand[0].rank, {
+ canDouble: !aceStand && h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das),
+ canSplit: canSplitPair(h.cards, h.fromSplit, playerHands.length) && state.bankroll >= h.bet,
+ canSurrender: state.ls && h.cards.length === 2 && !h.fromSplit && playerHands.length === 1,
+ fromSplit: !!h.fromSplit,
+ splitAcesOneCard: state.splitAcesOneCard !== false,
+ useDeviations: !!(state.featI18 || state.featFab4),
+ useI18: !!state.featI18,
+ useFab4: !!state.featFab4,
+ tc: getTrueCount(),
+ rc: runningCount,
+ decks: state.decks
+ });
+ if (!indexPromptShouldShow(!!state.featIndexPrompts, !!(state.featI18 || state.featFab4), dec && dec.note)) {
+ el.hidden = true;
+ el.textContent = '';
+ return;
+ }
+ el.hidden = false;
+ el.textContent = formatIndexPrompt(dec.note, getTrueCount());
+ }
+
+ let clockTimer = null;
+ let noiseCtl = null;
+ function formatTableClock(d) {
+ const dt = d || new Date();
+ let h = dt.getHours(), m = dt.getMinutes(), s = dt.getSeconds();
+ const pad = n => (n < 10 ? '0' : '') + n;
+ return pad(h) + ':' + pad(m) + ':' + pad(s);
+ }
+ function stopDistractNoise() {
+ try { if (noiseCtl && noiseCtl.src) noiseCtl.src.stop(); } catch (e) {}
+ noiseCtl = null;
+ }
+ function startDistractNoise() {
+ if (noiseCtl) return;
+ try {
+ const AC = window.AudioContext || window.webkitAudioContext;
+ if (!AC) return;
+ const ctx = new AC();
+ const len = Math.max(1, ctx.sampleRate * 2);
+ const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+ const data = buf.getChannelData(0);
+ let last = 0;
+ for (let i = 0; i < len; i++) {
+ const white = Math.random() * 2 - 1;
+ last = (last + 0.02 * white) / 1.02;
+ data[i] = Math.max(-1, Math.min(1, last * 3.2));
+ }
+ const src = ctx.createBufferSource();
+ src.buffer = buf;
+ src.loop = true;
+ const gain = ctx.createGain();
+ gain.gain.value = 0.035;
+ src.connect(gain);
+ gain.connect(ctx.destination);
+ if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+ src.start();
+ noiseCtl = { src: src, ctx: ctx, gain: gain };
+ } catch (e) { noiseCtl = null; }
+ }
+ function syncDistractUI() {
+ const cell = document.getElementById('table-clock-cell');
+ const clock = document.getElementById('table-clock');
+ const on = !!(state.featDistract && (typeof activeTab === 'undefined' || activeTab === 'play'));
+ if (cell) cell.hidden = !on;
+ if (on && clock) clock.textContent = formatTableClock();
+ if (on && !clockTimer) {
+ clockTimer = setInterval(() => {
+ const c = document.getElementById('table-clock');
+ if (c) c.textContent = formatTableClock();
+ }, 1000);
+ }
+ if (!on && clockTimer) { clearInterval(clockTimer); clockTimer = null; }
+ const wantNoise = !!(state.featDistract && state.featDistractNoise && (typeof activeTab === 'undefined' || activeTab === 'play') && !(typeof document !== 'undefined' && document.hidden));
+ if (wantNoise) startDistractNoise();
+ else stopDistractNoise();
+ }
+
+ function exportTrainerData() {
+ const payload = buildExportPayload(state, new Date().toISOString());
+ const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+ const a = document.createElement('a');
+ a.href = URL.createObjectURL(blob);
+ a.download = 'bj-trainer-backup-' + String(payload.exportedAt || '').slice(0, 10) + '.json';
+ document.body.appendChild(a);
+ a.click();
+ setTimeout(() => { try { URL.revokeObjectURL(a.href); a.remove(); } catch (e) {} }, 500);
+ const st = document.getElementById('st-review-status');
+ if (st) st.textContent = 'Exported settings and stats to ' + a.download + '.';
+ return payload;
+ }
+ function importTrainerData(obj) {
+ const src = parseImportPayload(obj);
+ const migrated = migrateState(src);
+ state = migrated;
+ saveState();
+ if (typeof syncFeatureToggles === 'function') syncFeatureToggles();
+ if (typeof updateModeOptions === 'function') updateModeOptions();
+ if (typeof renderTable === 'function') renderTable();
+ if (typeof renderStatsTab === 'function') renderStatsTab();
+ if (typeof updateHud === 'function') updateHud();
+ if (typeof updateTopStats === 'function') updateTopStats();
+ if (typeof syncDistractUI === 'function') syncDistractUI();
+ const st = document.getElementById('st-review-status');
+ if (st) st.textContent = 'Imported settings and stats from the backup.';
+ return true;
+ }
+ function replayOneMistake(m) {
+ if (!m || !m.cards || !m.up) return;
+ reviewQueue = [m];
+ const sel = document.getElementById('mode-select');
+ if (sel) { sel.value = 'strat'; sel.dispatchEvent(new Event('change')); }
+ }
+ function renderMistakeList() {
+ const wrap = document.getElementById('st-mistake-list');
+ if (!wrap) return;
+ const list = (state.stats && state.stats.mistakes || []).slice().reverse().slice(0, 40);
+ if (!list.length) {
+ wrap.innerHTML = '<p class="feat-note">No mistakes logged yet. Wrong Table Play or Strategy Drill decisions, and graded bets, will appear here.</p>';
+ return;
+ }
+ wrap.innerHTML = list.map((m, i) => {
+ const when = m.t ? formatHistoryTime(m.t) : '';
+ const correct = m.action ? (typeof actionName === 'function' && m.kind !== 'bet' ? actionName(m.action) : String(m.action)) : '—';
+ const chose = m.chosen ? (typeof actionName === 'function' && m.kind !== 'bet' && m.chosen.length <= 2 ? actionName(m.chosen) : String(m.chosen)) : '—';
+ const canReplay = !!(m.cards && m.up);
+ const main = escapeHtml(m.key || 'Mistake');
+ return '<div class="mistake-row" data-idx="' + i + '"><div><div class="mr-main">' + main + '</div><div class="mr-meta">' + (when ? escapeHtml(when) + ' · ' : '') + 'You: ' + escapeHtml(String(chose)) + ' · Correct: ' + escapeHtml(String(correct)) + '</div></div>' + (canReplay ? '<button type="button" class="btn btn-sm js-replay-miss">Replay</button>' : '') + '</div>';
+ }).join('');
+ wrap.querySelectorAll('.js-replay-miss').forEach((btn, j) => {
+ btn.addEventListener('click', () => {
+ const replayable = list.filter(m => m.cards && m.up);
+ // buttons only exist on replayable rows; match by walking
+ const row = btn.closest('.mistake-row');
+ const allBtns = [...wrap.querySelectorAll('.js-replay-miss')];
+ const k = allBtns.indexOf(btn);
+ const m = list.filter(x => x.cards && x.up)[k];
+ if (m) replayOneMistake(m);
+ });
+ });
+ }
+ function drawLineChart(canvasId, points, yKey, label, emptyText) {
+ const cv = document.getElementById(canvasId);
+ if (!cv || !cv.getContext) return;
+ const ctx = cv.getContext('2d');
+ const w = cv.width, h = cv.height;
+ ctx.clearRect(0, 0, w, h);
+ ctx.fillStyle = 'rgba(0,0,0,0.25)';
+ ctx.fillRect(0, 0, w, h);
+ ctx.fillStyle = '#9bb0a6';
+ ctx.font = '13px sans-serif';
+ if (!points || points.length < 2) {
+ ctx.fillText(emptyText || 'Not enough data yet.', 16, h / 2);
+ return;
+ }
+ const ys = points.map(p => Number(p[yKey]) || 0);
+ const min = Math.min(...ys), max = Math.max(...ys);
+ const span = (max - min) || 1;
+ const pad = 8;
+ ctx.fillText(label, 10, 16);
+ ctx.strokeStyle = '#e5b94c';
+ ctx.lineWidth = 2;
+ ctx.beginPath();
+ points.forEach((pt, i) => {
+ const x = pad + (w - 2 * pad) * i / (points.length - 1);
+ const y = h - pad - (h - 2 * pad) * ((Number(pt[yKey]) - min) / span);
+ if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+ });
+ ctx.stroke();
+ }
+function startMistakeReview() {
  const list = (state.stats && state.stats.mistakes || []).filter(m => m.cards && m.up);
  if (!list.length) {
  const st = document.getElementById('st-review-status');
@@ -7080,7 +7483,7 @@
  };
  },
  setDealInstant(on) { qaDealInstant = !!on; return qaDealInstant; },
- setDealPace(p) { writePageSetting('play', 'dealPace', p || 'normal'); return state.dealPace; },
+ setDealPace(p) { writePageSetting('play', 'dealPace', p || 'normal'); if (typeof saveState === 'function') saveState(); return state.dealPace; },
  holdRound(on) { qaHoldRound = !!on; return qaHoldRound; },
  forceReshuffleOnNextDeal() { needsReshuffle = true; return true; },
  shoeShuffleNotice() { return shoeShuffleNotice || ''; },
@@ -7136,9 +7539,27 @@
  dealPace: state.dealPace,
  featLastRoundReview: !!state.featLastRoundReview,
  feedback: ((document.getElementById('play-feedback') || {}).textContent || ''),
- shoeShuffleNotice: shoeShuffleNotice || ''
+ shoeShuffleNotice: shoeShuffleNotice || '',
+ indexPrompt: ((document.getElementById('index-prompt') || {}).textContent || '').trim(),
+ clockVisible: !!(document.getElementById('table-clock-cell') && !document.getElementById('table-clock-cell').hidden),
+ noiseOn: !!(typeof noiseCtl !== 'undefined' && noiseCtl),
+ shoeQuizPoints: (typeof shoeQuizPoints !== 'undefined' && shoeQuizPoints && shoeQuizPoints.slice) ? shoeQuizPoints.slice() : [],
+ featIndexPrompts: !!state.featIndexPrompts,
+ featShoeQuiz: !!state.featShoeQuiz,
+ featDistract: !!state.featDistract
  };
- }
+ },
+ formatIndexPrompt: formatIndexPrompt,
+ indexPromptShouldShow: indexPromptShouldShow,
+ scheduleShoeQuizPoints: scheduleShoeQuizPoints,
+ shouldOfferShoeQuiz: shouldOfferShoeQuiz,
+ buildExportPayload: (st) => buildExportPayload(st || state, new Date().toISOString()),
+ parseImportPayload: parseImportPayload,
+ armShoeQuizAt(n) { shoeQuizPoints = [n]; shoeQuizAsked = {}; state.featShoeQuiz = true; return shoeQuizPoints; },
+ setPlayFlag(k, v) { writePageSetting('play', k, v); if (typeof saveState === 'function') saveState(); if (k === 'featIndexPrompts' && typeof syncIndexPrompt === 'function') syncIndexPrompt(); if ((k === 'featDistract' || k === 'featDistractNoise') && typeof syncDistractUI === 'function') syncDistractUI(); if (typeof syncFeatureToggles === 'function') syncFeatureToggles(); return state[k]; },
+ setRunningCount(n) { runningCount = Number(n) || 0; if (typeof updateHud === 'function') updateHud(); if (typeof syncIndexPrompt === 'function') syncIndexPrompt(); return runningCount; },
+ exportData() { return exportTrainerData(); },
+ importData(obj) { return importTrainerData(obj); }
  };
  }
 
@@ -7237,14 +7658,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v14-0-3')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v14-1')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v14-0-3', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v14-1', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-0-3'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-1'); } catch (e) {} }, 2500);
   });
 }
 </script>
