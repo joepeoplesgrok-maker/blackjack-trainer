@@ -3,7 +3,7 @@
 A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Strategy, Hi-Lo card counting, Illustrious 18 & Fab 4 deviations, and optimal bet sizing across 1, 2 (Double Deck), 4, 6, and 8-deck shoes.
 
 ## Features
-- **Table Play**: Full Blackjack with CSPRNG Fisher-Yates shuffling, burn card, deck-accurate penetration, exact $0.50 payouts, Insurance / Even Money, Late Surrender, live Count HUD, and Strategy/Deviation Coach.
+- **Table Play**: Full Blackjack with CSPRNG Fisher-Yates shuffling, a face-down burn card (uncounted), deck-accurate penetration, exact $0.50 payouts, Insurance / Even Money, Late Surrender, live Count HUD, and Strategy/Deviation Coach. Cards are dealt one at a time in casino order (first base to third base, then the dealer, hole card down). You can sit first base through third base when other seats are on. Busted hands are swept immediately; the round is swept at the end unless Last-round review is on.
 - **Speed Count**: 52-card Hi-Lo flashcard drill (1, 2, or 3 cards at a time; manual or auto-deal). Best time and cards/sec are saved.
 - **Strategy Drill**: Rapid-fire Basic Strategy and Illustrious 18 / Fab 4 trainer, with an optional countdown per decision.
 - **Charts**: Dynamic deck-accurate strategy cards (2D, 6D, 8D) and the Hi-Lo / Kelly / Wonging reference.
@@ -21,7 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
-## Feature guide (v13.3)
+## Feature guide (v14)
+
+v14.0 adds realistic Table Play dealing and seat choice on top of every v13.3 feature. Cards appear in place at a per-page **Deal pace** (Instant / Fast / Normal / Slow; Normal by default; instant when the device requests reduced motion). Deal order is left to right, first base to third base, then the dealer, twice, with the hole card face down and uncounted until the dealer’s turn. Pick **Your seat** when other players are at the table; they act in seat order with basic strategy. Busts are swept at once, and the whole layout is swept at the end of the round so you have to count while the cards are visible. **Last-round review** (off by default) keeps the finished hands until the next Deal — the v13.3 linger. A hidden **#selftest** page runs shoe-composition, strategy, deal-order, burn, and hole-card checks for this build. Features 4–9 (mistake replay, progress charts, random TC quizzes, index prompts, distraction mode, and export/import) are not in 14.0 and will follow as v14.x. Feature 5 from the original roadmap (RSA / 6:5 / early surrender) is still not in the app.
+
 
 v13.3 fixes Jerry's v13.2 QA bugs: per-page Settings now hide options that don't belong on that page; Speed Count keeps accumulated run time across pauses and at shoe end (and only then records Best); Apply to all no longer rebuilds the Table shoe unless Play's decks actually change; Strategy and Risk settings show their own values.
 
@@ -75,6 +78,14 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v14
+- Table Play deals one card at a time in casino order (first base → third base → dealer, two rounds). The hole card stays face down and uncounted until it is revealed. The burn card after a shuffle stays unseen and is never counted.
+- **Deal pace** (Table Play Settings): Instant, Fast, Normal (default), or Slow. Cards simply appear; there is no flip, slide, or 3D motion.
+- **Your seat** (first base through third base) when other seats are on. Other players act in that order with basic strategy, before and/or after you.
+- Busted hands are swept immediately. At the end of the round every hand is swept unless **Last-round review** is on (that restores the v13.3 “cards stay until Deal” behavior).
+- Hidden `#selftest` page (not in the mode menu) runs composition, strategy, deal-order, burn, and hole-card checks.
+- All v13.3 modes, drills, per-page settings, Apply to all, and the Speed Count Ready / Start / Deal flow are unchanged. Service worker cache bumped to `bj-trainer-v14`.
 
 ### v13.3
 - Per-page Settings only show the current page's options (`[hidden]` is no longer overridden by `display: grid`). A control that does not belong on the page cannot write Table Play values.

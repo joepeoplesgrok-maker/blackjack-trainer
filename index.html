@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v13.3</title>
+<title>Blackjack & Card Counting Trainer Pro v14</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -1260,6 +1260,26 @@
  padding: 2px 0 4px;
  }
  .other-seats[hidden] { display: none !important; }
+ .table-seats { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 6px; width: 100%; }
+ .table-seat { background: rgba(0,0,0,0.25); border: 1px solid var(--panel-border); border-radius: 8px; padding: 3px 6px 5px; min-width: 0; flex: 1 1 90px; max-width: 100%; }
+ .table-seat.you { border-color: var(--gold); background: rgba(20, 28, 18, 0.45); flex: 1 1 140px; }
+ .table-seat.acting { outline: 1px solid rgba(212,175,55,0.45); }
+ .table-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; }
+ .table-seat.you .os-label { color: var(--gold); font-weight: 700; }
+ .table-seat.swept .cards-row { min-height: 0; }
+ .table-seat .swept-note, .swept-note { font-size: 0.62rem; color: var(--muted); text-align: center; font-style: italic; padding: 4px 0; }
+ .seat-picker { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 4px 0 6px; }
+ .seat-picker[hidden] { display: none !important; }
+ .seat-picker .sp-lab { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+ .seat-pick { font-size: 0.72rem; padding: 6px 8px; min-height: 36px; border: 1px solid var(--panel-border); background: rgba(0,0,0,0.25); color: var(--text); border-radius: 8px; cursor: pointer; }
+ .seat-pick.you { border-color: var(--gold); color: var(--gold); font-weight: 700; }
+ #selftest-panel { display: none; padding: 12px 14px 24px; max-width: 820px; margin: 0 auto; }
+ #selftest-panel.open { display: block; }
+ #selftest-panel h2 { font-size: 1.05rem; margin: 0 0 8px; }
+ #selftest-results { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.78rem; line-height: 1.45; white-space: pre-wrap; }
+ #selftest-results .ok { color: #7dcea0; }
+ #selftest-results .fail { color: #e07a7a; }
+ .last-round-flag { font-size: 0.68rem; color: var(--gold); text-align: center; letter-spacing: 0.3px; margin: 0 0 4px; }
  .other-seat {
  background: rgba(0,0,0,0.25);
  border: 1px solid var(--panel-border);
@@ -1562,7 +1582,11 @@
  </div>
 
  <div id="heat-hint" class="heat-hint" role="status"></div>
- <div id="other-seats" class="other-seats" hidden></div>
+ <div id="seat-picker" class="seat-picker" hidden>
+  <span class="sp-lab">Your seat</span>
+  <div id="seat-picker-btns" class="row" style="gap:6px;flex-wrap:wrap;justify-content:center;"></div>
+ </div>
+ <div id="other-seats" class="other-seats table-seats" hidden></div>
  <div class="table-stage" id="table-stage">
  <div id="live-tray" class="live-tray">
  <button type="button" class="live-tray-btn" id="live-tray-btn" aria-label="Estimate decks remaining from the shoe and discard bars">
@@ -2029,9 +2053,19 @@
  </details>
 
  <details class="guide-block">
+ <summary>Realistic dealing, your seat, and the sweep</summary>
+ <div class="guide-block-body">
+ <p>Table Play deals the way a pit does: one card at a time, left to right from <strong>first base</strong> to <strong>third base</strong>, then the dealer, then the same order again. The dealer’s hole card stays face down and is not counted until the dealer’s turn (or a blackjack peek). After every shuffle, one card is burned face down — it is unseen and is never added to the running count.</p>
+ <p>Cards simply appear at the deal pace you set in Table Play Settings (<strong>Instant</strong>, <strong>Fast</strong>, <strong>Normal</strong>, or <strong>Slow</strong>). There is no flipping, sliding, or 3D motion. Instant is the old v13 feel; Normal is the default table pace. If your device asks to reduce motion, dealing is instant.</p>
+ <p>When other seats are on, pick <strong>Your seat</strong> (first base through third base). Other players act in that same seat order with basic strategy — seats to your right (first base side) act before you; seats to your left act after you, then the dealer.</p>
+ <p>When any player busts, that hand’s cards are swept immediately so you have to count them while they are on the felt. At the end of the round every hand is swept the same way. Turn on <strong>Last-round review</strong> (off by default) if you want the finished hands to stay visible until you press Deal, which is how v13.3 behaved.</p>
+ </div>
+ </details>
+
+ <details class="guide-block">
  <summary>Other seats and heat hints</summary>
  <div class="guide-block-body">
- <p>You can add 1–6 other seats that play <strong>basic strategy</strong> from the same shoe. Their cards are dealt and counted in the running count, which changes true counts and penetration the way a full table does. They do not use deviations and do not affect your bankroll.</p>
+ <p>You can add 1–6 other seats that play <strong>basic strategy</strong> from the same shoe. Their cards are dealt and counted in the running count, which changes true counts and penetration the way a full table does. They do not use deviations and do not affect your bankroll. Choose <strong>Your seat</strong> so you can practice first base or third base. Deal and action order always run first base → third base → dealer.</p>
  <p><strong>Heat hints</strong> are educational only. If a bet jumps more than 2×, or you leap from a small bet to the top of the spread, you will see a reminder that ramping with the count is quieter than jumping after a win or loss. Nothing is blocked.</p>
  </div>
  </details>
@@ -2063,7 +2097,9 @@
  <li><strong>Speed Count mode</strong> and <strong>Strategy Drill mode</strong> — show or hide those modes in the header menu.</li>
  <li><strong>Timed decisions</strong> — countdown in Strategy Drill; a timeout is scored as a miss. <strong>Seconds per decision</strong> sets the limit.</li>
  <li><strong>Stats</strong> and <strong>Risk Tools</strong> — show or hide those modes and (for Stats) stop logging.</li>
- <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count.</li>
+ <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count. <strong>Your seat</strong> places you at first base through third base.</li>
+ <li><strong>Deal pace</strong> — Instant, Fast, Normal (default), or Slow. Cards appear in place; nothing animates.</li>
+ <li><strong>Last-round review</strong> (off by default) — keep the finished hands on the felt until the next Deal. Off: cards are swept at the end of the round (and at once on a bust).</li>
  <li><strong>Heat hints</strong> — an educational warning when a bet jumps more than 2× or leaps from a small wager to the top of the spread.</li>
  <li><strong>Show card totals</strong> (on by default) — the total pills next to the dealer, your hand, every split hand, and other seats. Turn it off to practice adding the cards yourself. Busts and blackjacks are still announced; the coach will not name the total. Tap a hidden total to peek at it for the rest of the round.</li>
  </ul>
@@ -2074,6 +2110,17 @@
 </main>
 
 <!-- Settings Modal -->
+
+<div id="selftest-panel" hidden>
+ <h2>Hidden self-test</h2>
+ <p class="feat-note">This page is not in the mode menu. It runs shoe-composition, strategy, deal-order, burn-card, and hole-card checks for this build. Close it by leaving <code>#selftest</code> in the address bar.</p>
+ <div class="row" style="gap:8px;margin:8px 0 12px;flex-wrap:wrap;">
+  <button type="button" class="btn btn-gold" id="btn-run-selftest">Run checks</button>
+  <button type="button" class="btn" id="btn-close-selftest">Close</button>
+ </div>
+ <div id="selftest-results" role="status">Checks have not been run yet.</div>
+</div>
+
 <div class="modal-backdrop" id="settings-modal">
  <div class="modal">
  <div class="row between" style="margin-bottom:8px;">
@@ -2223,7 +2270,21 @@
  <option value="6">6</option>
  </select>
  </div>
- <div class="setting-row" data-settings-pages="play"><span class="lbl">Heat hints (educational)</span><input type="checkbox" id="feat-heat" aria-label="Enable heat hints"></div>
+ <div class="setting-row" data-settings-pages="play"><span class="lbl">Your seat</span>
+<select id="opt-player-seat" aria-label="Your seat at the table">
+<option value="0" selected>First base</option>
+</select>
+</div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Deal pace</span>
+<select id="opt-deal-pace" aria-label="Table deal pace">
+<option value="instant">Instant (no pause)</option>
+<option value="fast">Fast</option>
+<option value="normal" selected>Normal (table pace)</option>
+<option value="slow">Slow</option>
+</select>
+</div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Last-round review (keep cards until next Deal)</span><input type="checkbox" id="feat-last-round-review" aria-label="Keep last round cards visible until the next deal"></div>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Heat hints (educational)</span><input type="checkbox" id="feat-heat" aria-label="Enable heat hints"></div>
  <div class="ins-grid" style="margin-top:10px;" data-settings-pages="play,stats,app">
  <button class="btn" id="btn-reset-stats" type="button">Reset stats &amp; logs</button>
  </div>
@@ -2396,7 +2457,7 @@
 
 
  const PAGE_SETTING_KEYS = {
- play: ['decks','s17','das','ls','splitAcesOneCard','betStrat','showHud','showTags','coach','featI18','featFab4','featIns','tcRounding','featBetRamp','featBetGrade','unitSize','spreadMin','spreadMax','featQuiz','quizInterval','featLiveTray','featShowExactDecks','featShowTotals','deckEstInterval','featDeckEst','featSeats','otherSeats','featHeat'],
+ play: ['decks','s17','das','ls','splitAcesOneCard','betStrat','showHud','showTags','coach','featI18','featFab4','featIns','tcRounding','featBetRamp','featBetGrade','unitSize','spreadMin','spreadMax','featQuiz','quizInterval','featLiveTray','featShowExactDecks','featShowTotals','deckEstInterval','featDeckEst','featSeats','otherSeats','playerSeat','dealPace','featLastRoundReview','featHeat'],
  speed: ['decks','batch','mode','interval','showTags','featDeckEst'],
  strat: ['decks','s17','das','ls','splitAcesOneCard','featI18','featFab4','featIns','featTimed','decisionSec'],
  charts: ['decks','s17','das','ls','splitAcesOneCard'],
@@ -2406,7 +2467,7 @@
  guide: []
  };
  const PAGE_SETTING_LABELS = { play: 'Table Play', speed: 'Speed Count', strat: 'Strategy Drill', charts: 'Charts', stats: 'Stats', risk: 'Risk Tools', history: 'Hand History', guide: 'How It Works' };
- const SETTING_KEY_LABELS = { decks: 'Decks', s17: 'Dealer soft 17', das: 'DAS', ls: 'Late surrender', splitAcesOneCard: 'Split aces one card', betStrat: 'Betting strategy', showHud: 'Count HUD', showTags: 'Hi-Lo tags', coach: 'Live coach', featI18: 'Illustrious 18', featFab4: 'Fab 4', featIns: 'Insurance index', tcRounding: 'True-count rounding', featBetRamp: 'Bet ramp', featBetGrade: 'Grade bets', unitSize: 'Unit size', spreadMin: 'Spread min', spreadMax: 'Spread max', featQuiz: 'Count quizzes', quizInterval: 'Quiz frequency', featLiveTray: 'Live shoe bars', featShowExactDecks: 'Exact decks', featShowTotals: 'Card totals', deckEstInterval: 'Deck-estimate prompt', featDeckEst: 'Deck-estimate drill', featSeats: 'Other seats', otherSeats: 'Other-seat count', featHeat: 'Heat hints', featTimed: 'Timed decisions', decisionSec: 'Seconds per decision', batch: 'Cards per step', mode: 'Deal mode', interval: 'Auto interval' };
+ const SETTING_KEY_LABELS = { decks: 'Decks', s17: 'Dealer soft 17', das: 'DAS', ls: 'Late surrender', splitAcesOneCard: 'Split aces one card', betStrat: 'Betting strategy', showHud: 'Count HUD', showTags: 'Hi-Lo tags', coach: 'Live coach', featI18: 'Illustrious 18', featFab4: 'Fab 4', featIns: 'Insurance index', tcRounding: 'True-count rounding', featBetRamp: 'Bet ramp', featBetGrade: 'Grade bets', unitSize: 'Unit size', spreadMin: 'Spread min', spreadMax: 'Spread max', featQuiz: 'Count quizzes', quizInterval: 'Quiz frequency', featLiveTray: 'Live shoe bars', featShowExactDecks: 'Exact decks', featShowTotals: 'Card totals', deckEstInterval: 'Deck-estimate prompt', featDeckEst: 'Deck-estimate drill', featSeats: 'Other seats', otherSeats: 'Other-seat count', playerSeat: 'Your seat', dealPace: 'Deal pace', featLastRoundReview: 'Last-round review', featHeat: 'Heat hints', featTimed: 'Timed decisions', decisionSec: 'Seconds per decision', batch: 'Cards per step', mode: 'Deal mode', interval: 'Auto interval' };
 
  function defaultPageSettings() {
  return {
@@ -2545,6 +2606,176 @@
  function playDecksChanged(prevDecks, nextDecks) {
  return Number(prevDecks) !== Number(nextDecks);
  }
+ const DEAL_PACE_MS = { instant: 0, off: 0, fast: 200, normal: 450, slow: 800 };
+ function dealPaceMs(pace, opts) {
+ if (opts && (opts.instant || opts.reducedMotion)) return 0;
+ if (pace === 0 || pace === 'instant' || pace === 'off') return 0;
+ if (typeof pace === 'number' && isFinite(pace)) return Math.max(0, pace | 0);
+ return DEAL_PACE_MS[pace] != null ? DEAL_PACE_MS[pace] : DEAL_PACE_MS.normal;
+ }
+ function clampPlayerSeat(playerSeat, otherSeats) {
+ const n = Math.max(0, Math.min(6, otherSeats | 0));
+ let seat = playerSeat | 0;
+ if (seat < 0) seat = 0;
+ if (seat > n) seat = n;
+ return { otherSeats: n, totalSeats: n + 1, playerSeat: seat };
+ }
+ function seatBaseLabel(index, totalSeats) {
+ if (totalSeats <= 1) return 'You';
+ if (index === 0) return 'First base';
+ if (index === totalSeats - 1) return 'Third base';
+ if (totalSeats === 3 && index === 1) return 'Middle';
+ return 'Seat ' + (index + 1);
+ }
+ function tableSeatLayout(otherSeats, playerSeat) {
+ const c = clampPlayerSeat(playerSeat, otherSeats);
+ const seats = [];
+ let otherIndex = 0;
+ for (let i = 0; i < c.totalSeats; i++) {
+ if (i === c.playerSeat) seats.push({ index: i, role: 'player', otherIndex: -1, label: seatBaseLabel(i, c.totalSeats), you: true });
+ else seats.push({ index: i, role: 'other', otherIndex: otherIndex++, label: seatBaseLabel(i, c.totalSeats), you: false });
+ }
+ return seats;
+ }
+ function casinoDealSequence(seatCount) {
+ const n = Math.max(1, seatCount | 0);
+ const seq = [];
+ for (let round = 1; round <= 2; round++) {
+ for (let i = 0; i < n; i++) seq.push({ target: 'seat', seatIndex: i, round: round, hole: false });
+ seq.push({ target: 'dealer', seatIndex: -1, round: round, hole: round === 2 });
+ }
+ return seq;
+ }
+ function assignDealCards(cardsFromTop, seatCount) {
+ const seq = casinoDealSequence(seatCount);
+ const seats = Array.from({ length: Math.max(1, seatCount | 0) }, () => []);
+ const dealer = [];
+ for (let i = 0; i < seq.length; i++) {
+ const step = seq[i];
+ const c = cardsFromTop[i];
+ if (!c) break;
+ if (step.target === 'dealer') dealer.push({ card: c, hole: !!step.hole });
+ else seats[step.seatIndex].push(c);
+ }
+ return { seats: seats, dealer: dealer, steps: seq };
+ }
+ function burnCardAffectsRunningCount() { return false; }
+ function holeCardAffectsRunningCount(revealed) { return !!revealed; }
+ function shouldSweepOnBust(isBust) { return !!isBust; }
+ function shouldLingerLastRound(featLastRoundReview, holdRound) {
+ return !!(featLastRoundReview || holdRound);
+ }
+ function v13ParityKeys() {
+ return {
+ storageKey: 'bj_trainer_v7',
+ speedKeys: ['decks','batch','mode','interval','showTags','featDeckEst'],
+ modes: ['play','speed','strat','charts','stats','risk','history','guide'],
+ speedStartHint: 'Press Start when ready'
+ };
+ }
+ function runSelfTestChecks() {
+ const tests = [];
+ const add = (name, fn) => {
+ try {
+ const detail = fn();
+ tests.push({ name: name, ok: true, detail: detail == null ? 'ok' : String(detail) });
+ } catch (e) {
+ tests.push({ name: name, ok: false, detail: (e && e.message) ? e.message : String(e) });
+ }
+ };
+ [1, 2, 4, 6, 8].forEach(d => {
+ add('composition ' + d + 'D unshuffled pack', () => {
+ const shoe = makeUnshuffledShoe(d);
+ const issues = compositionIssues(shoe, d);
+ if (issues.length) throw new Error(issues.join('; '));
+ if (hiLoSum(shoe) !== 0) throw new Error('full-shoe Hi-Lo is not 0');
+ return shoe.length + ' cards, Hi-Lo 0';
+ });
+ add('burn card unseen in ' + d + 'D shoe', () => {
+ const shoe = makeUnshuffledShoe(d);
+ const burn = shoe.pop();
+ const pack = shoe.concat([burn]);
+ const issues = compositionIssues(pack, d);
+ if (issues.length) throw new Error(issues.join('; '));
+ if (hiLoSum(shoe) + hiLoValue(burn.rank) !== 0) throw new Error('burn broke pack Hi-Lo');
+ if (burnCardAffectsRunningCount()) throw new Error('burn must not count');
+ return (burn.rank || '?') + ' burned, uncounted';
+ });
+ });
+ add('casino deal order: first base to third base, then dealer, two rounds', () => {
+ const seq = casinoDealSequence(3);
+ if (seq.length !== 8) throw new Error('expected 8 steps, got ' + seq.length);
+ const want = ['seat0','seat1','seat2','dealer','seat0','seat1','seat2','dealer-hole'];
+ const got = seq.map(s => s.target === 'dealer' ? (s.hole ? 'dealer-hole' : 'dealer') : ('seat' + s.seatIndex));
+ if (got.join(',') !== want.join(',')) throw new Error(got.join(','));
+ const cards = [1,2,3,4,5,6,7,8];
+ const asg = assignDealCards(cards, 3);
+ if (asg.seats[0].join() !== '1,5' || asg.seats[2].join() !== '3,7') throw new Error('seat cards ' + JSON.stringify(asg.seats));
+ if (!asg.dealer[1].hole || asg.dealer[0].card !== 4 || asg.dealer[1].card !== 8) throw new Error('dealer cards');
+ return got.join(' → ');
+ });
+ add('player at third base is dealt third', () => {
+ const layout = tableSeatLayout(2, 2);
+ if (!layout[2].you || layout[0].label !== 'First base' || layout[2].label !== 'Third base') throw new Error(JSON.stringify(layout));
+ const c = clampPlayerSeat(9, 2);
+ if (c.playerSeat !== 2) throw new Error('clamp failed');
+ return 'first / middle / you';
+ });
+ add('hole card stays uncounted until revealed', () => {
+ if (holeCardAffectsRunningCount(false)) throw new Error('hidden hole must not count');
+ if (!holeCardAffectsRunningCount(true)) throw new Error('revealed hole must count');
+ return 'hidden out, revealed in';
+ });
+ add('busts are swept; last-round review is optional', () => {
+ if (!shouldSweepOnBust(true) || shouldSweepOnBust(false)) throw new Error('sweep rule');
+ if (shouldLingerLastRound(false, false)) throw new Error('default must not linger');
+ if (!shouldLingerLastRound(true, false) || !shouldLingerLastRound(false, true)) throw new Error('review/hold');
+ return 'bust sweeps; review opt-in';
+ });
+ add('deal pace: instant 0, normal 450, reduced-motion 0', () => {
+ if (dealPaceMs('instant') !== 0 || dealPaceMs('normal') !== 450 || dealPaceMs('slow') !== 800) throw new Error('pace map');
+ if (dealPaceMs('normal', { reducedMotion: true }) !== 0) throw new Error('reduced motion');
+ return 'ok';
+ });
+ const spots = [
+ { hand: ['10','6'], up: '10', expect: 'H', name: 'hard 16 vs 10 hits' },
+ { hand: ['A','A'], up: '6', expect: 'P', name: 'pair aces vs 6 splits' },
+ { hand: ['5','6'], up: '5', expect: 'D', name: '11 vs 5 doubles' },
+ { hand: ['A','6'], up: '3', expect: 'D', name: 'soft 17 vs 3 doubles', s17: true },
+ { hand: ['10','6'], up: '10', expect: 'S', name: '16 vs 10 stands at TC >= 0 (I18)', i18: true, tc: 0 }
+ ];
+ spots.forEach(sp => {
+ add(sp.name, () => {
+ const cards = sp.hand.map((r, i) => ({ rank: r, suit: SUITS[i % 4] }));
+ const canSplit = cards.length === 2 && normalizeRank(cards[0].rank) === normalizeRank(cards[1].rank);
+ const dec = getOptimalDecision(cards, sp.up, {
+ canDouble: true,
+ canSplit: canSplit,
+ canSurrender: !!sp.surr,
+ useDeviations: !!sp.i18,
+ useI18: !!sp.i18,
+ useFab4: false,
+ tc: sp.tc != null ? sp.tc : 0,
+ rc: sp.tc != null ? sp.tc : 0,
+ decks: 6,
+ s17Override: sp.s17 !== undefined ? sp.s17 : true
+ });
+ if (dec.action !== sp.expect) throw new Error('got ' + dec.action + ' expected ' + sp.expect);
+ return dec.action;
+ });
+ });
+ add('v13 parity: storage key and Speed keys stay the same', () => {
+ const p = v13ParityKeys();
+ if (p.storageKey !== 'bj_trainer_v7') throw new Error(p.storageKey);
+ const got = (PAGE_SETTING_KEYS.speed || []).join(',');
+ if (got !== p.speedKeys.join(',')) throw new Error(got);
+ if (PAGE_SETTING_KEYS.play.indexOf('dealPace') === -1) throw new Error('missing dealPace on play');
+ if (PAGE_SETTING_KEYS.speed.indexOf('dealPace') !== -1) throw new Error('dealPace leaked to speed');
+ return p.storageKey;
+ });
+ return tests;
+ }
+
  function pageForSettingWrite(page, key) {
  const keys = PAGE_SETTING_KEYS[page] || [];
  return keys.indexOf(key) !== -1 ? page : null;
@@ -2580,7 +2811,7 @@
  sdBest: 0,
  speedBestCps: 0,
  speedBestMs: 0,
- schemaVersion: 10,
+ schemaVersion: 11,
  pageSettings: defaultPageSettings(),
  featI18: true,
  featFab4: true,
@@ -2606,6 +2837,9 @@
  spreadMax: 12,
  decisionSec: 5,
  otherSeats: 0,
+ playerSeat: 0,
+ dealPace: 'normal',
+ featLastRoundReview: false,
  handHistory: [],
  lastMode: 'play',
  historyShoeId: 0,
@@ -2619,7 +2853,10 @@
  if (saved.featI18 === undefined && saved.devCoach === 'basic') {
  s.featI18 = false; s.featFab4 = false; s.featIns = false;
  }
- s.schemaVersion = 10;
+ s.schemaVersion = 11;
+ if (saved.dealPace === undefined) s.dealPace = 'normal';
+ if (saved.playerSeat === undefined) s.playerSeat = 0;
+ if (saved.featLastRoundReview === undefined) s.featLastRoundReview = false;
  if (saved.featLiveTray === undefined) s.featLiveTray = true;
  if (saved.featShowExactDecks === undefined) s.featShowExactDecks = false;
  if (saved.featShowTotals === undefined) s.featShowTotals = true;
@@ -3279,9 +3516,16 @@
  if (bet <= 0) { bankroll += 10000; continue; }
  bankroll = roundMoney(bankroll - bet);
 
- const others = [];
- for (let s = 0; s < otherSeats; s++) others.push([draw(true), draw(true)]);
- const p1 = draw(true), d1 = draw(true), p2 = draw(true), d2 = draw(false);
+ const pSeat = clampPlayerSeat((opts && opts.playerSeat) || 0, otherSeats).playerSeat;
+ const seatCards = Array.from({ length: otherSeats + 1 }, () => []);
+ let d1, d2;
+ for (let round = 0; round < 2; round++) {
+ for (let i = 0; i < seatCards.length; i++) seatCards[i].push(draw(true));
+ if (round === 0) d1 = draw(true);
+ else d2 = draw(false);
+ }
+ const p1 = seatCards[pSeat][0], p2 = seatCards[pSeat][1];
+ const others = seatCards.filter((_, i) => i !== pSeat);
  const dealer = [d1, d2];
  let ins = 0;
  const pEv0 = evalHand([p1, p2]);
@@ -3307,15 +3551,7 @@
  rounds++;
  continue;
  }
- // Other seats play basic (no deviations)
- const savedI18 = useI18, savedFab = useFab4;
- // temporarily play others with deviations off via flags in this closure — call getOptimalDecision with useI18 false
- const _useI18 = useI18, _useFab4 = useFab4;
- // play others
- others.forEach(cards => {
- // local play with deviations off
- const tmpUse = { i: useI18, f: useFab4 };
- // inline mini play
+ function playOtherBasic(cards) {
  let hCards = cards.slice();
  let guard = 0;
  while (guard++ < 20) {
@@ -3334,14 +3570,17 @@
  }
  break;
  }
- });
+ }
+ seatCards.forEach((cards, i) => { if (i < pSeat) playOtherBasic(cards); });
  // Player plays
  // Play player; deduct extra stake for splits/doubles as they happen via a hook on bet growth
  const playerHands = playHand([p1, p2], d1, bet, false);
  // Deduct any stake beyond the original bet (splits and doubles)
  const totalStake = playerHands.reduce((s, h) => s + h.bet, 0);
  bankroll = roundMoney(bankroll - (totalStake - bet));
- const anyLive = playerHands.some(h => !h.surrendered && !evalHand(h.cards).isBust);
+ seatCards.forEach((cards, i) => { if (i > pSeat) playOtherBasic(cards); });
+ const anyLive = playerHands.some(h => !h.surrendered && !evalHand(h.cards).isBust) ||
+ seatCards.some((cards, i) => i !== pSeat && !evalHand(cards).isBust);
  rc += hiLoValue(d2.rank); seen.push(d2);
  if (anyLive) {
  let dEv = evalHand(dealer);
@@ -3776,7 +4015,7 @@
  let lastSuggestedAmount = 25;
 
  function refundInFlightBetsIfAny() {
- if (phase === 'playing' || phase === 'insurance') {
+ if (phase === 'playing' || phase === 'insurance' || phase === 'dealing' || phase === 'others' || phase === 'dealer') {
  let refund = insuranceBet;
  playerHands.forEach(h => { if (!h.surrendered) refund = roundMoney(refund + h.bet); });
  state.bankroll = roundMoney(state.bankroll + refund);
@@ -3785,9 +4024,14 @@
  }
 
  function resetTableAndBuildShoe(customSeed = '', msg = '') {
+ if (typeof clearTableTimer === 'function') clearTableTimer();
  refundInFlightBetsIfAny();
  dealerHand = [];
  playerHands = [];
+ otherSeatHands = [];
+ dealerSwept = false;
+ lastRoundActive = false;
+ actingSeatIndex = -1;
  phase = 'betting';
  insuranceBet = 0;
  isEvenMoneyOffer = false;
@@ -4038,7 +4282,7 @@
 
  function drawCard(countImmediately = true) {
  if (shoe.length === 0) {
- const midHand = (phase === 'playing' || phase === 'insurance' || phase === 'dealer');
+ const midHand = (phase === 'playing' || phase === 'insurance' || phase === 'dealer' || phase === 'dealing' || phase === 'others');
  // Casino practice is to finish the current hand, then shuffle. If the shoe is
  // exhausted mid-hand anyway, cut a fresh shoe to finish dealing. The running
  // count resets for the new shoe; cards already on the table (including a hidden
@@ -4234,10 +4478,17 @@
  renderOtherSeats();
  const dContainer = document.getElementById('dealer-cards');
  dContainer.innerHTML = '';
+ if (dealerSwept) {
+ const note = document.createElement('div');
+ note.className = 'swept-note';
+ note.textContent = 'Swept';
+ dContainer.appendChild(note);
+ } else {
  dealerHand.forEach((c, idx) => {
  const hidden = holeHidden && idx === 1;
  dContainer.appendChild(createCardEl(c, { hidden, showTag: state.showTags }));
  });
+ }
  const dScoreEl = document.getElementById('dealer-score');
  if (dealerHand.length === 0) {
  applyScorePill(dScoreEl, '--', 'hand-score', 'dealer', null);
@@ -4262,6 +4513,12 @@
 
  const pContainer = document.getElementById('player-hands');
  pContainer.innerHTML = '';
+ if (lastRoundActive && phase === 'done' && !multiSeatOn()) {
+ const flag = document.createElement('div');
+ flag.className = 'last-round-flag';
+ flag.textContent = 'Last round — cards stay until Deal';
+ pContainer.appendChild(flag);
+ }
  playerHands.forEach((h, idx) => {
  const box = document.createElement('div');
  box.className = 'player-hand-box' + (phase === 'playing' && idx === activeHandIdx ? ' active-hand' : '');
@@ -4285,10 +4542,17 @@
  }
  box.appendChild(header);
 
+ if (h.swept) {
+ const note = document.createElement('div');
+ note.className = 'swept-note';
+ note.textContent = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
+ box.appendChild(note);
+ } else {
  const row = document.createElement('div');
  row.className = 'cards-row overlap';
  h.cards.forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
  box.appendChild(row);
+ }
 
  const shell = document.createElement('div');
  shell.className = 'player-hand-shell';
@@ -4342,15 +4606,21 @@
  }
 
  function startDeal() {
+ if (phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer') return;
+ if (typeof clearTableTimer === 'function') clearTableTimer();
+ lastRoundActive = false;
+ dealerSwept = false;
+ actingSeatIndex = -1;
  if (typeof clearRevealedTotals === 'function') clearRevealedTotals();
  if (state.bet <= 0) { setFeedback('Add chips to place a bet first.', 'warn'); return; }
  if (state.bet > state.bankroll) { setFeedback('Not enough bankroll for that bet.', 'warn'); return; }
 
+ const shuffled = !!needsReshuffle;
  if (needsReshuffle) {
  buildShoe();
- setFeedback(`Cut card reached — fresh ${state.decks}D shoe shuffled (1 burned). RC = 0.`, 'info');
+ setFeedback('Cut card reached — fresh ' + state.decks + 'D shoe shuffled (1 burned, unseen). RC = 0. Dealing…', 'info');
  } else {
- setFeedback('Your turn.', '');
+ setFeedback('Dealing…', '');
  }
 
  maybeShowHeat(state.lastBet, state.bet);
@@ -4361,23 +4631,51 @@
  insuranceBet = 0;
  isEvenMoneyOffer = false;
  holeHidden = true;
- dealOtherSeats();
 
- const p1 = drawCard(true);
- const d1 = drawCard(true);
- const p2 = drawCard(true);
- const d2 = drawCard(false);
-
- dealerHand = [d1, d2];
- holeCardShoeId = d2.shoeId || currentShoeId;
- playerHands = [{ cards: [p1, p2], bet: state.bet, doubled: false, fromSplit: false, surrendered: false, finished: false, result: '', resultText: '' }];
+ const layout = currentTableLayout();
+ playerHands = [{ cards: [], bet: state.bet, doubled: false, fromSplit: false, surrendered: false, finished: false, result: '', resultText: '', swept: false }];
+ otherSeatHands = layout.filter(s => !s.you).map(s => ({ cards: [], label: s.label, seatIndex: s.index, otherIndex: s.otherIndex, swept: false, fromSplit: false }));
+ dealerHand = [];
  activeHandIdx = 0;
+ phase = 'dealing';
+ renderTable();
 
+ const seq = casinoDealSequence(layout.length);
+ let i = 0;
+ const step = () => {
+ if (phase !== 'dealing') return;
+ if (i >= seq.length) { finishInitialDeal(); return; }
+ const st = seq[i++];
+ const card = drawCard(!st.hole);
+ if (st.target === 'dealer') {
+ dealerHand.push(card);
+ if (st.hole) holeCardShoeId = card.shoeId || currentShoeId;
+ } else if (layout[st.seatIndex] && layout[st.seatIndex].you) {
+ playerHands[0].cards.push(card);
+ } else {
+ const oh = otherSeatHands.find(h => h.seatIndex === st.seatIndex);
+ if (oh) oh.cards.push(card);
+ }
+ renderTable();
+ afterTableDelay(currentDealPaceMs(), step);
+ };
+ step();
+ }
+
+ function finishInitialDeal() {
+ if (dealerHand.length < 2 || !playerHands[0] || playerHands[0].cards.length < 2) {
+ setFeedback('Deal could not be completed.', 'warn');
+ phase = 'done';
+ renderTable();
+ return;
+ }
+ const d1 = dealerHand[0];
  if (d1.rank === 'A') {
  const pHasBj = evalHand(playerHands[0].cards).isBlackjack;
  if (pHasBj) {
  isEvenMoneyOffer = true;
  phase = 'insurance';
+ setFeedback('Blackjack vs Dealer Ace! Take Even Money? (1:1)', '');
  renderTable();
  return;
  } else if (state.bankroll >= roundMoney(state.bet / 2)) {
@@ -4387,7 +4685,6 @@
  return;
  }
  }
-
  checkInitialBlackjacks();
  }
 
@@ -4441,9 +4738,7 @@
  if (typeof finalizeRoundLog === 'function') finalizeRoundLog(handNet);
  finishRound();
  } else {
- playOtherSeats();
- phase = 'playing';
- renderTable();
+ startOthersThenPlayer();
  }
  }
 
@@ -4488,7 +4783,7 @@
 
  function advanceHandOrDealer() {
  while (activeHandIdx < playerHands.length && playerHands[activeHandIdx].finished) activeHandIdx++;
- if (activeHandIdx >= playerHands.length) runDealerTurn();
+ if (activeHandIdx >= playerHands.length) playOtherSeatsRange('after', () => runDealerTurn());
  else renderTable();
  }
 
@@ -4505,6 +4800,7 @@
  if (ev.isBust) {
  h.result = 'res-lose';
  h.resultText = `BUST (-${formatMoney(h.bet)})`;
+ if (shouldSweepOnBust(true)) markHandSwept(h, 'bust');
  }
  advanceHandOrDealer();
  } else {
@@ -4534,6 +4830,7 @@
  if (ev.isBust) {
  h.result = 'res-lose';
  h.resultText = `BUST (-${formatMoney(h.bet)})`;
+ if (shouldSweepOnBust(true)) markHandSwept(h, 'bust');
  }
  advanceHandOrDealer();
  }
@@ -4577,7 +4874,8 @@
  phase = 'dealer';
  revealHoleCard();
 
- const anyLive = playerHands.some(h => !h.surrendered && !evalHand(h.cards).isBust);
+ const anyLive = playerHands.some(h => !h.surrendered && !evalHand(h.cards).isBust) ||
+ (multiSeatOn() && otherSeatHands.some(h => !h.surrendered && !evalHand(h.cards).isBust));
  if (anyLive) {
  let dEv = evalHand(dealerHand);
  while (dEv.total < 17 || (dEv.total === 17 && dEv.isSoft && !state.s17)) {
@@ -4637,6 +4935,20 @@
  }
  saveState();
  renderTable();
+ if (!shouldLingerLastRound(!!state.featLastRoundReview, !!qaHoldRound)) {
+ const wait = qaDealInstant ? 0 : Math.max(currentDealPaceMs(), 400);
+ afterTableDelay(wait, () => {
+ if (phase !== 'done') return;
+ playerHands.forEach(h => markHandSwept(h, 'round'));
+ otherSeatHands.forEach(h => markHandSwept(h, 'round'));
+ dealerSwept = true;
+ lastRoundActive = false;
+ renderTable();
+ });
+ } else {
+ lastRoundActive = true;
+ renderTable();
+ }
 
  if (state.featStats) snapshotBankroll();
  handsSinceDeckEst++;
@@ -4885,6 +5197,11 @@
  if (page === 'play') {
  if (key === 'decks') {
  resetTableAndBuildShoe('', 'Switched to ' + state.decks + '-Deck shoe (' + Math.round(getPenetrationForDecks(state.decks) * 100) + '% pen, 1 burned).');
+ }
+ if (key === 'otherSeats' || key === 'playerSeat' || key === 'featSeats') {
+ const c = clampPlayerSeat(state.playerSeat || 0, state.featSeats ? (state.otherSeats || 0) : 0);
+ if (state.playerSeat !== c.playerSeat) state.playerSeat = c.playerSeat;
+ if (typeof syncSeatSelect === 'function') syncSeatSelect();
  }
  updateHud();
  renderTable();
@@ -5567,6 +5884,38 @@
 
  /* ==================== V7 UI: FEATURES, SEATS, STATS, RISK, DRILLS ==================== */
  let otherSeatHands = [];
+ let tableTimer = null;
+ let qaDealInstant = false;
+ let qaHoldRound = false;
+ let actingSeatIndex = -1;
+ let lastRoundActive = false;
+ let dealerSwept = false;
+ function clearTableTimer() {
+ if (tableTimer) { clearTimeout(tableTimer); tableTimer = null; }
+ }
+ function prefersReducedMotion() {
+ try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+ }
+ function currentDealPaceMs() {
+ return dealPaceMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
+ }
+ function afterTableDelay(ms, fn) {
+ clearTableTimer();
+ if (!ms) { fn(); return; }
+ tableTimer = setTimeout(() => { tableTimer = null; fn(); }, ms);
+ }
+ function multiSeatOn() { return !!(state.featSeats && (state.otherSeats || 0) > 0); }
+ function currentTableLayout() {
+ const n = state.featSeats ? (state.otherSeats || 0) : 0;
+ const c = clampPlayerSeat(state.playerSeat || 0, n);
+ if ((state.playerSeat | 0) !== c.playerSeat) state.playerSeat = c.playerSeat;
+ return tableSeatLayout(c.otherSeats, c.playerSeat);
+ }
+ function markHandSwept(h, reason) {
+ if (!h || h.swept) return;
+ h.swept = true;
+ h.sweepReason = reason || 'bust';
+ }
  let nextQuizAt = 0;
  let reviewQueue = [];
  let sdTimerId = null;
@@ -5629,7 +5978,7 @@
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
  'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
- 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-heat': 'featHeat'
  };
  Object.keys(map).forEach(id => {
  const el = document.getElementById(id);
@@ -5652,6 +6001,30 @@
  const os = document.getElementById('opt-other-seats'); if (os) os.value = String(pick('otherSeats', state.otherSeats || 0));
  if (optQuizInt) optQuizInt.value = String(pick('quizInterval', state.quizInterval || 0));
  const deIntEl = document.getElementById('opt-deckest-int'); if (deIntEl) deIntEl.value = String(pick('deckEstInterval', state.deckEstInterval || 0));
+ const dp = document.getElementById('opt-deal-pace'); if (dp) dp.value = String(pick('dealPace', state.dealPace || 'normal'));
+ if (typeof syncSeatSelect === 'function') syncSeatSelect();
+ const lr = document.getElementById('feat-last-round-review');
+ if (lr) lr.checked = !!pick('featLastRoundReview', state.featLastRoundReview);
+ }
+
+ function syncSeatSelect() {
+ const sel = document.getElementById('opt-player-seat');
+ if (!sel) return;
+ const n = (typeof state !== 'undefined' && state.featSeats) ? (state.otherSeats || 0) : 0;
+ const cur = clampPlayerSeat(state.playerSeat || 0, n).playerSeat;
+ if ((state.playerSeat | 0) !== cur) state.playerSeat = cur;
+ const total = n + 1;
+ const prev = sel.value;
+ sel.innerHTML = '';
+ for (let i = 0; i < total; i++) {
+ const o = document.createElement('option');
+ o.value = String(i);
+ o.textContent = seatBaseLabel(i, Math.max(1, total));
+ if (i === cur) o.selected = true;
+ sel.appendChild(o);
+ }
+ sel.disabled = n <= 0;
+ if (prev && sel.value !== prev && !sel.disabled) { /* rebuilt */ }
  }
 
  function bindFeatureToggles() {
@@ -5661,7 +6034,7 @@
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
  'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
- 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-heat': 'featHeat'
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-heat': 'featHeat'
  };
  Object.keys(boolMap).forEach(id => {
  const el = document.getElementById(id);
@@ -5730,7 +6103,20 @@
  const n = parseInt(os.value, 10) || 0;
  writeFromControl('otherSeats', n);
  if (n > 0) { writeFromControl('featSeats', true); const f = document.getElementById('feat-seats'); if (f) f.checked = true; }
+ const clamped = clampPlayerSeat(state.playerSeat || 0, n);
+ if (state.playerSeat !== clamped.playerSeat) writeFromControl('playerSeat', clamped.playerSeat);
+ if (typeof syncSeatSelect === 'function') syncSeatSelect();
  renderTable();
+ });
+ const ps = document.getElementById('opt-player-seat');
+ if (ps) ps.addEventListener('change', () => {
+ const n = parseInt(ps.value, 10) || 0;
+ writeFromControl('playerSeat', n);
+ renderTable();
+ });
+ const dpEl = document.getElementById('opt-deal-pace');
+ if (dpEl) dpEl.addEventListener('change', () => {
+ writeFromControl('dealPace', dpEl.value || 'normal');
  });
  document.getElementById('btn-reset-stats')?.addEventListener('click', resetAllStats);
  document.getElementById('btn-reset-stats-tab')?.addEventListener('click', resetAllStats);
@@ -5825,18 +6211,45 @@
  }
 
  function dealOtherSeats() {
- otherSeatHands = [];
- if (!state.featSeats) return;
- const n = Math.max(0, Math.min(6, state.otherSeats || 0));
- for (let i = 0; i < n; i++) {
- otherSeatHands.push({ cards: [drawCard(true), drawCard(true)] });
- }
+ /* v14: other seats are dealt in casino order inside startDeal. */
  }
 
- function playOtherSeats() {
- if (!state.featSeats || !otherSeatHands.length || !dealerHand[0]) return;
- otherSeatHands.forEach((seat, idx) => {
- const hands = [{ cards: seat.cards, fromSplit: false }];
+ function startOthersThenPlayer() {
+ playOtherSeatsRange('before', () => {
+ phase = 'playing';
+ actingSeatIndex = -1;
+ setFeedback('Your turn.', '');
+ renderTable();
+ });
+ }
+
+ function playOtherSeatsRange(which, done) {
+ const finish = typeof done === 'function' ? done : function () {};
+ if (!multiSeatOn() || !otherSeatHands.length || !dealerHand[0]) { finish(); return; }
+ const layout = currentTableLayout();
+ const pSeat = (layout.find(s => s.you) || { index: 0 }).index;
+ const targets = otherSeatHands.filter(h => {
+ if (h.seatIndex == null) return which === 'after';
+ return which === 'before' ? h.seatIndex < pSeat : h.seatIndex > pSeat;
+ });
+ if (!targets.length) { finish(); return; }
+ phase = 'others';
+ let idx = 0;
+ const next = () => {
+ if (idx >= targets.length) { actingSeatIndex = -1; finish(); return; }
+ const seat = targets[idx++];
+ actingSeatIndex = seat.seatIndex;
+ setFeedback((seat.label || 'Seat') + ' is playing basic strategy…', '');
+ playOneOtherSeat(seat);
+ renderTable();
+ afterTableDelay(currentDealPaceMs(), next);
+ };
+ next();
+ }
+
+ function playOneOtherSeat(seat) {
+ if (!seat || !dealerHand[0]) return;
+ const hands = [{ cards: seat.cards, fromSplit: !!seat.fromSplit, surrendered: false }];
  let i = 0;
  while (i < hands.length) {
  const h = hands[i];
@@ -5856,12 +6269,12 @@
  tc: getTrueCount(), rc: runningCount, decks: state.decks
  });
  if (oneCard) break;
- if (dec.action === 'R') break;
+ if (dec.action === 'R') { h.surrendered = true; break; }
  if (dec.action === 'P' && canSplit) {
  const c1 = h.cards.pop();
  h.cards.push(drawCard(true));
  h.fromSplit = true;
- const sib = { cards: [c1, drawCard(true)], fromSplit: true };
+ const sib = { cards: [c1, drawCard(true)], fromSplit: true, surrendered: false };
  hands.splice(i + 1, 0, sib);
  if (splitAceMustStand(h.cards, true, state.splitAcesOneCard)) break;
  continue;
@@ -5879,9 +6292,45 @@
  i++;
  }
  seat.cards = hands[0].cards;
+ seat.fromSplit = !!hands[0].fromSplit;
+ seat.surrendered = !!hands[0].surrendered;
+ if (evalHand(seat.cards).isBust && shouldSweepOnBust(true)) markHandSwept(seat, 'bust');
  if (hands.length > 1) {
- hands.slice(1).forEach(h => otherSeatHands.push({ cards: h.cards, fromSplit: true }));
+ hands.slice(1).forEach(h => {
+ const extra = { cards: h.cards, fromSplit: true, seatIndex: seat.seatIndex, otherIndex: seat.otherIndex, label: (seat.label || 'Seat') + ' split', swept: false };
+ if (evalHand(extra.cards).isBust && shouldSweepOnBust(true)) markHandSwept(extra, 'bust');
+ otherSeatHands.push(extra);
+ });
  }
+ }
+
+ function playOtherSeats() {
+ playOtherSeatsRange('before', () => {});
+ playOtherSeatsRange('after', () => {});
+ }
+
+
+ function renderSeatPicker() {
+ const wrap = document.getElementById('seat-picker');
+ const btns = document.getElementById('seat-picker-btns');
+ if (!wrap || !btns) return;
+ const show = multiSeatOn() && (phase === 'betting' || phase === 'done');
+ wrap.hidden = !show;
+ if (!show) { btns.innerHTML = ''; return; }
+ const layout = currentTableLayout();
+ btns.innerHTML = '';
+ layout.forEach(s => {
+ const b = document.createElement('button');
+ b.type = 'button';
+ b.className = 'seat-pick' + (s.you ? ' you' : '');
+ b.textContent = s.you ? (s.label + ' · You') : ('Sit ' + s.label);
+ b.setAttribute('aria-pressed', s.you ? 'true' : 'false');
+ b.addEventListener('click', () => {
+ writePageSetting('play', 'playerSeat', s.index);
+ if (typeof afterPageSettingChanged === 'function') afterPageSettingChanged('play', 'playerSeat');
+ else renderTable();
+ });
+ btns.appendChild(b);
  });
  }
 
@@ -5889,19 +6338,53 @@
  const wrap = document.getElementById('other-seats');
  if (!wrap) return;
  wrap.innerHTML = '';
- const show = state.featSeats && otherSeatHands.length;
+ if (typeof renderSeatPicker === 'function') renderSeatPicker();
+ const layout = currentTableLayout();
+ const show = multiSeatOn() && (otherSeatHands.length || phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer' || phase === 'done');
  wrap.hidden = !show;
- if (!show) return;
- otherSeatHands.forEach((seat, i) => {
+ const pZone0 = document.getElementById('player-hands');
+ const pWrap0 = pZone0 && pZone0.closest('.zone');
+ if (!show) { if (pWrap0) pWrap0.hidden = false; return; }
+ const pZone = document.getElementById('player-hands');
+ layout.forEach(s => {
  const box = document.createElement('div');
- box.className = 'other-seat';
+ box.className = 'table-seat other-seat' + (s.you ? ' you' : '') + (actingSeatIndex === s.index ? ' acting' : '');
+ box.dataset.seatIndex = String(s.index);
  const lab = document.createElement('div');
  lab.className = 'os-label';
- const ev = evalHand(seat.cards);
- const show = totalsVisible() || revealedTotals['os' + i];
- if (show) lab.textContent = 'Seat ' + (i + 1) + ' · ' + (ev.isBust ? 'Bust ' : '') + ev.total;
- else lab.textContent = 'Seat ' + (i + 1) + (ev.isBust ? ' · BUST' : ev.isBlackjack ? ' · BJ!' : ' · · · ·');
- if (!show && !ev.isBust && !ev.isBlackjack) {
+ if (s.you) {
+ const hands = playerHands.length ? playerHands : [{ cards: [], bet: state.bet || 0, swept: false }];
+ const ev0 = hands[0].cards.length ? evalHand(hands[0].cards) : null;
+ lab.textContent = s.label + ' · You' + (hands[0].swept ? ' · swept' : (ev0 && ev0.isBust ? ' · BUST' : ev0 && ev0.isBlackjack && !hands[0].fromSplit ? ' · BJ!' : ''));
+ box.appendChild(lab);
+ if (lastRoundActive && phase === 'done') {
+ const flag = document.createElement('div');
+ flag.className = 'last-round-flag';
+ flag.textContent = 'Last round';
+ box.appendChild(flag);
+ }
+ hands.forEach((h, idx) => {
+ if (h.swept) {
+ const note = document.createElement('div');
+ note.className = 'swept-note';
+ note.textContent = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
+ box.appendChild(note);
+ return;
+ }
+ const row = document.createElement('div');
+ row.className = 'cards-row overlap';
+ row.dataset.hand = 'player-' + idx;
+ (h.cards || []).forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
+ box.appendChild(row);
+ });
+ } else {
+ const seats = otherSeatHands.filter(h => h.seatIndex === s.index);
+ const seat = seats[0] || { cards: [], swept: false };
+ const ev = seat.cards && seat.cards.length ? evalHand(seat.cards) : null;
+ const i = seat.otherIndex != null ? seat.otherIndex : s.otherIndex;
+ const showTot = ev && (totalsVisible() || revealedTotals['os' + i]);
+ lab.textContent = s.label + (seat.swept ? ' · swept' : ev && showTot ? (' · ' + (ev.isBust ? 'Bust ' : '') + ev.total) : ev && ev.isBust ? ' · BUST' : ev && ev.isBlackjack ? ' · BJ!' : ev ? ' · · · ·' : '');
+ if (ev && !showTot && !ev.isBust && !ev.isBlackjack && !seat.swept) {
  lab.classList.add('score-hidden');
  lab.dataset.scoreKey = 'os' + i;
  lab.title = 'Tap to reveal total';
@@ -5909,12 +6392,24 @@
  lab.tabIndex = 0;
  }
  box.appendChild(lab);
+ seats.forEach(h => {
+ if (h.swept) {
+ const note = document.createElement('div');
+ note.className = 'swept-note';
+ note.textContent = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
+ box.appendChild(note);
+ return;
+ }
  const row = document.createElement('div');
  row.className = 'cards-row overlap';
- seat.cards.forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
+ (h.cards || []).forEach(c => row.appendChild(createCardEl(c, { showTag: state.showTags })));
  box.appendChild(row);
+ });
+ }
  wrap.appendChild(box);
  });
+ const pZoneWrap = pZone && pZone.closest('.zone');
+ if (pZoneWrap) pZoneWrap.hidden = true;
  }
 
  function situationKey(cards, upRank, dec) {
@@ -6244,8 +6739,63 @@
  issues,
  ok: issues.length === 0 && rcAll === 0
  };
+ },
+ setDealInstant(on) { qaDealInstant = !!on; return qaDealInstant; },
+ setDealPace(p) { writePageSetting('play', 'dealPace', p || 'normal'); return state.dealPace; },
+ holdRound(on) { qaHoldRound = !!on; return qaHoldRound; },
+ waitUntilIdle() {
+ return new Promise(resolve => {
+ const tick = () => {
+ if (phase !== 'dealing' && phase !== 'others' && !tableTimer) resolve(phase);
+ else setTimeout(tick, 20);
+ };
+ tick();
+ });
+ },
+ runSelfTest() { return typeof runSelfTestUI === 'function' ? runSelfTestUI() : { tests: runSelfTestChecks() }; },
+ seatLayout() { return currentTableLayout(); },
+ dealSequence(n) { return casinoDealSequence(n); },
+ phase() { return phase; },
+ snapshot() {
+ return {
+ phase: phase,
+ holeHidden: !!holeHidden,
+ dealerSwept: !!dealerSwept,
+ lastRoundActive: !!lastRoundActive,
+ runningCount: runningCount,
+ cardsDealtCount: cardsDealtCount,
+ burnCardCount: burnCardCount,
+ burnRank: burnCard ? burnCard.rank : null,
+ dealer: dealerHand.map((c, i) => ({ rank: c.rank, hidden: holeHidden && i === 1 })),
+ player: playerHands.map(h => ({ ranks: (h.cards || []).map(c => c.rank), swept: !!h.swept, result: h.resultText || '' })),
+ others: otherSeatHands.map(h => ({ ranks: (h.cards || []).map(c => c.rank), swept: !!h.swept, seatIndex: h.seatIndex, label: h.label })),
+ playerSeat: state.playerSeat || 0,
+ dealPace: state.dealPace,
+ featLastRoundReview: !!state.featLastRoundReview
+ };
  }
  };
+ }
+
+ function runSelfTestUI() {
+ const tests = runSelfTestChecks();
+ const el = document.getElementById('selftest-results');
+ const failed = tests.filter(x => !x.ok);
+ const lines = tests.map(x => (x.ok ? 'PASS' : 'FAIL') + '  ' + x.name + (x.detail ? ' — ' + x.detail : ''));
+ lines.push('', failed.length ? (failed.length + ' failed of ' + tests.length) : ('All ' + tests.length + ' checks passed.'));
+ if (el) {
+ el.textContent = lines.join('\n');
+ el.className = failed.length ? 'fail' : 'ok';
+ }
+ return { tests: tests, failed: failed.length, passed: tests.length - failed.length };
+ }
+ function syncSelfTestPage() {
+ const panel = document.getElementById('selftest-panel');
+ if (!panel) return;
+ const on = ((location.hash || '').replace(/^#/, '').split('?')[0] === 'selftest');
+ panel.hidden = !on;
+ panel.classList.toggle('open', on);
+ if (on && typeof runSelfTestUI === 'function') runSelfTestUI();
  }
 
  bindFeatureToggles();
@@ -6266,6 +6816,21 @@
  const tab = (state && state.lastMode && document.getElementById('tab-' + state.lastMode)) ? state.lastMode : activeTab;
  applyActiveTab(tab, { save: false });
  }, 0);
+ try {
+ const q = String(location.search || '') + String(location.hash || '');
+ if (/[?&#]qa=1(?:&|$)/.test(q) || /[?&#]qa=1(?:#|$)/.test(q)) qaDealInstant = true;
+ } catch (e) {}
+ if (typeof syncSelfTestPage === 'function') {
+ syncSelfTestPage();
+ window.addEventListener('hashchange', syncSelfTestPage);
+ }
+ const runSt = document.getElementById('btn-run-selftest');
+ if (runSt) runSt.addEventListener('click', () => runSelfTestUI());
+ const closeSt = document.getElementById('btn-close-selftest');
+ if (closeSt) closeSt.addEventListener('click', () => {
+ try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
+ syncSelfTestPage();
+ });
  renderTable();
  updateHistoryCount();
 
@@ -6306,14 +6871,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v13-3')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v14')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v13-3', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v14', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v13-3'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14'); } catch (e) {} }, 2500);
   });
 }
 </script>
