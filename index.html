@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14.0.2</title>
+<title>Blackjack & Card Counting Trainer Pro v14.0.3</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -534,6 +534,8 @@
  user-select: none;
  -webkit-user-select: none;
  flex-shrink: 0;
+ animation: none;
+ transition: none;
  }
  .card.large { width: 82px; height: 118px; padding: 6px 8px; }
  .card.red { color: var(--card-red); }
@@ -1305,7 +1307,7 @@
  overflow-x: auto;
  }
  .other-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; }
- .other-seat .cards-row { margin: 0 auto; }
+ .other-seat .cards-row { margin: 0; justify-content: flex-start; width: max-content; }
  .other-seat .card { width: 36px; height: 50px; padding: 2px 2px; }
  .other-seat .card-top, .other-seat .card-bot { font-size: 0.58rem; }
  .other-seat .card-center { font-size: 0.9rem; }
@@ -2644,6 +2646,15 @@
  function bustHoldMs(pace, opts) {
  return endRoundSweepDelayMs(pace, opts);
  }
+ function dealerCardDelayMs(pace, opts) {
+ // Dealer reveal and hits must stay countable. Instant/QA can be fast;
+ // reduced-motion must not collapse this to a single frame.
+ if (opts && (opts.instant || opts.qaInstant)) return 0;
+ if (pace === 0 || pace === 'instant' || pace === 'off') return 0;
+ if (pace === 'fast') return 500;
+ if (pace === 'slow') return 1400;
+ return 900;
+ }
  function cutCardShuffleMessage(decks) {
  return 'Cut card reached — fresh ' + decks + 'D shoe shuffled (1 burned, unseen). RC = 0.';
  }
@@ -3711,14 +3722,16 @@
  const showTag = !!opts.showTag;
  const large = !!opts.large;
  const id = cardIdentity(card);
- if (id) el.setAttribute('data-card-id', id);
+ if (id && el.getAttribute('data-card-id') !== id) el.setAttribute('data-card-id', id);
  if (hidden) {
- el.className = 'card back' + (large ? ' large' : '');
- el.innerHTML = '';
+ const want = 'card back' + (large ? ' large' : '');
+ if (el.className !== want) el.className = want;
+ if (el.innerHTML) el.innerHTML = '';
  return el;
  }
  const isRed = card && (card.suit === '♥' || card.suit === '♦');
- el.className = 'card ' + (isRed ? 'red' : 'black') + (large ? ' large' : '');
+ const wantCls = 'card ' + (isRed ? 'red' : 'black') + (large ? ' large' : '');
+ if (el.className !== wantCls) el.className = wantCls;
  const rank = card && card.rank != null ? card.rank : '';
  const suit = card && card.suit != null ? card.suit : '';
  const topWant = rank + suit;
@@ -3769,6 +3782,49 @@
  return applyCardFace(el, card, opts || {});
  }
  return createCardEl(card, opts || {});
+ }
+ function cardChildren(row) {
+ if (!row) return [];
+ const out = [];
+ for (let i = 0; i < row.children.length; i++) {
+ if (row.children[i].classList && row.children[i].classList.contains('card')) out.push(row.children[i]);
+ }
+ return out;
+ }
+ /* Never detach a card that is already in the right slot. Only append new cards or update a hole card in place. */
+ function syncCardRow(row, cards, opts) {
+ opts = opts || {};
+ if (!row) return;
+ const showTag = !!opts.showTag;
+ const large = !!opts.large;
+ const list = cards || [];
+ for (let i = 0; i < list.length; i++) {
+ const card = list[i];
+ const hidden = typeof opts.hiddenAt === 'function' ? !!opts.hiddenAt(i) : false;
+ const id = cardIdentity(card);
+ const kids = cardChildren(row);
+ const el = kids[i];
+ if (el && el.getAttribute('data-card-id') === id) {
+ applyCardFace(el, card, { hidden, showTag, large });
+ } else if (!el) {
+ row.appendChild(createCardEl(card, { hidden, showTag, large }));
+ } else {
+ const neu = createCardEl(card, { hidden, showTag, large });
+ row.replaceChild(neu, el);
+ }
+ }
+ cardChildren(row).slice(list.length).forEach(el => el.remove());
+ }
+ function syncFlag(container, selector, show, className, text) {
+ let flag = container.querySelector(selector);
+ if (show) {
+ if (!flag) {
+ flag = document.createElement('div');
+ flag.className = className;
+ container.insertBefore(flag, container.firstChild);
+ }
+ if (flag.textContent !== text) flag.textContent = text;
+ } else if (flag) flag.remove();
  }
 
  /* ==================== DECK-ACCURATE BASIC STRATEGY + DEVIATIONS ENGINE ==================== */
@@ -4558,30 +4614,23 @@
  }
 
  function renderTable() {
- const cardPool = mergeCardPools([
- harvestCardNodes(document.getElementById('dealer-cards')),
- harvestCardNodes(document.getElementById('player-hands')),
- harvestCardNodes(document.getElementById('other-seats'))
- ]);
- renderOtherSeats(cardPool);
+ renderOtherSeats();
  const dContainer = document.getElementById('dealer-cards');
- const keepDealer = [];
  if (dealerSwept) {
- dContainer.innerHTML = '';
- const note = document.createElement('div');
+ cardChildren(dContainer).forEach(el => el.remove());
+ let note = dContainer.querySelector('.swept-note');
+ if (!note) {
+ note = document.createElement('div');
  note.className = 'swept-note';
- note.textContent = 'Swept';
  dContainer.appendChild(note);
+ }
+ if (note.textContent !== 'Swept') note.textContent = 'Swept';
  } else {
- dealerHand.forEach((c, idx) => {
- const hidden = holeHidden && idx === 1;
- keepDealer.push(takeCardEl(cardPool, c, { hidden, showTag: state.showTags }));
- });
- keepDealer.forEach((el, i) => {
- if (dContainer.children[i] !== el) dContainer.insertBefore(el, dContainer.children[i] || null);
- });
- [...dContainer.children].forEach(ch => {
- if (keepDealer.indexOf(ch) === -1) ch.remove();
+ const note = dContainer.querySelector('.swept-note');
+ if (note) note.remove();
+ syncCardRow(dContainer, dealerHand, {
+ showTag: state.showTags,
+ hiddenAt: (idx) => holeHidden && idx === 1
  });
  }
  const dScoreEl = document.getElementById('dealer-score');
@@ -4607,61 +4656,97 @@
  }
 
  const pContainer = document.getElementById('player-hands');
- pContainer.innerHTML = '';
- if (lastRoundActive && phase === 'done' && !multiSeatOn()) {
- const flag = document.createElement('div');
- flag.className = 'last-round-flag';
- flag.textContent = 'Last round — cards stay until Deal';
- pContainer.appendChild(flag);
- }
+ syncFlag(pContainer, ':scope > .last-round-flag',
+ lastRoundActive && phase === 'done' && !multiSeatOn(),
+ 'last-round-flag', 'Last round — cards stay until Deal');
  playerHands.forEach((h, idx) => {
- const box = document.createElement('div');
- box.className = 'player-hand-box' + (phase === 'playing' && idx === activeHandIdx ? ' active-hand' : '');
-
- const ev = evalHand(h.cards);
- const scoreCls = 'hand-score' + (ev.isBust ? ' bust' : (ev.isBlackjack && !h.fromSplit) ? ' bj' : '');
-
- const header = document.createElement('div');
- header.className = 'zone-title';
- const nameEl = document.createElement('span');
- nameEl.textContent = (playerHands.length > 1 ? 'H' + (idx + 1) : 'You') + ' · ' + formatMoney(h.bet);
- const scoreEl = document.createElement('span');
- header.appendChild(nameEl);
- header.appendChild(scoreEl);
- applyScorePill(scoreEl, null, scoreCls, 'p' + idx, ev, { fromSplit: !!h.fromSplit, surrendered: !!h.surrendered, longSoft: true });
- if (h.resultText) {
- const res = document.createElement('span');
- res.className = 'hand-result ' + h.result;
- res.textContent = h.resultText;
- header.appendChild(res);
- }
- box.appendChild(header);
-
- if (h.swept) {
- const note = document.createElement('div');
- note.className = 'swept-note';
- note.textContent = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
- box.appendChild(note);
- } else {
- const row = document.createElement('div');
- row.className = 'cards-row overlap';
- h.cards.forEach(c => row.appendChild(takeCardEl(cardPool, c, { showTag: state.showTags })));
- box.appendChild(row);
- }
-
- const shell = document.createElement('div');
+ let shell = pContainer.querySelector(':scope > .player-hand-shell[data-hand-idx="' + idx + '"]');
+ if (!shell) {
+ shell = document.createElement('div');
  shell.className = 'player-hand-shell';
+ shell.dataset.handIdx = String(idx);
+ const box0 = document.createElement('div');
+ box0.className = 'player-hand-box';
+ const header0 = document.createElement('div');
+ header0.className = 'zone-title';
+ const nameEl0 = document.createElement('span');
+ nameEl0.className = 'hand-name';
+ const scoreEl0 = document.createElement('span');
+ header0.appendChild(nameEl0);
+ header0.appendChild(scoreEl0);
+ box0.appendChild(header0);
+ const row0 = document.createElement('div');
+ row0.className = 'cards-row overlap';
+ box0.appendChild(row0);
  const hintL = document.createElement('div');
  hintL.className = 'scroll-hint scroll-hint-left';
  hintL.setAttribute('aria-hidden', 'true');
  const hintR = document.createElement('div');
  hintR.className = 'scroll-hint scroll-hint-right';
  hintR.setAttribute('aria-hidden', 'true');
- shell.appendChild(box);
+ shell.appendChild(box0);
  shell.appendChild(hintL);
  shell.appendChild(hintR);
- box.addEventListener('scroll', updateHandScrollHints, { passive: true });
+ box0.addEventListener('scroll', updateHandScrollHints, { passive: true });
  pContainer.appendChild(shell);
+ }
+ const box = shell.querySelector('.player-hand-box');
+ const wantBox = 'player-hand-box' + (phase === 'playing' && idx === activeHandIdx ? ' active-hand' : '');
+ if (box.className !== wantBox) box.className = wantBox;
+ const ev = evalHand(h.cards);
+ const scoreCls = 'hand-score' + (ev.isBust ? ' bust' : (ev.isBlackjack && !h.fromSplit) ? ' bj' : '');
+ const header = box.querySelector('.zone-title');
+ let nameEl = header.querySelector('.hand-name');
+ if (!nameEl) {
+ nameEl = header.querySelector('span:not(.hand-score):not(.hand-result)') || document.createElement('span');
+ nameEl.className = 'hand-name';
+ if (!nameEl.parentNode) header.insertBefore(nameEl, header.firstChild);
+ }
+ const nameWant = (playerHands.length > 1 ? 'H' + (idx + 1) : 'You') + ' · ' + formatMoney(h.bet);
+ if (nameEl.textContent !== nameWant) nameEl.textContent = nameWant;
+ let scoreEl = header.querySelector('.hand-score');
+ if (!scoreEl) {
+ scoreEl = document.createElement('span');
+ header.insertBefore(scoreEl, nameEl.nextSibling);
+ }
+ applyScorePill(scoreEl, null, scoreCls, 'p' + idx, ev, { fromSplit: !!h.fromSplit, surrendered: !!h.surrendered, longSoft: true });
+ let res = header.querySelector('.hand-result');
+ if (h.resultText) {
+ if (!res) {
+ res = document.createElement('span');
+ header.appendChild(res);
+ }
+ const resCls = 'hand-result ' + h.result;
+ if (res.className !== resCls) res.className = resCls;
+ if (res.textContent !== h.resultText) res.textContent = h.resultText;
+ } else if (res) res.remove();
+
+ if (h.swept) {
+ const row = box.querySelector('.cards-row');
+ if (row) row.remove();
+ let note = box.querySelector('.swept-note');
+ if (!note) {
+ note = document.createElement('div');
+ note.className = 'swept-note';
+ box.appendChild(note);
+ }
+ const noteWant = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
+ if (note.textContent !== noteWant) note.textContent = noteWant;
+ } else {
+ const note = box.querySelector('.swept-note');
+ if (note) note.remove();
+ let row = box.querySelector('.cards-row');
+ if (!row) {
+ row = document.createElement('div');
+ row.className = 'cards-row overlap';
+ box.appendChild(row);
+ }
+ syncCardRow(row, h.cards, { showTag: state.showTags });
+ }
+ });
+ [...pContainer.querySelectorAll(':scope > .player-hand-shell')].forEach(shell => {
+ const idx = parseInt(shell.dataset.handIdx, 10);
+ if (!Number.isFinite(idx) || idx >= playerHands.length) shell.remove();
  });
  requestAnimationFrame(updateHandScrollHints);
 
@@ -5038,7 +5123,7 @@
  if (anyLive && dealerShouldHit()) {
  dealerHand.push(drawCard(true));
  renderTable();
- afterTableDelay(currentStepDelayMs(), hitNext);
+ afterTableDelay(currentDealerDelayMs(), hitNext);
  return;
  }
  settleDealerRound();
@@ -5046,7 +5131,7 @@
  if (holeHidden && dealerHand.length >= 2) {
  revealHoleCard();
  renderTable();
- afterTableDelay(currentStepDelayMs(), hitNext);
+ afterTableDelay(currentDealerDelayMs(), hitNext);
  } else {
  renderTable();
  hitNext();
@@ -6047,6 +6132,9 @@
  if (qaDealInstant) return 0;
  return 16;
  }
+ function currentDealerDelayMs() {
+ return dealerCardDelayMs(state.dealPace || 'normal', { instant: !!qaDealInstant });
+ }
  function currentSweepDelayMs() {
  return endRoundSweepDelayMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
  }
@@ -6551,11 +6639,44 @@
  });
  }
 
- function renderOtherSeats(cardPool) {
+ function syncSeatHands(box, hands, prefix) {
+ (hands || []).forEach((h, idx) => {
+ const key = prefix + idx;
+ if (h.swept) {
+ const row = box.querySelector(':scope > .cards-row[data-hand="' + key + '"]');
+ if (row) row.remove();
+ let note = box.querySelector(':scope > .swept-note[data-hand="' + key + '"]');
+ if (!note) {
+ note = document.createElement('div');
+ note.className = 'swept-note';
+ note.dataset.hand = key;
+ box.appendChild(note);
+ }
+ const want = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
+ if (note.textContent !== want) note.textContent = want;
+ } else {
+ const note = box.querySelector(':scope > .swept-note[data-hand="' + key + '"]');
+ if (note) note.remove();
+ let row = box.querySelector(':scope > .cards-row[data-hand="' + key + '"]');
+ if (!row) {
+ row = document.createElement('div');
+ row.className = 'cards-row overlap';
+ row.dataset.hand = key;
+ box.appendChild(row);
+ }
+ syncCardRow(row, h.cards || [], { showTag: state.showTags });
+ }
+ });
+ [...box.querySelectorAll(':scope > .cards-row, :scope > .swept-note')].forEach(el => {
+ const k = el.getAttribute('data-hand') || '';
+ if (!k.startsWith(prefix)) return;
+ const idx = parseInt(k.slice(prefix.length), 10);
+ if (!Number.isFinite(idx) || idx >= (hands || []).length) el.remove();
+ });
+ }
+ function renderOtherSeats() {
  const wrap = document.getElementById('other-seats');
  if (!wrap) return;
- cardPool = cardPool || harvestCardNodes(wrap);
- wrap.innerHTML = '';
  if (typeof renderSeatPicker === 'function') renderSeatPicker();
  const layout = currentTableLayout();
  const show = multiSeatOn() && (otherSeatHands.length || phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer' || phase === 'done');
@@ -6564,67 +6685,66 @@
  const pWrap0 = pZone0 && pZone0.closest('.zone');
  if (!show) { if (pWrap0) pWrap0.hidden = false; return; }
  const pZone = document.getElementById('player-hands');
+ const liveIndexes = {};
  layout.forEach(s => {
- const box = document.createElement('div');
- box.className = 'table-seat other-seat' + (s.you ? ' you' : '') + (actingSeatIndex === s.index ? ' acting' : '');
+ liveIndexes[String(s.index)] = true;
+ let box = wrap.querySelector(':scope > .table-seat[data-seat-index="' + s.index + '"]');
+ if (!box) {
+ box = document.createElement('div');
  box.dataset.seatIndex = String(s.index);
- const lab = document.createElement('div');
+ const lab0 = document.createElement('div');
+ lab0.className = 'os-label';
+ box.appendChild(lab0);
+ wrap.appendChild(box);
+ }
+ const wantCls = 'table-seat other-seat' + (s.you ? ' you' : '') + (actingSeatIndex === s.index ? ' acting' : '');
+ if (box.className !== wantCls) box.className = wantCls;
+ let lab = box.querySelector(':scope > .os-label');
+ if (!lab) {
+ lab = document.createElement('div');
  lab.className = 'os-label';
+ box.insertBefore(lab, box.firstChild);
+ }
  if (s.you) {
  const hands = playerHands.length ? playerHands : [{ cards: [], bet: state.bet || 0, swept: false }];
  const ev0 = hands[0].cards.length ? evalHand(hands[0].cards) : null;
- lab.textContent = s.label + ' · You' + (hands[0].swept ? ' · swept' : (ev0 && ev0.isBust ? ' · BUST' : ev0 && ev0.isBlackjack && !hands[0].fromSplit ? ' · BJ!' : ''));
- box.appendChild(lab);
- if (lastRoundActive && phase === 'done') {
- const flag = document.createElement('div');
- flag.className = 'last-round-flag';
- flag.textContent = 'Last round';
- box.appendChild(flag);
- }
- hands.forEach((h, idx) => {
- if (h.swept) {
- const note = document.createElement('div');
- note.className = 'swept-note';
- note.textContent = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
- box.appendChild(note);
- return;
- }
- const row = document.createElement('div');
- row.className = 'cards-row overlap';
- row.dataset.hand = 'player-' + idx;
- (h.cards || []).forEach(c => row.appendChild(takeCardEl(cardPool, c, { showTag: state.showTags })));
- box.appendChild(row);
- });
+ const labWant = s.label + ' · You' + (hands[0].swept ? ' · swept' : (ev0 && ev0.isBust ? ' · BUST' : ev0 && ev0.isBlackjack && !hands[0].fromSplit ? ' · BJ!' : ''));
+ if (lab.textContent !== labWant) lab.textContent = labWant;
+ lab.classList.remove('score-hidden');
+ lab.removeAttribute('data-score-key');
+ lab.removeAttribute('title');
+ lab.removeAttribute('role');
+ lab.removeAttribute('tabindex');
+ syncFlag(box, ':scope > .last-round-flag', lastRoundActive && phase === 'done', 'last-round-flag', 'Last round');
+ syncSeatHands(box, hands, 'player-');
  } else {
  const seats = otherSeatHands.filter(h => h.seatIndex === s.index);
  const seat = seats[0] || { cards: [], swept: false };
  const ev = seat.cards && seat.cards.length ? evalHand(seat.cards) : null;
  const i = seat.otherIndex != null ? seat.otherIndex : s.otherIndex;
+ const labWant = s.label + (seat.swept ? ' · swept' : ev && (totalsVisible() || revealedTotals['os' + i]) ? (' · ' + (ev.isBust ? 'Bust ' : '') + ev.total) : ev && ev.isBust ? ' · BUST' : ev && ev.isBlackjack ? ' · BJ!' : ev ? ' · · · ·' : '');
+ if (lab.textContent !== labWant) lab.textContent = labWant;
  const showTot = ev && (totalsVisible() || revealedTotals['os' + i]);
- lab.textContent = s.label + (seat.swept ? ' · swept' : ev && showTot ? (' · ' + (ev.isBust ? 'Bust ' : '') + ev.total) : ev && ev.isBust ? ' · BUST' : ev && ev.isBlackjack ? ' · BJ!' : ev ? ' · · · ·' : '');
  if (ev && !showTot && !ev.isBust && !ev.isBlackjack && !seat.swept) {
  lab.classList.add('score-hidden');
  lab.dataset.scoreKey = 'os' + i;
  lab.title = 'Tap to reveal total';
  lab.setAttribute('role', 'button');
  lab.tabIndex = 0;
+ } else {
+ lab.classList.remove('score-hidden');
+ lab.removeAttribute('data-score-key');
+ lab.removeAttribute('title');
+ lab.removeAttribute('role');
+ lab.removeAttribute('tabindex');
  }
- box.appendChild(lab);
- seats.forEach(h => {
- if (h.swept) {
- const note = document.createElement('div');
- note.className = 'swept-note';
- note.textContent = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
- box.appendChild(note);
- return;
+ const flag = box.querySelector(':scope > .last-round-flag');
+ if (flag) flag.remove();
+ syncSeatHands(box, seats.length ? seats : [{ cards: [], swept: false }], 'other-');
  }
- const row = document.createElement('div');
- row.className = 'cards-row overlap';
- (h.cards || []).forEach(c => row.appendChild(takeCardEl(cardPool, c, { showTag: state.showTags })));
- box.appendChild(row);
  });
- }
- wrap.appendChild(box);
+ [...wrap.querySelectorAll(':scope > .table-seat')].forEach(box => {
+ if (!liveIndexes[box.dataset.seatIndex]) box.remove();
  });
  const pZoneWrap = pZone && pZone.closest('.zone');
  if (pZoneWrap) pZoneWrap.hidden = true;
@@ -6974,6 +7094,7 @@
  return Array.from(root.querySelectorAll('#dealer-cards .card, #player-hands .card, #other-seats .card')).map(el => ({ id: el.getAttribute('data-card-id'), back: el.classList.contains('back') }));
  },
  endRoundSweepDelayMs,
+ dealerCardDelayMs,
  bustHoldMs,
  cardIdentity,
  queueDraws(list) {
@@ -7116,14 +7237,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v14-0-2')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v14-0-3')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v14-0-2', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v14-0-3', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-0-2'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-0-3'); } catch (e) {} }, 2500);
   });
 }
 </script>

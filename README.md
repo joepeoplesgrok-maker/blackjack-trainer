@@ -79,6 +79,11 @@ Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
 
+### v14.0.3
+- Cards already on the table stay in the same DOM node. A new card is only appended; existing cards are not rebuilt, re-inserted, or re-animated, so they no longer “pop” on each deal step.
+- After you stand or bust, the dealer’s hole card is revealed in place, then each dealer hit appears one at a time with a clear pause (0.9 s at Normal, 0.5 s Fast, 1.4 s Slow). The end-of-round sweep still waits the countable beat from v14.0.2. Instant remains fast but still shows every card. Reduced-motion no longer collapses the dealer’s hits into a single frame.
+- Cache `bj-trainer-v14-0-3`. Hard-refresh to pick it up.
+
 ### v14.0.2
 - The bust card is drawn on the felt and stays visible for a countable beat (scaled with deal pace; about two seconds at Normal) before the hand is swept, for you and for the other seats. It is no longer counted and whisked away before you can see it.
 - The dealer’s hole card and each dealer hit appear one at a time at the deal pace. The end-of-round sweep waits that same countable beat (1.5–2.5 s at Normal; Instant stays fast but still shows every card).
