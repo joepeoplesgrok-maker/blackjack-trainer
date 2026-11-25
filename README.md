@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v13)
+
+v13 gives every mode its own Settings menu (the header gear opens the current page). Table Play, Speed Count, Strategy Drill, Charts, and Risk Tools keep their own decks and rules; App settings only hide modes and reset data. **Apply to all pages** copies shared options such as decks or dealer rules to the pages that have them. Speed Count has a cleaner layout, a **New Shoe** button that reshuffles and restarts immediately, and optional 1/2/4/6/8-deck shoes (a full shoe still ends at RC 0).
+
 ## Feature guide (v12)
 
 v12 keeps the v11 history and split-aces features and fixes four QA items: the header mode label fits on a 320 px phone (it shortens to **Hand History** under 360 px), the result banner no longer tucks under dealer cards on a 360×780 split, `BJ_QA.shoeComposition()` still reports a full pack after a reload or a v11 upgrade, and a history row only shows RC/TC if the count HUD was on when that hand was bet.
@@ -59,6 +63,12 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v13
+- Per-page settings: the header gear opens options for the current mode only. Existing universal settings are copied into each page on upgrade so nothing is lost. **Apply to all pages** copies that page's shared settings (decks, dealer rules, HUD, tags, and so on) to every other page that has them, with a short confirmation.
+- A small **App settings** section is for mode visibility and data reset only (this build has no theme control).
+- Speed Count: cleaner phone and desktop layout, a **New Shoe** reset that reshuffles and restarts immediately (count, cards seen, and timer), and a per-page shoe of 1, 2, 4, 6, or 8 decks. Check still works mid-shoe; a full shoe still finishes at RC 0.
+- Service worker cache bumped to `bj-trainer-v13`.
 
 ### v12
 - v11-1: the header mode menu no longer clips **Hand History (this shoe)** on a 320 px phone; under 360 px the label shortens to **Hand History**. Every header option is checked at 320 and 360.
