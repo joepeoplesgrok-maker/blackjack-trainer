@@ -23,7 +23,7 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 
 ## Feature guide (v14)
 
-v14.0 adds realistic Table Play dealing and seat choice on top of every v13.3 feature. Cards appear in place at a per-page **Deal pace** (Instant / Fast / Normal / Slow; Normal by default; instant when the device requests reduced motion). Deal order is left to right, first base to third base, then the dealer, twice, with the hole card face down and uncounted until the dealer’s turn. Pick **Your seat** when other players are at the table; they act in seat order with basic strategy. Busts are swept at once, and the whole layout is swept at the end of the round so you have to count while the cards are visible. **Last-round review** (off by default) keeps the finished hands until the next Deal — the v13.3 linger. A hidden **#selftest** page runs shoe-composition, strategy, deal-order, burn, and hole-card checks for this build. v14.1 adds those deferred features (mistake replay, progress charts, random mid-shoe TC quizzes, index prompts, distraction mode, and export/import); all of them stay off until you enable them. Feature 5 from the original roadmap (RSA / 6:5 / early surrender) is still not in the app.
+v14.0 adds realistic Table Play dealing and seat choice on top of every v13.3 feature. Cards appear in place at a per-page **Deal pace** you type in Settings as seconds per card (0–3 s; recommended chips for Instant 0, Fast 0.20, Normal 0.45, Casino-realistic 0.60, Slow 0.80; Normal by default; instant when the device requests reduced motion). Deal order is left to right, first base to third base, then the dealer, twice, with the hole card face down and uncounted until the dealer’s turn. Pick **Your seat** when other players are at the table; they act in seat order with basic strategy. Busts are swept at once, and the whole layout is swept at the end of the round so you have to count while the cards are visible. **Last-round review** (off by default) keeps the finished hands until the next Deal — the v13.3 linger. A hidden **#selftest** page runs shoe-composition, strategy, deal-order, burn, and hole-card checks for this build. v14.1 adds those deferred features (mistake replay, progress charts, random mid-shoe TC quizzes, index prompts, distraction mode, and export/import); all of them stay off until you enable them. Feature 5 from the original roadmap (RSA / 6:5 / early surrender) is still not in the app.
 
 
 v13.3 fixes Jerry's v13.2 QA bugs: per-page Settings now hide options that don't belong on that page; Speed Count keeps accumulated run time across pauses and at shoe end (and only then records Best); Apply to all no longer rebuilds the Table shoe unless Play's decks actually change; Strategy and Risk settings show their own values.
@@ -78,6 +78,13 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v14.2
+- Deal pace is a seconds-per-card number in **Settings** (Play), not a named-only menu and not a table or toolbar control. Type 0–3 seconds (step 0.05). 0 is Instant, including the brief 0.05 s paint hold so the bust card and dealer hole stay visible.
+- Recommended chips fill the box: Instant 0, Fast 0.20, Normal 0.45 (default), Casino-realistic 0.60, Slow 0.80. The matching chip stays highlighted.
+- Other waits follow that one number: dealer hole and hits are **2×** the deal spacing (Normal stays 0.90 s); bust hold and the pre-sweep linger use the existing `1.0 s + 2.2×` deal, clamped 1.2–3.0 s (Normal stays ~1.99 s).
+- Saved Instant/Fast/Normal/Slow settings migrate to those seconds (schema 13). Casino distraction still forces the initial deal to Fast (0.20 s) unless the pace is already Instant; dealer timing follows the typed value. Speed Count still has its own interval. Export/import and Apply to all keep deal pace as a Play-only setting.
+- Cache `bj-trainer-v14-2`. Hard-refresh to pick it up.
 
 ### v14.1.1
 - Switching seats before the end-of-round sweep no longer leaves a ghost hand or stale “Swept” notes in the You box (Jerry B1).

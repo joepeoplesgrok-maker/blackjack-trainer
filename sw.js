@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bj-trainer-v14-1-1';
+const CACHE_NAME = 'bj-trainer-v14-2';
 const ASSETS = [
   './',
   './index.html',

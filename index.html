@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14.1.1</title>
+<title>Blackjack & Card Counting Trainer Pro v14.2</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -857,6 +857,39 @@
  height: 18px;
  cursor: pointer;
  }
+ .deal-pace-ui { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+ .deal-pace-input-row { display: flex; align-items: center; gap: 8px; }
+ #opt-deal-pace {
+ width: 7rem;
+ max-width: 46%;
+ min-height: 44px;
+ box-sizing: border-box;
+ padding: 8px 10px;
+ font-size: 1rem;
+ font-variant-numeric: tabular-nums;
+ }
+ .deal-pace-unit { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+ .deal-pace-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+ .deal-pace-chip {
+ padding: 6px 10px;
+ min-height: 36px;
+ border-radius: 8px;
+ border: 1px solid var(--panel-border);
+ background: #0b1914;
+ color: var(--text);
+ font-size: 0.72rem;
+ font-weight: 700;
+ cursor: pointer;
+ touch-action: manipulation;
+ }
+ .deal-pace-chip .sec { font-weight: 650; color: var(--muted); }
+ .deal-pace-chip.active {
+ border-color: var(--gold);
+ color: var(--gold);
+ background: rgba(229,185,76,0.14);
+ }
+ .deal-pace-chip.active .sec { color: var(--gold); }
+ .deal-pace-hint { margin: 0; }
 
  .seed-box {
  background: rgba(0,0,0,0.3);
@@ -2173,7 +2206,7 @@
  <li><strong>Timed decisions</strong> — countdown in Strategy Drill; a timeout is scored as a miss. <strong>Seconds per decision</strong> sets the limit.</li>
  <li><strong>Stats</strong> and <strong>Risk Tools</strong> — show or hide those modes and (for Stats) stop logging.</li>
  <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count. <strong>Your seat</strong> places you at first base through third base.</li>
- <li><strong>Deal pace</strong> — Instant, Fast, Normal (default), or Slow. Cards appear in place; nothing animates.</li>
+ <li><strong>Deal pace</strong> — type seconds per card in Settings (0–3 s, step 0.05 s; 0 is Instant). Recommended chips fill the box: Instant 0, Fast 0.20, Normal 0.45 (default), Casino-realistic 0.60, Slow 0.80. Dealer hole and hits wait twice as long as the deal; the bust and end-of-round holds scale with the same number. Cards appear in place; nothing animates.</li>
  <li><strong>Last-round review</strong> (off by default) — keep the finished hands on the felt until the next Deal. Off: cards are swept at the end of the round (and after a countable beat on a bust).</li>
  <li><strong>Index-play prompts</strong> (off by default) — when an Illustrious 18 or Fab 4 deviation applies, Table Play shows the index and the recommended action (for example, 16 vs 10, stand at TC ≥ 0).</li>
  <li><strong>Mid-shoe true-count quizzes</strong> (off by default) — optional RC/TC prompts at random points in the shoe, once, twice, or 1–3 times per shoe, in addition to the existing between-hand quizzes.</li>
@@ -2353,13 +2386,21 @@
 <option value="0" selected>First base</option>
 </select>
 </div>
-<div class="setting-row" data-settings-pages="play"><span class="lbl">Deal pace</span>
-<select id="opt-deal-pace" aria-label="Table deal pace">
-<option value="instant">Instant (no pause)</option>
-<option value="fast">Fast</option>
-<option value="normal" selected>Normal (table pace)</option>
-<option value="slow">Slow</option>
-</select>
+<div class="setting-row" data-settings-pages="play"><span class="lbl">Deal pace (seconds per card)</span>
+<div class="deal-pace-ui">
+<div class="deal-pace-input-row">
+<input type="number" id="opt-deal-pace" min="0" max="3" step="0.05" inputmode="decimal" value="0.45" aria-label="Deal pace in seconds per card">
+<span class="deal-pace-unit">s / card</span>
+</div>
+<div id="deal-pace-presets" class="deal-pace-presets" role="group" aria-label="Recommended deal paces">
+<button type="button" class="deal-pace-chip" data-pace="0">Instant <span class="sec">0</span></button>
+<button type="button" class="deal-pace-chip" data-pace="0.2">Fast <span class="sec">0.20</span></button>
+<button type="button" class="deal-pace-chip" data-pace="0.45">Normal <span class="sec">0.45</span></button>
+<button type="button" class="deal-pace-chip" data-pace="0.6">Casino-realistic <span class="sec">0.60</span></button>
+<button type="button" class="deal-pace-chip" data-pace="0.8">Slow <span class="sec">0.80</span></button>
+</div>
+<p id="deal-pace-hint" class="feat-note deal-pace-hint"></p>
+</div>
 </div>
 <div class="setting-row" data-settings-pages="play"><span class="lbl">Last-round review (keep cards until next Deal)</span><input type="checkbox" id="feat-last-round-review" aria-label="Keep last round cards visible until the next deal"></div>
 <div class="setting-row" data-settings-pages="play"><span class="lbl">Index-play prompts (Table Play)</span><input type="checkbox" id="feat-index-prompts" aria-label="Show index-play prompts when a deviation applies"></div>
@@ -2697,12 +2738,54 @@
  function playDecksChanged(prevDecks, nextDecks) {
  return Number(prevDecks) !== Number(nextDecks);
  }
- const DEAL_PACE_MS = { instant: 0, off: 0, fast: 200, normal: 450, slow: 800 };
+ const DEAL_PACE_SEC_MIN = 0;
+ const DEAL_PACE_SEC_MAX = 3;
+ const DEAL_PACE_SEC_STEP = 0.05;
+ const DEAL_PACE_SEC = { instant: 0, off: 0, fast: 0.2, normal: 0.45, slow: 0.8 };
+ const DEAL_PACE_PRESETS = [
+ { id: 'instant', label: 'Instant', sec: 0 },
+ { id: 'fast', label: 'Fast', sec: 0.2 },
+ { id: 'normal', label: 'Normal', sec: 0.45 },
+ { id: 'casino', label: 'Casino-realistic', sec: 0.6 },
+ { id: 'slow', label: 'Slow', sec: 0.8 }
+ ];
+ function dealPacePresets() { return DEAL_PACE_PRESETS.slice(); }
+ function roundDealPaceSec(n) {
+ const x = Math.round((Number(n) + 1e-9) / DEAL_PACE_SEC_STEP) * DEAL_PACE_SEC_STEP;
+ return Number(x.toFixed(2));
+ }
+ function normalizeDealPaceSec(value) {
+ if (value === 0 || value === '0') return 0;
+ if (typeof value === 'string') {
+ const key = value.trim().toLowerCase();
+ if (Object.prototype.hasOwnProperty.call(DEAL_PACE_SEC, key)) return DEAL_PACE_SEC[key];
+ const n = parseFloat(value);
+ if (!isFinite(n)) return DEAL_PACE_SEC.normal;
+ value = n;
+ }
+ if (typeof value === 'number' && isFinite(value)) {
+ let n = value;
+ if (n < DEAL_PACE_SEC_MIN) n = DEAL_PACE_SEC_MIN;
+ if (n > DEAL_PACE_SEC_MAX) n = DEAL_PACE_SEC_MAX;
+ return roundDealPaceSec(n);
+ }
+ return DEAL_PACE_SEC.normal;
+ }
  function dealPaceMs(pace, opts) {
  if (opts && (opts.instant || opts.reducedMotion)) return 0;
- if (pace === 0 || pace === 'instant' || pace === 'off') return 0;
- if (typeof pace === 'number' && isFinite(pace)) return Math.max(0, pace | 0);
- return DEAL_PACE_MS[pace] != null ? DEAL_PACE_MS[pace] : DEAL_PACE_MS.normal;
+ const sec = normalizeDealPaceSec(pace);
+ return Math.round(sec * 1000);
+ }
+ function formatDealPaceSec(sec) {
+ const n = normalizeDealPaceSec(sec);
+ return n === 0 ? '0' : n.toFixed(2);
+ }
+ function formatDealPaceDerived(pace) {
+ const dealMs = dealPaceMs(pace);
+ const dealerMs = dealerCardDelayMs(pace);
+ const holdMs = bustHoldMs(pace);
+ if (dealMs <= 0) return 'Instant: cards appear immediately, with a brief 0.05 s paint so the bust card and dealer hole stay visible.';
+ return 'Dealer cards every ' + (dealerMs / 1000).toFixed(2) + ' s · Bust / sweep hold ' + (holdMs / 1000).toFixed(2) + ' s';
  }
  function cardIdentity(card) {
  if (!card) return '';
@@ -2720,13 +2803,12 @@
  return endRoundSweepDelayMs(pace, opts);
  }
  function dealerCardDelayMs(pace, opts) {
- // Dealer reveal and hits must stay countable. Instant/QA can be fast;
- // reduced-motion must not collapse this to a single frame.
+ // Dealer hole and hits stay countable at 2× the deal spacing (Normal: 0.90 / 0.45).
+ // Instant/QA can be fast; reduced-motion must not collapse this to a single frame.
  if (opts && (opts.instant || opts.qaInstant)) return 0;
- if (pace === 0 || pace === 'instant' || pace === 'off') return 0;
- if (pace === 'fast') return 500;
- if (pace === 'slow') return 1400;
- return 900;
+ const dealMs = dealPaceMs(pace);
+ if (dealMs <= 0) return 0;
+ return Math.round(2 * dealMs);
  }
  function cutCardShuffleMessage(decks) {
  return 'Cut card reached — fresh ' + decks + 'D shoe shuffled (1 burned, unseen). RC = 0.';
@@ -2999,7 +3081,7 @@ function formatIndexPrompt(note, tc) {
  sdBest: 0,
  speedBestCps: 0,
  speedBestMs: 0,
- schemaVersion: 12,
+ schemaVersion: 13,
  pageSettings: defaultPageSettings(),
  featI18: true,
  featFab4: true,
@@ -3026,7 +3108,7 @@ function formatIndexPrompt(note, tc) {
  decisionSec: 5,
  otherSeats: 0,
  playerSeat: 0,
- dealPace: 'normal',
+ dealPace: 0.45,
  featLastRoundReview: false,
  featIndexPrompts: false,
  featShoeQuiz: false,
@@ -3046,8 +3128,8 @@ function formatIndexPrompt(note, tc) {
  if (saved.featI18 === undefined && saved.devCoach === 'basic') {
  s.featI18 = false; s.featFab4 = false; s.featIns = false;
  }
- s.schemaVersion = 12;
- if (saved.dealPace === undefined) s.dealPace = 'normal';
+ s.schemaVersion = 13;
+ s.dealPace = normalizeDealPaceSec(saved.dealPace === undefined ? 0.45 : saved.dealPace);
  if (saved.playerSeat === undefined) s.playerSeat = 0;
  if (saved.featLastRoundReview === undefined) s.featLastRoundReview = false;
  if (saved.featIndexPrompts === undefined) s.featIndexPrompts = false;
@@ -3091,6 +3173,7 @@ function formatIndexPrompt(note, tc) {
  function saveState() {
  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
  }
+ try { saveState(); } catch (e) {}
 
  function roundMoney(v) { return Math.round(v * 100) / 100; }
 
@@ -5558,6 +5641,38 @@ function formatIndexPrompt(note, tc) {
  p.classList.toggle('active', parseInt(p.dataset.chartDecks, 10) === ch.decks);
  });
  }
+ function syncDealPaceUi(raw) {
+ const sec = normalizeDealPaceSec(raw !== undefined ? raw : (typeof state !== 'undefined' ? state.dealPace : 0.45));
+ const dp = document.getElementById('opt-deal-pace');
+ if (dp && document.activeElement !== dp) dp.value = formatDealPaceSec(sec);
+ const hint = document.getElementById('deal-pace-hint');
+ if (hint) hint.textContent = formatDealPaceDerived(sec);
+ document.querySelectorAll('#deal-pace-presets .deal-pace-chip').forEach(btn => {
+ const v = normalizeDealPaceSec(btn.getAttribute('data-pace'));
+ const on = v === sec;
+ btn.classList.toggle('active', on);
+ btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+ });
+ }
+ function commitDealPaceFromInput(raw, revertOnInvalid) {
+ let sec;
+ if (raw === '' || raw == null || (typeof raw === 'string' && !String(raw).trim())) {
+ if (!revertOnInvalid) return null;
+ sec = normalizeDealPaceSec(typeof state !== 'undefined' ? state.dealPace : 0.45);
+ } else {
+ const n = (typeof raw === 'number') ? raw : parseFloat(String(raw).trim());
+ if (!isFinite(n)) {
+ if (!revertOnInvalid) return null;
+ sec = normalizeDealPaceSec(typeof state !== 'undefined' ? state.dealPace : 0.45);
+ } else {
+ sec = normalizeDealPaceSec(n);
+ }
+ }
+ if (typeof writeFromControl === 'function') writeFromControl('dealPace', sec);
+ else if (typeof writePageSetting === 'function') { writePageSetting('play', 'dealPace', sec); if (typeof saveState === 'function') saveState(); }
+ syncDealPaceUi(sec);
+ return sec;
+ }
  function syncSettingsControls() {
  const page = settingsContextPage || 'play';
  const cfg = getPageSettings(page);
@@ -6298,8 +6413,8 @@ function formatIndexPrompt(note, tc) {
  try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
  }
  function currentDealPaceMs() {
- let pace = state.dealPace || 'normal';
- if (state.featDistract && pace !== 'instant') pace = 'fast';
+ let pace = normalizeDealPaceSec(state.dealPace);
+ if (state.featDistract && pace > 0) pace = 0.2;
  return dealPaceMs(pace, { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
  }
  function currentStepDelayMs() {
@@ -6309,14 +6424,14 @@ function formatIndexPrompt(note, tc) {
  return 16;
  }
  function currentDealerDelayMs() {
- const ms = dealerCardDelayMs(state.dealPace || 'normal', { instant: !!qaDealInstant });
+ const ms = dealerCardDelayMs(state.dealPace, { instant: !!qaDealInstant });
  return ms > 0 ? ms : instantPaintHoldMs();
  }
  function currentSweepDelayMs() {
- return endRoundSweepDelayMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
+ return endRoundSweepDelayMs(state.dealPace, { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
  }
  function currentBustHoldMs() {
- const ms = bustHoldMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
+ const ms = bustHoldMs(state.dealPace, { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
  return ms > 0 ? ms : instantPaintHoldMs();
  }
  function afterTableDelay(ms, fn) {
@@ -6478,7 +6593,7 @@ function formatIndexPrompt(note, tc) {
  const os = document.getElementById('opt-other-seats'); if (os) os.value = String(pick('otherSeats', state.otherSeats || 0));
  if (optQuizInt) optQuizInt.value = String(pick('quizInterval', state.quizInterval || 0));
  const deIntEl = document.getElementById('opt-deckest-int'); if (deIntEl) deIntEl.value = String(pick('deckEstInterval', state.deckEstInterval || 0));
- const dp = document.getElementById('opt-deal-pace'); if (dp) dp.value = String(pick('dealPace', state.dealPace || 'normal'));
+ if (typeof syncDealPaceUi === 'function') syncDealPaceUi(pick('dealPace', state.dealPace));
  if (typeof syncSeatSelect === 'function') syncSeatSelect();
  const lr = document.getElementById('feat-last-round-review');
  if (lr) lr.checked = !!pick('featLastRoundReview', state.featLastRoundReview);
@@ -6593,8 +6708,29 @@ function formatIndexPrompt(note, tc) {
  renderTable();
  });
  const dpEl = document.getElementById('opt-deal-pace');
- if (dpEl) dpEl.addEventListener('change', () => {
- writeFromControl('dealPace', dpEl.value || 'normal');
+ if (dpEl) {
+ dpEl.addEventListener('input', () => {
+ const raw = dpEl.value;
+ if (raw === '' || /\.$/.test(String(raw).trim())) return;
+ const n = parseFloat(String(raw).trim());
+ if (!isFinite(n)) return;
+ const sec = normalizeDealPaceSec(n);
+ const hint = document.getElementById('deal-pace-hint');
+ if (hint) hint.textContent = formatDealPaceDerived(sec);
+ document.querySelectorAll('#deal-pace-presets .deal-pace-chip').forEach(btn => {
+ const v = normalizeDealPaceSec(btn.getAttribute('data-pace'));
+ btn.classList.toggle('active', v === sec);
+ });
+ });
+ dpEl.addEventListener('change', () => { commitDealPaceFromInput(dpEl.value, true); });
+ dpEl.addEventListener('blur', () => { commitDealPaceFromInput(dpEl.value, true); });
+ }
+ document.querySelectorAll('#deal-pace-presets .deal-pace-chip').forEach(btn => {
+ btn.addEventListener('click', () => {
+ const sec = normalizeDealPaceSec(btn.getAttribute('data-pace'));
+ writeFromControl('dealPace', sec);
+ syncDealPaceUi(sec);
+ });
  });
  const sqf = document.getElementById('opt-shoe-quiz-freq');
  if (sqf) sqf.addEventListener('change', () => writeFromControl('shoeQuizFreq', sqf.value || '1'));
@@ -7574,7 +7710,7 @@ function startMistakeReview() {
  };
  },
  setDealInstant(on) { qaDealInstant = !!on; return qaDealInstant; },
- setDealPace(p) { writePageSetting('play', 'dealPace', p || 'normal'); if (typeof saveState === 'function') saveState(); return state.dealPace; },
+ setDealPace(p) { const sec = normalizeDealPaceSec(p); writePageSetting('play', 'dealPace', sec); if (typeof saveState === 'function') saveState(); if (typeof syncDealPaceUi === 'function') syncDealPaceUi(sec); return state.dealPace; },
  holdRound(on) { qaHoldRound = !!on; return qaHoldRound; },
  forceReshuffleOnNextDeal() { needsReshuffle = true; return true; },
  shoeShuffleNotice() { return shoeShuffleNotice || ''; },
@@ -7760,14 +7896,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v14-1-1')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v14-2')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v14-1-1', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v14-2', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-1-1'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-2'); } catch (e) {} }, 2500);
   });
 }
 </script>
