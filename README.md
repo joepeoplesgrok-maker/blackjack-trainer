@@ -79,6 +79,14 @@ Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
 
+### v14.0.2
+- The bust card is drawn on the felt and stays visible for a countable beat (scaled with deal pace; about two seconds at Normal) before the hand is swept, for you and for the other seats. It is no longer counted and whisked away before you can see it.
+- The dealer’s hole card and each dealer hit appear one at a time at the deal pace. The end-of-round sweep waits that same countable beat (1.5–2.5 s at Normal; Instant stays fast but still shows every card).
+- Cards already on the table are not recreated on later deal steps, so they no longer flicker or replay a fade/slide. The 0.14 s slide-in animation is gone: cards simply appear in place.
+- After a cut-card reshuffle, the “Cut card reached — fresh shoe shuffled (1 burned, unseen). RC = 0” notice stays on Your turn (and in a persistent line under the feedback bar) so Instant pace no longer hides it (Jerry N2).
+- The hidden `#selftest` page is a separate full view: it no longer shares the column with Table Play or squashes the felt on desktop (Jerry N3).
+- Speed Count’s Deck Estimate Drill still follows only Speed’s toggle (Jerry N1). Cache `bj-trainer-v14-0-2`.
+
 ### v14.0.1
 - Speed Count's Deck Estimate Drill button follows only Speed's own toggle, not Table Play's (Jerry N1). Cache `bj-trainer-v14-0-1`.
 
