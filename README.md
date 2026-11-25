@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v13.2)
+
+Speed Count keeps a large full-width **Deal** button on the top row. The bottom row is three equal buttons: **New Shoe**, **Start**, and **Check Count**. New Shoe reshuffles and resets the count, cards seen, and timer to 0, then waits at Ready — the timer does not start until you press Start. Deal, felt tap, and Space do not start a run. Changing Speed settings mid-run returns to Ready.
+
 ## Feature guide (v13.1)
 
 Speed Count uses a large full-width **Deal** button on the top row (it also starts a run if one has not begun). The bottom row is **New Shoe** and **Check Count**. Deal is disabled while Auto is running and after the shoe ends. Tap the felt or press Space to deal in Manual mode.
@@ -67,6 +71,10 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v13.2
+- Speed Count: **New Shoe** and **Start** are separate. New Shoe goes to an idle Ready state (timer at 0, no card dealt). **Start** begins the timer and deals the first card(s). Deal stays the large top button but is disabled until Start (hint: "Press Start when ready"), during Auto, after the shoe ends, and while the count prompt is open. After a mid-shoe Check, Deal continues the same shoe without resetting the timer to 0. Changing Speed settings mid-run returns to Ready.
+- Service worker cache bumped to `bj-trainer-v13-2`.
 
 ### v13.1
 - Speed Count buttons: one large full-width **Deal** on the top row (deals the next card(s) and starts a run if needed). Bottom row is two equal buttons, **New Shoe** and **Check Count**. The extra Start / Restart control is gone. Deal is disabled during Auto deal and after the last card; felt tap and Space still deal in Manual mode.

@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v13.1</title>
+<title>Blackjack & Card Counting Trainer Pro v13.2</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -1457,7 +1457,7 @@
  #tab-speed #sp-cards { gap: 10px; min-height: 120px; flex-wrap: wrap; }
  #tab-speed .sp-actions {
  display: grid;
- grid-template-columns: 1fr 1fr;
+ grid-template-columns: 1fr 1fr 1fr;
  gap: 8px;
  width: 100%;
  }
@@ -1468,8 +1468,22 @@
  font-weight: 700;
  letter-spacing: 0.02em;
  }
+ #tab-speed #sp-deal-hint {
+ grid-column: 1 / -1;
+ margin: 0;
+ text-align: center;
+ font-size: 0.78rem;
+ color: var(--muted);
+ }
+ #tab-speed #sp-deal-hint[hidden] { display: none; }
  #tab-speed #sp-new-shoe,
- #tab-speed #sp-check { min-height: 44px; }
+ #tab-speed #sp-start,
+ #tab-speed #sp-check {
+ min-height: 44px;
+ white-space: normal;
+ line-height: 1.15;
+ text-align: center;
+ }
  #tab-speed .kbd-hint { margin-top: 8px; }
  @media (min-width: 720px) {
  #tab-speed #sp-stage { min-height: 280px; }
@@ -1645,7 +1659,7 @@
  <div class="table-felt" id="sp-stage">
  <div class="cards-row center" id="sp-cards"></div>
  <div class="feedback-bar" id="sp-feedback" style="width:100%; max-width:520px;">
- Tap Deal to start. The running count stays hidden and ends at 0 when the shoe is done. Check mid-shoe anytime. New Shoe reshuffles and restarts.
+ Ready. Press Start when ready. The running count stays hidden and ends at 0 when the shoe is done. Check mid-shoe anytime.
  </div>
  <div id="sp-answer-box" style="display:none;" class="row center">
  <input type="number" id="sp-guess" placeholder="Count" inputmode="numeric" style="width:115px; text-align:center;">
@@ -1656,10 +1670,12 @@
  <div class="controls-bar">
  <div class="sp-actions">
  <button class="btn btn-gold" id="sp-deal" type="button">Deal</button>
+ <p class="sp-deal-hint" id="sp-deal-hint">Press Start when ready</p>
  <button class="btn" id="sp-new-shoe" type="button">New Shoe</button>
+ <button class="btn" id="sp-start" type="button">Start</button>
  <button class="btn" id="sp-check" type="button">Check Count</button>
  </div>
- <div class="kbd-hint">Keys: Space = Deal in Manual mode (also starts a run). New Shoe reshuffles and restarts immediately.</div>
+ <div class="kbd-hint">Keys: Space = Deal in Manual mode after Start. New Shoe reshuffles and leaves the shoe Ready (timer stays at 0 until Start).</div>
  <div id="deck-est-panel" hidden style="margin-top:10px;">
  <div class="row between" style="gap:8px; align-items:center; flex-wrap:wrap;">
  <button class="btn btn-gold" id="de-start" type="button">Deck Estimate Drill</button>
@@ -1923,7 +1939,7 @@
  <summary>The modes</summary>
  <div class="guide-block-body">
  <p><strong>Table Play</strong> is a full blackjack table: you bet, play hands, and can use the count HUD, coach, and quizzes.</p>
- <p><strong>Speed Count</strong> flashes cards from a 1-, 2-, 4-, 6-, or 8-deck shoe so you can practice the running count against a timer. <strong>Deal</strong> (the large top button, or tap the felt / press Space) deals the next card(s) and starts the run if one is not in progress. In Auto mode, Deal starts the shoe and then stays disabled while cards come out on their own. After the last card, Deal is disabled until you start a New Shoe. <strong>New Shoe</strong> reshuffles and restarts immediately. The running count stays hidden and is always 0 at the end of a full shoe. Check mid-shoe anytime. Use this page's Settings for decks, cards per step, auto deal, and tags.</p>
+ <p><strong>Speed Count</strong> flashes cards from a 1-, 2-, 4-, 6-, or 8-deck shoe so you can practice the running count against a timer. <strong>New Shoe</strong> reshuffles and resets the count, cards seen, and timer to 0, then waits in a Ready state — the timer does not start. <strong>Start</strong> begins the timer (and auto-dealing in Auto mode) and deals the first card(s). The large <strong>Deal</strong> button (or tap the felt / press Space in Manual mode) deals the next card(s) only after Start; it does not start a run. Deal is disabled until Start, while Auto is running, after the last card, and while the count prompt is open. After a mid-shoe Check, Deal continues the same shoe without resetting the timer to 0. Changing Speed settings mid-run returns to Ready. The running count stays hidden and is always 0 at the end of a full shoe. Use this page's Settings for decks, cards per step, auto deal, and tags.</p>
  <p><strong>Strategy Drill</strong> quizzes you on the next play (hit, stand, double, split, surrender) for a random hand.</p>
  <p><strong>Charts</strong> shows basic strategy and the deviation tables for your current rules.</p>
  <p><strong>Stats</strong> tracks accuracy and bankroll and lets you review missed hands.</p>
@@ -1991,7 +2007,7 @@
  <p><strong>Count-check quizzes</strong> pause Table Play after a set number of hands, or at a random gap between 5 and 15 hands. Enter the running count and true count. The true-count answer uses your rounding setting (in Exact mode, either truncate or round is accepted, as before).</p>
  <p><strong>Live shoe and discard bars</strong> sit beside the table during Table Play (on by default). The Shoe bar empties and the Discard bar fills as cards come out, including other seats, and they reset on a shuffle. A red mark on the Shoe bar is the cut card. Exact numbers stay hidden unless you turn on “Show exact decks remaining.” Tap the bars at any time and estimate decks remaining; a guess within 0.5 decks is correct. Feedback shows the actual decks left and how your guess would have changed the true count. An optional prompt can ask every 5, 10, or 15 hands (off by default).</p>
  <p><strong>Deck-estimation drill</strong> (a separate toggle) is a standalone quiz: a practice tray is shown at a random depth and you guess decks remaining or already played, also within 0.5 decks.</p>
- <p><strong>Speed Count</strong> times a full shoe (1–8 decks). You enter the running count mid-shoe or at the end (always 0 for a full shoe). Time and accuracy are scored, and your best correct full-shoe time is saved. Deal starts or continues the shoe; New Shoe clears the count, cards seen, and timer and reshuffles.</p>
+ <p><strong>Speed Count</strong> times a full shoe (1–8 decks). You enter the running count mid-shoe or at the end (always 0 for a full shoe). Time and accuracy are scored, and your best correct full-shoe time is saved. New Shoe clears the count, cards seen, and timer and waits at Ready; Start begins the timer when you are ready.</p>
  <p><strong>Timed decisions</strong> in Strategy Drill give you a set number of seconds. If the timer runs out, the hand is scored as a miss.</p>
  </div>
  </details>
@@ -2503,7 +2519,14 @@
  if (answering) return false;
  if (mode === 'auto' && running) return false;
  if (!running && seen > 0 && remaining === 0) return false;
+ if (!running && (seen || 0) === 0) return false; // idle Ready — wait for Start
  return true;
+ }
+ function speedStartAllowed({ answering, running, seen, remaining }) {
+ if (answering) return false;
+ if (running) return false;
+ if ((seen || 0) > 0) return false; // mid-shoe pause or shoe ended — Deal continues or New Shoe
+ return (remaining || 0) > 0;
  }
 
  const defaultState = {
@@ -4831,8 +4854,9 @@
  if (page === 'strat' || page === 'play') updateStratRulesLabel();
  if (page === 'charts' || page === 'play') { syncChartWidgets(); if (typeof renderCharts === 'function') renderCharts(); }
  if (page === 'speed') {
- spUpdateStatusLine();
- if (key === 'decks' && typeof spRunning !== 'undefined' && spRunning && typeof spNewShoe === 'function') spNewShoe();
+ const mid = (typeof spRunning !== 'undefined' && (spRunning || (typeof spSeen !== 'undefined' && spSeen > 0) || (typeof spAnswerOpen === 'function' && spAnswerOpen())));
+ if ((mid || key === 'decks') && typeof spResetToReady === 'function') spResetToReady();
+ else if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
  }
  if (page === 'risk' && typeof renderRiskTab === 'function') renderRiskTab();
  if (page === 'play' && typeof renderRiskTab === 'function' && activeTab === 'risk') renderRiskTab();
@@ -4898,6 +4922,7 @@
  let spCount = 0;
  let spSeen = 0;
  let spStartTime = 0;
+ let spElapsedMs = 0;
  let spTimerId = null;
  let spAutoId = null;
  let spRunning = false;
@@ -4912,9 +4937,13 @@
  if (el) el.textContent = (st.decks || 1) + 'D · ' + batch + ' card' + (batch > 1 ? 's' : '') + ' · ' + mode + ' — Settings to change the shoe or deal style.';
  if (typeof spSyncDealButton === 'function') spSyncDealButton();
  }
+ function spElapsedSeconds() {
+ if (spRunning && spStartTime) return (Date.now() - spStartTime) / 1000;
+ return (spElapsedMs || 0) / 1000;
+ }
  function spUpdateStats() {
  document.getElementById('sp-seen').textContent = spSeen + '/' + spTotal();
- const elapsed = spStartTime ? (Date.now() - spStartTime) / 1000 : 0;
+ const elapsed = spElapsedSeconds();
  document.getElementById('sp-time').textContent = elapsed.toFixed(1) + 's';
  const cps = elapsed > 0.2 ? (spSeen / elapsed) : 0;
  document.getElementById('sp-cps').textContent = cps.toFixed(2) + ' c/s';
@@ -4929,32 +4958,28 @@
  if (spAutoId) { clearInterval(spAutoId); spAutoId = null; }
  }
 
- function spNewShoe() {
+ function spResetToReady() {
  spStopTimers();
  const st = spCfg();
  spDeck = makeSpeedShoe(st.decks || 1, createSeededRng(generateRandomSeedString()));
  spCount = 0;
  spSeen = 0;
- spStartTime = Date.now();
- spRunning = true;
+ spStartTime = 0;
+ spElapsedMs = 0;
+ spRunning = false;
  const box = document.getElementById('sp-answer-box');
  if (box) box.style.display = 'none';
+ const cards = document.getElementById('sp-cards');
+ if (cards) cards.innerHTML = '';
  const fb = document.getElementById('sp-feedback');
  if (fb) {
  fb.className = 'feedback-bar';
- fb.textContent = st.mode === 'auto' ? 'Auto-dealing. Check mid-shoe anytime. A full shoe ends at RC 0.' : 'Tap Deal, the felt, or Space for the next card(s). Check mid-shoe anytime. A full shoe ends at RC 0.';
+ fb.textContent = 'Ready. Press Start when ready. The running count stays hidden and ends at 0 when the shoe is done. Check mid-shoe anytime.';
  }
- const cards = document.getElementById('sp-cards');
- if (cards) cards.innerHTML = '';
  spUpdateStats();
- spTimerId = setInterval(spUpdateStats, 100);
- spNextStep();
- if (st.mode === 'auto') {
- const ms = parseInt(st.interval, 10) || 1000;
- spAutoId = setInterval(() => { if (spRunning) spNextStep(); }, ms);
- }
  spSyncDealButton();
  }
+ function spNewShoe() { spResetToReady(); }
  function spAnswerOpen() {
  const box = document.getElementById('sp-answer-box');
  return !!(box && box.style.display !== 'none');
@@ -4968,27 +4993,69 @@
  remaining: spDeck ? spDeck.length : 0
  });
  }
+ function spCanStart() {
+ return speedStartAllowed({
+ answering: spAnswerOpen(),
+ running: !!spRunning,
+ seen: spSeen || 0,
+ remaining: spDeck ? spDeck.length : 0
+ });
+ }
  function spSyncDealButton() {
  const btn = document.getElementById('sp-deal');
- if (!btn) return;
- const can = spCanDeal();
- btn.disabled = !can;
+ const startBtn = document.getElementById('sp-start');
+ const hint = document.getElementById('sp-deal-hint');
  const st = spCfg();
- if (st.mode === 'auto' && spRunning) btn.title = 'Auto-dealing is on. Use New Shoe to restart, or Check Count to pause.';
- else if (!spRunning && spSeen > 0 && spDeck.length === 0) btn.title = 'Shoe finished. Tap New Shoe to reshuffle and start again.';
- else if (spAnswerOpen()) btn.title = 'Enter the running count, then continue or start a New Shoe.';
- else if (!spRunning && spSeen > 0 && spDeck.length > 0) btn.title = 'Continue this shoe.';
- else if (!spRunning) btn.title = 'Start a shoe and deal the first card(s).';
+ const canDeal = spCanDeal();
+ const canStart = spCanStart();
+ const idleReady = !spRunning && (spSeen || 0) === 0 && (spDeck ? spDeck.length : 0) > 0 && !spAnswerOpen();
+ if (btn) {
+ btn.disabled = !canDeal;
+ if (st.mode === 'auto' && spRunning) btn.title = 'Auto-dealing is on. Use New Shoe to reset, or Check Count to pause.';
+ else if (!spRunning && spSeen > 0 && spDeck && spDeck.length === 0) btn.title = 'Shoe finished. Tap New Shoe, then Start when ready.';
+ else if (spAnswerOpen()) btn.title = 'Enter the running count, then Deal to continue or New Shoe to reset.';
+ else if (idleReady) btn.title = 'Press Start when ready';
+ else if (!spRunning && spSeen > 0 && spDeck && spDeck.length > 0) btn.title = 'Continue this shoe.';
  else btn.title = 'Deal the next card(s).';
+ }
+ if (hint) hint.hidden = !idleReady;
+ if (startBtn) {
+ startBtn.disabled = !canStart;
+ startBtn.title = canStart ? 'Start the timer and deal the first card(s).' : (spRunning ? 'A run is already in progress.' : (spSeen > 0 && spDeck && spDeck.length > 0 ? 'This shoe is paused — tap Deal to continue.' : 'Tap New Shoe to prepare a shoe, then Start when ready.'));
+ }
  }
  function spResumeShoe() {
  const st = spCfg();
+ spStartTime = Date.now() - (spElapsedMs || 0);
  spRunning = true;
  if (!spTimerId) spTimerId = setInterval(spUpdateStats, 100);
  if (st.mode === 'auto') {
  const ms = parseInt(st.interval, 10) || 1000;
  if (!spAutoId) spAutoId = setInterval(() => { if (spRunning) spNextStep(); }, ms);
  }
+ }
+ function spStartRun() {
+ if (!spCanStart()) { spSyncDealButton(); return; }
+ if (!spDeck || spDeck.length === 0) spResetToReady();
+ const st = spCfg();
+ spElapsedMs = 0;
+ spStartTime = Date.now();
+ spRunning = true;
+ const box = document.getElementById('sp-answer-box');
+ if (box) box.style.display = 'none';
+ const fb = document.getElementById('sp-feedback');
+ if (fb) {
+ fb.className = 'feedback-bar';
+ fb.textContent = st.mode === 'auto' ? 'Auto-dealing. Check mid-shoe anytime. A full shoe ends at RC 0.' : 'Tap Deal, the felt, or Space for the next card(s). Check mid-shoe anytime. A full shoe ends at RC 0.';
+ }
+ spUpdateStats();
+ spTimerId = setInterval(spUpdateStats, 100);
+ spNextStep();
+ if (st.mode === 'auto') {
+ const ms = parseInt(st.interval, 10) || 1000;
+ spAutoId = setInterval(() => { if (spRunning) spNextStep(); }, ms);
+ }
+ spSyncDealButton();
  }
  function spDeal() {
  if (!spCanDeal()) { spSyncDealButton(); return; }
@@ -5000,7 +5067,8 @@
  spSyncDealButton();
  return;
  }
- spNewShoe();
+ // Do not start a run from Deal / felt / Space.
+ spSyncDealButton();
  return;
  }
  if (st.mode === 'manual') spNextStep();
@@ -5034,6 +5102,7 @@
  }
 
  function spPromptCheck(deckDone = false) {
+ if (spRunning && spStartTime) spElapsedMs = Date.now() - spStartTime;
  spStopTimers();
  spRunning = false;
  const fb = document.getElementById('sp-feedback');
@@ -5049,14 +5118,14 @@
  function spSubmitGuess() {
  const guess = parseInt(document.getElementById('sp-guess').value, 10);
  const fb = document.getElementById('sp-feedback');
- const elapsed = (Date.now() - spStartTime) / 1000;
+ const elapsed = spElapsedSeconds();
  const cps = elapsed > 0 ? spSeen / elapsed : 0;
 
  if (guess === spCount) {
  fb.className = 'feedback-bar good';
  fb.textContent = `✓ Correct! RC = ${spCount} (${spSeen} cards in ${elapsed.toFixed(1)}s = ${cps.toFixed(2)} c/s).`;
  if (spSeen === spTotal()) {
- const ms = Date.now() - spStartTime;
+ const ms = Math.round(elapsed * 1000);
  if (!state.speedBestMs || ms < state.speedBestMs) state.speedBestMs = ms;
  if (cps > state.speedBestCps) state.speedBestCps = cps;
  saveState();
@@ -5074,6 +5143,8 @@
  if (spDealBtn) spDealBtn.addEventListener('click', spDeal);
  const spNewBtn = document.getElementById('sp-new-shoe');
  if (spNewBtn) spNewBtn.addEventListener('click', spNewShoe);
+ const spStartBtn = document.getElementById('sp-start');
+ if (spStartBtn) spStartBtn.addEventListener('click', spStartRun);
  document.getElementById('sp-check').addEventListener('click', () => { if (spSeen > 0) spPromptCheck(spDeck.length === 0); });
  document.getElementById('sp-stage').addEventListener('click', (e) => {
  if (e.target.closest('#sp-answer-box')) return;
@@ -5083,20 +5154,15 @@
  document.getElementById('sp-guess').addEventListener('keydown', (e) => { if (e.key === 'Enter') spSubmitGuess(); });
  document.getElementById('sp-mode').addEventListener('change', () => {
  writePageSetting('speed', 'mode', document.getElementById('sp-mode').value);
- saveState();
- if (spRunning) spNewShoe();
- else spUpdateStatusLine();
+ afterPageSettingChanged('speed', 'mode');
  });
  document.getElementById('sp-interval').addEventListener('change', () => {
  writePageSetting('speed', 'interval', parseInt(document.getElementById('sp-interval').value, 10) || 1000);
- saveState();
- if (spRunning && spCfg().mode === 'auto') spNewShoe();
- else spUpdateStatusLine();
+ afterPageSettingChanged('speed', 'interval');
  });
  document.getElementById('sp-batch').addEventListener('change', () => {
  writePageSetting('speed', 'batch', parseInt(document.getElementById('sp-batch').value, 10) || 1);
- saveState();
- spUpdateStatusLine();
+ afterPageSettingChanged('speed', 'batch');
  });
 
  /* ==================== TAB 3: STRATEGY & DEVIATIONS DRILL ==================== */
@@ -5639,7 +5705,8 @@
  if (typeof renderRiskTab === 'function') renderRiskTab();
  if (typeof renderTable === 'function') renderTable();
  if (typeof updateHud === 'function') updateHud();
- if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
+ if (result.byPage && result.byPage.speed && typeof spResetToReady === 'function') spResetToReady();
+ else if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
  const msg = document.getElementById('settings-apply-msg');
  if (msg) {
  msg.textContent = formatApplySettingsMessage(result);
@@ -6131,7 +6198,8 @@
  if (!restoreCommittedShoe()) buildShoe();
  else { updateHud(); updateHistoryCount(); }
  updateTopStats();
- if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
+ if (typeof spResetToReady === 'function') spResetToReady();
+ else if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
  renderTable();
  updateHistoryCount();
 
@@ -6172,14 +6240,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v13-1')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v13-2')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v13-1', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v13-2', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v13-1'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v13-2'); } catch (e) {} }, 2500);
   });
 }
 </script>
