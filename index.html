@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14.1</title>
+<title>Blackjack & Card Counting Trainer Pro v14.1.1</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -167,7 +167,8 @@
  flex-direction: column;
  gap: 6px;
  }
- .tab-view.active { display: flex; }
+ .tab-view.active { display: flex; overflow: hidden; }
+ #tab-play.tab-view.active .table-stage { overflow: hidden; min-height: 0; }
  #tab-history.tab-view.active {
  display: flex;
  flex: 1 1 auto;
@@ -478,6 +479,7 @@
  flex-wrap: wrap;
  gap: 6px;
  max-width: 100%;
+ min-height: 1.7em;
  }
 
  .hand-score {
@@ -514,14 +516,24 @@
  .cards-row {
  --card-overlap: 0px;
  }
- .cards-row.overlap { --card-overlap: 12px; }
+ .cards-row.overlap { --card-overlap: 12px; --card-w: 60px; --hand-slots: 7; }
  .cards-row.overlap .card + .card { margin-left: calc(var(--card-overlap) * -1); }
- .cards-row { overflow: visible; }
+ .cards-row.overlap {
+ width: calc(var(--card-w) + (var(--hand-slots) - 1) * (var(--card-w) - var(--card-overlap)));
+ max-width: 100%;
+ justify-content: flex-start;
+ }
+ .cards-row {
+ overflow: visible;
+ min-height: var(--card-h, 86px);
+ }
 
  /* Playing Cards */
  .card {
+ --card-w: 60px;
+ --card-h: 86px;
  width: 60px;
- height: 86px;
+ height: var(--card-h);
  background: var(--card-bg);
  border-radius: 7px;
  box-shadow: 0 3px 8px rgba(0,0,0,0.45);
@@ -647,16 +659,13 @@
  .scroll-hint-left::after { content: '‹'; left: 3px; }
  .player-hand-box .cards-row {
  justify-content: flex-start;
- width: max-content;
- min-width: min-content;
- max-width: none;
  margin-inline: auto;
+ overflow-x: auto;
  }
  #dealer-cards {
  max-width: 100%;
  overflow-x: auto;
  justify-content: flex-start;
- width: max-content;
  margin-inline: auto;
  -webkit-overflow-scrolling: touch;
  }
@@ -693,7 +702,7 @@
  }
  .shoe-shuffle-notice[hidden] { display: none !important; }
  .feedback-bar {
- min-height: 30px;
+ min-height: 48px;
  border-radius: 8px;
  padding: 5px 10px;
  font-size: 0.79rem;
@@ -718,6 +727,10 @@
  border-radius: 10px;
  padding: 8px;
  flex-shrink: 0;
+ min-height: 7.5rem;
+ box-sizing: border-box;
+ position: relative;
+ z-index: 5;
  }
 
  .chips-wrap { display: flex; flex-direction: column; gap: 7px; }
@@ -1033,7 +1046,7 @@
 
  /* Short phone screens (e.g. iPhone SE / compact Android) — keep 44px tap targets */
  @media (max-height: 700px) {
- .card { width: 52px; height: 74px; padding: 3px 4px; }
+ .card { --card-w: 52px; --card-h: 74px; width: 52px; height: var(--card-h); padding: 3px 4px; }
  .card-top, .card-bot { font-size: 0.78rem; }
  .card-center { font-size: 1.3rem; }
  .card.large { width: 70px; height: 100px; }
@@ -1055,7 +1068,7 @@
  .controls-bar { padding: 6px; }
  .chips-wrap { flex-direction: row; justify-content: space-between; align-items: center; gap: 6px; }
  .bet-actions-row { width: auto; flex: 1; min-width: 0; }
- .card, .card.large { width: 40px; height: 56px; padding: 2px 3px; }
+ .card, .card.large { --card-w: 40px; --card-h: 56px; width: 40px; height: var(--card-h); padding: 2px 3px; }
  .card-top, .card-bot { font-size: 0.65rem; }
  .card-center, .card.large .card-center { font-size: 1.05rem; }
  .cards-row { min-height: 56px; }
@@ -1063,7 +1076,7 @@
  .zone-title { font-size: 0.62rem; margin-bottom: 2px; }
  /* Keep compact per-hand WIN/LOSE in the title row (do not hide after a split). */
  .hand-result { display: inline-block; font-size: 0.58rem; padding: 0 4px; margin: 0; }
- .cards-row.overlap { --card-overlap: 8px; }
+ .cards-row.overlap { --card-overlap: 8px; --card-w: 52px; }
  #tab-play .player-hands { padding: 0; gap: 4px; }
  #tab-play .player-hand-box { padding: 0 4px; border-width: 1px; min-width: 0; background: transparent; }
  #player-hands .zone-title {
@@ -1137,8 +1150,8 @@
  gap: 4px 8px;
  padding: 4px 6px;
  overflow: hidden;
- flex: 1 0 auto;
- min-height: min-content;
+ flex: 1 1 auto;
+ min-height: 10rem;
  }
  #tab-play #other-seats:not([hidden]) {
  max-height: 64px;
@@ -1170,25 +1183,25 @@
  /* Very short, narrow portrait (iPhone SE 1st gen 320×568 and similar):
     keep the banner readable and both split hands reachable. */
  @media (max-width: 400px) and (max-height: 640px) {
- .card, .card.large { width: 44px; height: 62px; padding: 2px 3px; }
+ .card, .card.large { --card-w: 44px; --card-h: 62px; width: 44px; height: var(--card-h); padding: 2px 3px; }
  .card-top, .card-bot { font-size: 0.62rem; }
  .card-center, .card.large .card-center { font-size: 1.05rem; }
  .cards-row { min-height: 62px; }
- .cards-row.overlap { --card-overlap: 10px; }
+ .cards-row.overlap { --card-overlap: 10px; --card-w: 44px; }
  .strip { padding: 3px 6px; }
  .stat-cell { padding: 2px 3px; }
  .stat-cell .label { font-size: 0.55rem; }
  .stat-cell .val { font-size: 0.78rem; }
  .controls-bar { padding: 6px; }
- #tab-play .table-stage { min-height: 0; flex: 1 1 auto; }
+ #tab-play .table-stage { min-height: 0; flex: 1 1 auto; overflow: hidden; }
  #tab-play .table-felt {
- overflow-x: hidden;
- overflow-y: auto;
- -webkit-overflow-scrolling: touch;
+ overflow: hidden;
  justify-content: flex-start;
  gap: 6px;
- min-height: 0;
+ min-height: 10rem;
+ flex: 1 1 auto;
  }
+ .controls-bar { min-height: 5.5rem; }
  #tab-play .table-felt > .feedback-bar {
  position: relative;
  z-index: 3;
@@ -1221,12 +1234,14 @@
  .live-meter-label { font-size: 0.6rem; }
  main { padding: 10px 14px 12px; }
  .chips-wrap { flex-direction: row; justify-content: space-between; align-items: center; }
+ .controls-bar { min-height: 4.75rem; }
  .bet-actions-row { width: 320px; }
  .guide-body { padding: 14px 16px 16px; }
  table.strat-table th, table.strat-table td { padding: 6px 4px; }
  }
  @media (min-width: 720px) and (min-height: 540px) {
- .card { width: 70px; height: 100px; }
+ .card { --card-w: 70px; --card-h: 100px; width: 70px; height: var(--card-h); }
+ .cards-row.overlap { --card-w: 70px; }
  .card-center { font-size: 1.85rem; }
  .card.large { width: 96px; height: 136px; }
  .card.large .card-center { font-size: 2.6rem; }
@@ -1297,8 +1312,12 @@
  #selftest-results .ok { color: #7dcea0; }
  #selftest-results .fail { color: #e07a7a; }
  .last-round-flag { font-size: 0.68rem; color: var(--gold); text-align: center; letter-spacing: 0.3px; margin: 0 0 4px; }
- #index-prompt { width: 100%; max-width: 520px; margin: 6px auto 0; padding: 6px 10px; border: 1px solid var(--gold); border-radius: 8px; background: rgba(20,28,18,0.55); color: var(--gold); font-size: 0.78rem; font-weight: 650; text-align: center; animation: none; transition: none; }
+ #index-prompt-slot { width: 100%; min-height: 0; flex: 0 0 auto; }
+ #index-prompt-slot.reserved { min-height: 2.8em; }
+ #index-prompt { width: 100%; max-width: 520px; margin: 0 auto; padding: 6px 10px; border: 1px solid var(--gold); border-radius: 8px; background: rgba(20,28,18,0.55); color: var(--gold); font-size: 0.78rem; font-weight: 650; text-align: center; animation: none; transition: none; }
  #index-prompt[hidden] { display: none !important; }
+ #seat-picker-slot { min-height: 0; flex: 0 0 auto; }
+ #seat-picker-slot.reserved { min-height: 2.6rem; }
  #table-clock { font-variant-numeric: tabular-nums; font-size: 0.78rem; color: var(--gold); letter-spacing: 0.4px; text-align: right; min-width: 4.5rem; }
  #table-clock-cell[hidden] { display: none !important; }
  .progress-charts { display: grid; gap: 10px; width: 100%; }
@@ -1319,7 +1338,8 @@
  }
  .other-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; }
  .other-seat .cards-row { margin: 0; justify-content: flex-start; width: max-content; }
- .other-seat .card { width: 36px; height: 50px; padding: 2px 2px; }
+ .other-seat .cards-row.overlap { --card-w: 36px; --hand-slots: 6; }
+ .other-seat .card { --card-w: 36px; width: 36px; height: 50px; padding: 2px 2px; }
  .other-seat .card-top, .other-seat .card-bot { font-size: 0.58rem; }
  .other-seat .card-center { font-size: 0.9rem; }
  .heat-hint {
@@ -1357,9 +1377,8 @@
  .table-stage > .table-felt {
  flex: 1 1 auto;
  min-width: 0;
- overflow-x: hidden;
- overflow-y: auto;
- -webkit-overflow-scrolling: touch;
+ min-height: 16rem;
+ overflow: hidden;
  }
  /* v11-2: the history link takes a row under the felt; do not shrink
     dealer/player cards under the result banner when space is tight. */
@@ -1611,9 +1630,11 @@
  </div>
 
  <div id="heat-hint" class="heat-hint" role="status"></div>
+ <div id="seat-picker-slot">
  <div id="seat-picker" class="seat-picker" hidden>
   <span class="sp-lab">Your seat</span>
   <div id="seat-picker-btns" class="row" style="gap:6px;flex-wrap:wrap;justify-content:center;"></div>
+ </div>
  </div>
  <div id="other-seats" class="other-seats table-seats" hidden></div>
  <div class="table-stage" id="table-stage">
@@ -1650,7 +1671,7 @@
  <div class="zone" style="width:100%;">
  <div class="player-hands" id="player-hands"></div>
  </div>
- <div id="index-prompt" hidden role="status"></div>
+ <div id="index-prompt-slot"><div id="index-prompt" hidden role="status"></div></div>
  </div>
  </div>
 
@@ -2356,6 +2377,7 @@
  <div class="ins-grid" style="margin-top:10px;" data-settings-pages="play,stats,app">
  <button class="btn" id="btn-reset-stats" type="button">Reset stats &amp; logs</button>
  <button class="btn" id="btn-export-data-settings" type="button">Export settings &amp; stats</button>
+ <button class="btn" id="btn-import-data-settings" type="button">Import backup…</button>
  </div>
  </div>
  </details>
@@ -2821,6 +2843,15 @@ function formatIndexPrompt(note, tc) {
  function shouldSweepOnBust(isBust) { return !!isBust; }
  function shouldLingerLastRound(featLastRoundReview, holdRound) {
  return !!(featLastRoundReview || holdRound);
+ }
+ function instantPaintHoldMs() { return 50; }
+ function tableActionsShouldLock(phase, opts) {
+ opts = opts || {};
+ if (phase === 'dealing' || phase === 'others' || phase === 'dealer') return true;
+ if (opts.bustVisible) return true;
+ if (phase === 'playing' && opts.handFinished) return true;
+ if (phase === 'done' && !opts.dealerSwept) return true;
+ return false;
  }
  function v13ParityKeys() {
  return {
@@ -4868,9 +4899,18 @@ function formatIndexPrompt(note, tc) {
  });
  requestAnimationFrame(updateHandScrollHints);
 
- document.getElementById('bet-controls').style.display = (phase === 'betting' || phase === 'done') ? 'flex' : 'none';
+ const lock = typeof tableActionsLocked === 'function' && tableActionsLocked();
+ const stayOnPlay = phase === 'playing' || phase === 'others' || phase === 'dealer' || (phase === 'done' && !dealerSwept && !lastRoundActive);
+ document.getElementById('bet-controls').style.display = (phase === 'betting' || (phase === 'done' && !stayOnPlay)) ? 'flex' : 'none';
  document.getElementById('insurance-controls').style.display = phase === 'insurance' ? 'block' : 'none';
- document.getElementById('play-controls').style.display = phase === 'playing' ? 'block' : 'none';
+ document.getElementById('play-controls').style.display = stayOnPlay ? 'block' : 'none';
+ ['btn-deal','btn-clear-bet','btn-rebet'].forEach(id => {
+ const el = document.getElementById(id);
+ if (el) el.disabled = !!(lock && phase !== 'betting' && !(phase === 'done' && (dealerSwept || lastRoundActive)));
+ });
+ document.querySelectorAll('#chips-row .chip').forEach(el => {
+ el.disabled = !!(lock && phase !== 'betting' && !(phase === 'done' && (dealerSwept || lastRoundActive)));
+ });
 
  if (phase === 'insurance') {
  document.getElementById('ins-prompt-text').textContent = isEvenMoneyOffer
@@ -4885,17 +4925,17 @@ function formatIndexPrompt(note, tc) {
  surrBtn.style.display = state.ls ? 'block' : 'none';
  grid.className = state.ls ? 'action-grid cols-5' : 'action-grid';
 
- if (phase === 'playing') {
- const h = playerHands[activeHandIdx];
- const aceStand = splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard);
- const canDouble = !aceStand && h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
- const canSplit = canSplitPair(h.cards, h.fromSplit, playerHands.length) && state.bankroll >= h.bet;
- const canSurr = state.ls && h.cards.length === 2 && !h.fromSplit && playerHands.length === 1;
- const canHit = !aceStand;
-
+ if (stayOnPlay) {
+ const h = playerHands[activeHandIdx] || playerHands[0];
+ const aceStand = h ? splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard) : true;
+ const canDouble = !lock && phase === 'playing' && h && !aceStand && h.cards.length === 2 && state.bankroll >= h.bet && (!h.fromSplit || state.das);
+ const canSplit = !lock && phase === 'playing' && h && canSplitPair(h.cards, h.fromSplit, playerHands.length) && state.bankroll >= h.bet;
+ const canSurr = !lock && phase === 'playing' && h && state.ls && h.cards.length === 2 && !h.fromSplit && playerHands.length === 1;
+ const canHit = !lock && phase === 'playing' && h && !aceStand && !h.finished && !h.swept;
  document.getElementById('btn-double').disabled = !canDouble;
  document.getElementById('btn-split').disabled = !canSplit;
  document.getElementById('btn-hit').disabled = !canHit;
+ document.getElementById('btn-stand').disabled = !(!lock && phase === 'playing' && h && !h.finished && !h.swept);
  surrBtn.disabled = !canSurr;
  }
 
@@ -4907,7 +4947,7 @@ function formatIndexPrompt(note, tc) {
  }
 
  function startDeal() {
- if (phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer') return;
+ if (typeof canStartDeal === 'function' ? !canStartDeal() : (phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer')) return;
  if (typeof clearTableTimer === 'function') clearTableTimer();
  lastRoundActive = false;
  dealerSwept = false;
@@ -5103,7 +5143,7 @@ function formatIndexPrompt(note, tc) {
  }
 
  function playerHit() {
- if (phase !== 'playing') return;
+ if (phase !== 'playing' || (typeof tableActionsLocked === 'function' && tableActionsLocked())) return;
  const cur = playerHands[activeHandIdx];
  if (splitAceMustStand(cur.cards, cur.fromSplit, state.splitAcesOneCard)) return;
  evaluateCoach('H');
@@ -5126,14 +5166,14 @@ function formatIndexPrompt(note, tc) {
  }
 
  function playerStand() {
- if (phase !== 'playing') return;
+ if (phase !== 'playing' || (typeof tableActionsLocked === 'function' && tableActionsLocked())) return;
  evaluateCoach('S');
  playerHands[activeHandIdx].finished = true;
  advanceHandOrDealer();
  }
 
  function playerDouble() {
- if (phase !== 'playing') return;
+ if (phase !== 'playing' || (typeof tableActionsLocked === 'function' && tableActionsLocked())) return;
  const h = playerHands[activeHandIdx];
  if (splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard)) return;
  if (h.cards.length !== 2 || state.bankroll < h.bet || (h.fromSplit && !state.das)) return;
@@ -5157,7 +5197,7 @@ function formatIndexPrompt(note, tc) {
  }
 
  function playerSplit() {
- if (phase !== 'playing') return;
+ if (phase !== 'playing' || (typeof tableActionsLocked === 'function' && tableActionsLocked())) return;
  const h = playerHands[activeHandIdx];
  if (!canSplitPair(h.cards, h.fromSplit, playerHands.length) || state.bankroll < h.bet) return;
  evaluateCoach('P');
@@ -5179,7 +5219,7 @@ function formatIndexPrompt(note, tc) {
  }
 
  function playerSurrender() {
- if (phase !== 'playing' || !state.ls) return;
+ if (phase !== 'playing' || !state.ls || (typeof tableActionsLocked === 'function' && tableActionsLocked())) return;
  const h = playerHands[activeHandIdx];
  if (h.cards.length !== 2 || h.fromSplit || playerHands.length > 1) return;
  evaluateCoach('R');
@@ -6206,13 +6246,14 @@ function formatIndexPrompt(note, tc) {
  const k = e.key.toLowerCase();
 
  if (activeTab === 'play') {
- if (phase === 'playing') {
+ if (phase === 'playing' && !(typeof tableActionsLocked === 'function' && tableActionsLocked())) {
  if (k === 'h') playerHit();
  else if (k === 's') playerStand();
  else if (k === 'd') playerDouble();
  else if (k === 'p') playerSplit();
  else if (k === 'r') playerSurrender();
  } else if ((phase === 'betting' || phase === 'done') && (k === ' ' || k === 'enter')) {
+ if (typeof canStartDeal === 'function' && !canStartDeal()) return;
  e.preventDefault();
  startDeal();
  }
@@ -6268,18 +6309,38 @@ function formatIndexPrompt(note, tc) {
  return 16;
  }
  function currentDealerDelayMs() {
- return dealerCardDelayMs(state.dealPace || 'normal', { instant: !!qaDealInstant });
+ const ms = dealerCardDelayMs(state.dealPace || 'normal', { instant: !!qaDealInstant });
+ return ms > 0 ? ms : instantPaintHoldMs();
  }
  function currentSweepDelayMs() {
  return endRoundSweepDelayMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
  }
  function currentBustHoldMs() {
- return bustHoldMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
+ const ms = bustHoldMs(state.dealPace || 'normal', { instant: !!qaDealInstant, reducedMotion: prefersReducedMotion() });
+ return ms > 0 ? ms : instantPaintHoldMs();
  }
  function afterTableDelay(ms, fn) {
  clearTableTimer();
- if (!ms) { fn(); return; }
- tableTimer = setTimeout(() => { tableTimer = null; fn(); }, ms);
+ const wait = (ms > 0) ? ms : instantPaintHoldMs();
+ tableTimer = setTimeout(() => { tableTimer = null; fn(); }, wait);
+ }
+ function tableActionsLocked() {
+ const h = (typeof playerHands !== 'undefined' && playerHands[typeof activeHandIdx !== 'undefined' ? activeHandIdx : 0]) || null;
+ const bustVisible = (typeof visibleBustCards === 'function') && (
+ visibleBustCards(typeof playerHands !== 'undefined' ? playerHands : []) ||
+ (typeof multiSeatOn === 'function' && multiSeatOn() && visibleBustCards(typeof otherSeatHands !== 'undefined' ? otherSeatHands : []))
+ );
+ return tableActionsShouldLock(typeof phase !== 'undefined' ? phase : '', {
+ bustVisible: !!bustVisible,
+ handFinished: !!(h && (h.finished || h.swept)),
+ lastRoundActive: !!(typeof lastRoundActive !== 'undefined' && lastRoundActive),
+ dealerSwept: !!(typeof dealerSwept !== 'undefined' && dealerSwept)
+ });
+ }
+ function canStartDeal() {
+ if (phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer') return false;
+ if (phase === 'done' && !dealerSwept && !lastRoundActive) return false;
+ return true;
  }
  let qaDealTrace = [];
  function recordTablePaint(tag) {
@@ -6549,12 +6610,12 @@ function formatIndexPrompt(note, tc) {
  imp.addEventListener('click', () => inp.click());
  inp.addEventListener('change', () => {
  const f = inp.files && inp.files[0];
- if (!f) return;
+ if (!f) { inp.value = ''; return; }
  const reader = new FileReader();
  reader.onload = () => {
  try {
  const obj = JSON.parse(String(reader.result || ''));
- if (!confirm('Import this backup? Current settings and stats on this device will be replaced. The live shoe is not part of the backup.')) return;
+ if (!confirm('Import this backup? Current settings and stats on this device will be replaced. The live shoe is not part of the backup.')) { inp.value = ''; return; }
  importTrainerData(obj);
  } catch (err) {
  const st = document.getElementById('st-review-status');
@@ -6569,6 +6630,9 @@ function formatIndexPrompt(note, tc) {
  bindExportImport('btn-export-data', 'inp-import-data');
  const exp2 = document.getElementById('btn-export-data-settings');
  if (exp2) exp2.addEventListener('click', () => exportTrainerData());
+ const imp2 = document.getElementById('btn-import-data-settings');
+ const inpImp = document.getElementById('inp-import-data');
+ if (imp2 && inpImp) imp2.addEventListener('click', () => inpImp.click());
  const applyAllBtn = document.getElementById('btn-apply-settings-all');
  if (applyAllBtn) applyAllBtn.addEventListener('click', () => {
  const page = settingsContextPage || activeTab || 'play';
@@ -6787,7 +6851,9 @@ function formatIndexPrompt(note, tc) {
  const wrap = document.getElementById('seat-picker');
  const btns = document.getElementById('seat-picker-btns');
  if (!wrap || !btns) return;
- const show = multiSeatOn() && (phase === 'betting' || phase === 'done');
+ const slot = document.getElementById('seat-picker-slot');
+ if (slot) slot.classList.toggle('reserved', multiSeatOn());
+ const show = multiSeatOn() && (phase === 'betting' || (phase === 'done' && dealerSwept));
  wrap.hidden = !show;
  if (!show) { btns.innerHTML = ''; return; }
  const layout = currentTableLayout();
@@ -6799,6 +6865,7 @@ function formatIndexPrompt(note, tc) {
  b.textContent = s.you ? (s.label + ' · You') : ('Sit ' + s.label);
  b.setAttribute('aria-pressed', s.you ? 'true' : 'false');
  b.addEventListener('click', () => {
+ if (typeof tableActionsLocked === 'function' && tableActionsLocked()) return;
  writePageSetting('play', 'playerSeat', s.index);
  if (typeof afterPageSettingChanged === 'function') afterPageSettingChanged('play', 'playerSeat');
  else renderTable();
@@ -6837,7 +6904,7 @@ function formatIndexPrompt(note, tc) {
  });
  [...box.querySelectorAll(':scope > .cards-row, :scope > .swept-note')].forEach(el => {
  const k = el.getAttribute('data-hand') || '';
- if (!k.startsWith(prefix)) return;
+ if (!k.startsWith(prefix)) { el.remove(); return; }
  const idx = parseInt(k.slice(prefix.length), 10);
  if (!Number.isFinite(idx) || idx >= (hands || []).length) el.remove();
  });
@@ -6920,6 +6987,9 @@ function formatIndexPrompt(note, tc) {
  });
  const pZoneWrap = pZone && pZone.closest('.zone');
  if (pZoneWrap) pZoneWrap.hidden = true;
+ if (pZone) {
+  [...pZone.querySelectorAll(':scope > .cards-row, :scope > .swept-note')].forEach(el => el.remove());
+ }
  }
 
  function situationKey(cards, upRank, dec) {
@@ -7077,35 +7147,56 @@ function formatIndexPrompt(note, tc) {
  if (!tot) return;
  const p = ensureProgress();
  p.acc = pushProgressPoint(p.acc, { t: Date.now(), acc: (state.playCorrect || 0) / tot }, 200);
+ if (typeof saveState === 'function') saveState();
  }
  function recordSpeedProgress(cps) {
  if (!state.featStats || !Number.isFinite(cps)) return;
  const p = ensureProgress();
  p.speed = pushProgressPoint(p.speed, { t: Date.now(), cps: cps }, 200);
+ if (typeof saveState === 'function') saveState();
  }
  function recordTcProgress(err) {
  if (!state.featStats) return;
  const p = ensureProgress();
  p.tc = pushProgressPoint(p.tc, { t: Date.now(), err: Number(err) || 0 }, 200);
+ if (typeof saveState === 'function') saveState();
  }
 
  let shoeQuizPoints = [];
  let shoeQuizAsked = {};
+ function persistShoeQuizzes() {
+ state.shoeQuizPoints = (shoeQuizPoints || []).slice();
+ state.shoeQuizAsked = Object.assign({}, shoeQuizAsked || {});
+ if (typeof saveState === 'function') saveState();
+ }
+ function restoreShoeQuizzes() {
+ if (Array.isArray(state.shoeQuizPoints) && state.shoeQuizPoints.length) {
+ shoeQuizPoints = state.shoeQuizPoints.slice();
+ shoeQuizAsked = (state.shoeQuizAsked && typeof state.shoeQuizAsked === 'object') ? Object.assign({}, state.shoeQuizAsked) : {};
+ return shoeQuizPoints.slice();
+ }
+ if (state.featShoeQuiz) armShoeQuizzes();
+ return shoeQuizPoints.slice();
+ }
  function armShoeQuizzes() {
  shoeQuizPoints = [];
  shoeQuizAsked = {};
- if (!state.featShoeQuiz) return;
+ if (!state.featShoeQuiz) { persistShoeQuizzes(); return; }
  shoeQuizPoints = scheduleShoeQuizPoints(cardsDealtCount, cutCardIndex, state.shoeQuizFreq || '1', Math.random);
+ persistShoeQuizzes();
  }
  function maybeOfferShoeQuiz() {
  const hit = shouldOfferShoeQuiz(!!state.featShoeQuiz, shoeQuizPoints, cardsDealtCount, shoeQuizAsked);
  if (hit === false) return false;
  shoeQuizAsked[hit] = true;
+ persistShoeQuizzes();
  openCountQuiz(true);
  return true;
  }
 
  function syncIndexPrompt() {
+ const slot = document.getElementById('index-prompt-slot');
+ if (slot) slot.classList.toggle('reserved', !!state.featIndexPrompts);
  const el = document.getElementById('index-prompt');
  if (!el) return;
  const showBase = indexPromptShouldShow(!!state.featIndexPrompts, !!(state.featI18 || state.featFab4), true);
@@ -7498,6 +7589,8 @@ function startMistakeReview() {
  },
  endRoundSweepDelayMs,
  dealerCardDelayMs,
+ instantPaintHoldMs,
+ tableActionsShouldLock,
  bustHoldMs,
  cardIdentity,
  queueDraws(list) {
@@ -7555,8 +7648,13 @@ function startMistakeReview() {
  shouldOfferShoeQuiz: shouldOfferShoeQuiz,
  buildExportPayload: (st) => buildExportPayload(st || state, new Date().toISOString()),
  parseImportPayload: parseImportPayload,
- armShoeQuizAt(n) { shoeQuizPoints = [n]; shoeQuizAsked = {}; state.featShoeQuiz = true; return shoeQuizPoints; },
+ armShoeQuizAt(n) { shoeQuizPoints = [n]; shoeQuizAsked = {}; state.featShoeQuiz = true; if (typeof persistShoeQuizzes === 'function') persistShoeQuizzes(); return shoeQuizPoints; },
  setPlayFlag(k, v) { writePageSetting('play', k, v); if (typeof saveState === 'function') saveState(); if (k === 'featIndexPrompts' && typeof syncIndexPrompt === 'function') syncIndexPrompt(); if ((k === 'featDistract' || k === 'featDistractNoise') && typeof syncDistractUI === 'function') syncDistractUI(); if (typeof syncFeatureToggles === 'function') syncFeatureToggles(); return state[k]; },
+ tableActionsLocked,
+ canStartDeal,
+ recordTcProgress,
+ restoreShoeQuizzes,
+ setPlayerSeat(n) { writePageSetting('play', 'playerSeat', n); if (typeof afterPageSettingChanged === 'function') afterPageSettingChanged('play', 'playerSeat'); return state.playerSeat; },
  setRunningCount(n) { runningCount = Number(n) || 0; if (typeof updateHud === 'function') updateHud(); if (typeof syncIndexPrompt === 'function') syncIndexPrompt(); return runningCount; },
  exportData() { return exportTrainerData(); },
  importData(obj) { return importTrainerData(obj); }
@@ -7589,7 +7687,11 @@ function startMistakeReview() {
  syncRuleControlsUI();
  updateModeOptions();
  if (!restoreCommittedShoe()) buildShoe();
- else { updateHud(); updateHistoryCount(); }
+ else {
+ updateHud();
+ updateHistoryCount();
+ if (typeof restoreShoeQuizzes === 'function') restoreShoeQuizzes();
+ }
  updateTopStats();
  if (typeof spResetToReady === 'function') spResetToReady();
  else if (typeof spUpdateStatusLine === 'function') spUpdateStatusLine();
@@ -7658,14 +7760,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v14-1')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v14-1-1')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v14-1', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v14-1-1', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-1'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-1-1'); } catch (e) {} }, 2500);
   });
 }
 </script>

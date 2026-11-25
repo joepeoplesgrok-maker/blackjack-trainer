@@ -79,6 +79,15 @@ Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
 
+### v14.1.1
+- Switching seats before the end-of-round sweep no longer leaves a ghost hand or stale “Swept” notes in the You box (Jerry B1).
+- Hit, Stand, and the other play actions (including keys) are disabled during the bust hold, the dealer’s turn, and the sweep wait (Jerry B2).
+- Existing cards keep their place: deal rows are reserved to a fixed width so they no longer shift sideways; the action bar, seat picker, and index-prompt slot keep reserved space so the felt and the player’s hand don’t jump (Jerry B3, L1).
+- Instant pace still shows the bust card and the dealer’s hole card for a brief, countable paint (about 50 ms) before the next step or sweep (Jerry R1-I, ID-1).
+- True-count quiz progress and the mid-shoe quiz schedule are saved and survive a reload (Jerry F1, F2).
+- Import always clears the file input, so the same backup can be chosen again after a cancel or a previous import. Settings now has both Export and Import, matching the README (Jerry F3, F4).
+- Cache `bj-trainer-v14-1-1`. Hard-refresh to pick it up.
+
 ### v14.1
 - **Mistake review / replay** on Stats: missed Table Play and Strategy Drill decisions (and graded bets) are listed with a Replay button that opens the Strategy Drill on that hand.
 - **Progress charts** on Stats plot accuracy, Speed Count pace, and true-count quiz error over recent sessions.
