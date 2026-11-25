@@ -79,6 +79,9 @@ Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
 
+### v14.0.1
+- Speed Count's Deck Estimate Drill button follows only Speed's own toggle, not Table Play's (Jerry N1). Cache `bj-trainer-v14-0-1`.
+
 ### v14
 - Table Play deals one card at a time in casino order (first base → third base → dealer, two rounds). The hole card stays face down and uncounted until it is revealed. The burn card after a shuffle stays unseen and is never counted.
 - **Deal pace** (Table Play Settings): Instant, Fast, Normal (default), or Slow. Cards simply appear; there is no flip, slide, or 3D motion.

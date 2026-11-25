@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14</title>
+<title>Blackjack & Card Counting Trainer Pro v14.0.1</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -2660,6 +2660,10 @@
  return { seats: seats, dealer: dealer, steps: seq };
  }
  function burnCardAffectsRunningCount() { return false; }
+ function deckEstimateDrillVisible(speedFeatDeckEst, playFeatDeckEst) {
+ // The drill button lives on Speed Count and follows only Speed's toggle.
+ return !!speedFeatDeckEst;
+ }
  function holeCardAffectsRunningCount(revealed) { return !!revealed; }
  function shouldSweepOnBust(isBust) { return !!isBust; }
  function shouldLingerLastRound(featLastRoundReview, holdRound) {
@@ -6562,7 +6566,8 @@
 
  function deckEstimateEnabled() {
  const speed = (typeof getPageSettings === 'function') ? getPageSettings('speed') : {};
- return !!(state.featDeckEst || speed.featDeckEst);
+ if (typeof deckEstimateDrillVisible === 'function') return deckEstimateDrillVisible(speed.featDeckEst, state.featDeckEst);
+ return !!speed.featDeckEst;
  }
  function syncDeckEstButton() {
  const p = document.getElementById('deck-est-panel');
@@ -6871,14 +6876,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v14')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v14-0-1')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v14', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v14-0-1', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v14-0-1'); } catch (e) {} }, 2500);
   });
 }
 </script>
