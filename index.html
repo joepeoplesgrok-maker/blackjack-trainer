@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v13</title>
+<title>Blackjack & Card Counting Trainer Pro v13.1</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -1459,13 +1459,21 @@
  display: grid;
  grid-template-columns: 1fr 1fr;
  gap: 8px;
+ width: 100%;
  }
- #tab-speed .sp-actions .btn-wide { grid-column: 1 / -1; }
+ #tab-speed #sp-deal {
+ grid-column: 1 / -1;
+ min-height: 64px;
+ font-size: 1.2rem;
+ font-weight: 700;
+ letter-spacing: 0.02em;
+ }
+ #tab-speed #sp-new-shoe,
+ #tab-speed #sp-check { min-height: 44px; }
  #tab-speed .kbd-hint { margin-top: 8px; }
  @media (min-width: 720px) {
- #tab-speed .sp-actions { grid-template-columns: repeat(3, 1fr); }
- #tab-speed .sp-actions .btn-wide { grid-column: auto; }
  #tab-speed #sp-stage { min-height: 280px; }
+ #tab-speed #sp-deal { min-height: 72px; font-size: 1.3rem; }
  }
  .settings-apply {
  margin-top: 12px;
@@ -1637,7 +1645,7 @@
  <div class="table-felt" id="sp-stage">
  <div class="cards-row center" id="sp-cards"></div>
  <div class="feedback-bar" id="sp-feedback" style="width:100%; max-width:520px;">
- Tap New Shoe to shuffle a Hi-Lo shoe. The running count stays hidden and ends at 0 when the shoe is done. Check mid-shoe anytime.
+ Tap Deal to start. The running count stays hidden and ends at 0 when the shoe is done. Check mid-shoe anytime. New Shoe reshuffles and restarts.
  </div>
  <div id="sp-answer-box" style="display:none;" class="row center">
  <input type="number" id="sp-guess" placeholder="Count" inputmode="numeric" style="width:115px; text-align:center;">
@@ -1647,11 +1655,11 @@
 
  <div class="controls-bar">
  <div class="sp-actions">
- <button class="btn btn-gold btn-wide" id="sp-new-shoe" type="button">New Shoe</button>
- <button class="btn" id="sp-start" type="button">Start / Restart</button>
+ <button class="btn btn-gold" id="sp-deal" type="button">Deal</button>
+ <button class="btn" id="sp-new-shoe" type="button">New Shoe</button>
  <button class="btn" id="sp-check" type="button">Check Count</button>
  </div>
- <div class="kbd-hint">Keys: Space = next card(s) in Manual mode. New Shoe reshuffles and restarts immediately.</div>
+ <div class="kbd-hint">Keys: Space = Deal in Manual mode (also starts a run). New Shoe reshuffles and restarts immediately.</div>
  <div id="deck-est-panel" hidden style="margin-top:10px;">
  <div class="row between" style="gap:8px; align-items:center; flex-wrap:wrap;">
  <button class="btn btn-gold" id="de-start" type="button">Deck Estimate Drill</button>
@@ -1915,7 +1923,7 @@
  <summary>The modes</summary>
  <div class="guide-block-body">
  <p><strong>Table Play</strong> is a full blackjack table: you bet, play hands, and can use the count HUD, coach, and quizzes.</p>
- <p><strong>Speed Count</strong> flashes cards from a 1-, 2-, 4-, 6-, or 8-deck shoe so you can practice the running count against a timer. New Shoe reshuffles and restarts immediately. The running count stays hidden and is always 0 at the end of a full shoe. Check mid-shoe anytime. Use this page's Settings for decks, cards per step, auto deal, and tags.</p>
+ <p><strong>Speed Count</strong> flashes cards from a 1-, 2-, 4-, 6-, or 8-deck shoe so you can practice the running count against a timer. <strong>Deal</strong> (the large top button, or tap the felt / press Space) deals the next card(s) and starts the run if one is not in progress. In Auto mode, Deal starts the shoe and then stays disabled while cards come out on their own. After the last card, Deal is disabled until you start a New Shoe. <strong>New Shoe</strong> reshuffles and restarts immediately. The running count stays hidden and is always 0 at the end of a full shoe. Check mid-shoe anytime. Use this page's Settings for decks, cards per step, auto deal, and tags.</p>
  <p><strong>Strategy Drill</strong> quizzes you on the next play (hit, stand, double, split, surrender) for a random hand.</p>
  <p><strong>Charts</strong> shows basic strategy and the deviation tables for your current rules.</p>
  <p><strong>Stats</strong> tracks accuracy and bankroll and lets you review missed hands.</p>
@@ -1983,7 +1991,7 @@
  <p><strong>Count-check quizzes</strong> pause Table Play after a set number of hands, or at a random gap between 5 and 15 hands. Enter the running count and true count. The true-count answer uses your rounding setting (in Exact mode, either truncate or round is accepted, as before).</p>
  <p><strong>Live shoe and discard bars</strong> sit beside the table during Table Play (on by default). The Shoe bar empties and the Discard bar fills as cards come out, including other seats, and they reset on a shuffle. A red mark on the Shoe bar is the cut card. Exact numbers stay hidden unless you turn on “Show exact decks remaining.” Tap the bars at any time and estimate decks remaining; a guess within 0.5 decks is correct. Feedback shows the actual decks left and how your guess would have changed the true count. An optional prompt can ask every 5, 10, or 15 hands (off by default).</p>
  <p><strong>Deck-estimation drill</strong> (a separate toggle) is a standalone quiz: a practice tray is shown at a random depth and you guess decks remaining or already played, also within 0.5 decks.</p>
- <p><strong>Speed Count</strong> times a full shoe (1–8 decks). You enter the running count mid-shoe or at the end (always 0 for a full shoe). Time and accuracy are scored, and your best correct full-shoe time is saved. New Shoe clears the count, cards seen, and timer.</p>
+ <p><strong>Speed Count</strong> times a full shoe (1–8 decks). You enter the running count mid-shoe or at the end (always 0 for a full shoe). Time and accuracy are scored, and your best correct full-shoe time is saved. Deal starts or continues the shoe; New Shoe clears the count, cards seen, and timer and reshuffles.</p>
  <p><strong>Timed decisions</strong> in Strategy Drill give you a set number of seconds. If the timer runs out, the hand is scored as a miss.</p>
  </div>
  </details>
@@ -2491,6 +2499,12 @@
  return shoe;
  }
  function speedShoeCardCount(decks) { return 52 * Math.max(1, decks | 0); }
+ function speedDealAllowed({ answering, mode, running, seen, remaining }) {
+ if (answering) return false;
+ if (mode === 'auto' && running) return false;
+ if (!running && seen > 0 && remaining === 0) return false;
+ return true;
+ }
 
  const defaultState = {
  bankroll: 1000,
@@ -4896,6 +4910,7 @@
  const mode = st.mode === 'auto' ? 'Auto' : 'Manual';
  const el = document.getElementById('sp-status');
  if (el) el.textContent = (st.decks || 1) + 'D · ' + batch + ' card' + (batch > 1 ? 's' : '') + ' · ' + mode + ' — Settings to change the shoe or deal style.';
+ if (typeof spSyncDealButton === 'function') spSyncDealButton();
  }
  function spUpdateStats() {
  document.getElementById('sp-seen').textContent = spSeen + '/' + spTotal();
@@ -4927,7 +4942,7 @@
  const fb = document.getElementById('sp-feedback');
  if (fb) {
  fb.className = 'feedback-bar';
- fb.textContent = st.mode === 'auto' ? 'Auto-dealing. Check mid-shoe anytime. A full shoe ends at RC 0.' : 'Tap the felt (or Space) for the next card(s). Check mid-shoe anytime. A full shoe ends at RC 0.';
+ fb.textContent = st.mode === 'auto' ? 'Auto-dealing. Check mid-shoe anytime. A full shoe ends at RC 0.' : 'Tap Deal, the felt, or Space for the next card(s). Check mid-shoe anytime. A full shoe ends at RC 0.';
  }
  const cards = document.getElementById('sp-cards');
  if (cards) cards.innerHTML = '';
@@ -4938,8 +4953,59 @@
  const ms = parseInt(st.interval, 10) || 1000;
  spAutoId = setInterval(() => { if (spRunning) spNextStep(); }, ms);
  }
+ spSyncDealButton();
  }
- function spStart() { spNewShoe(); }
+ function spAnswerOpen() {
+ const box = document.getElementById('sp-answer-box');
+ return !!(box && box.style.display !== 'none');
+ }
+ function spCanDeal() {
+ return speedDealAllowed({
+ answering: spAnswerOpen(),
+ mode: (spCfg().mode || 'manual'),
+ running: !!spRunning,
+ seen: spSeen || 0,
+ remaining: spDeck ? spDeck.length : 0
+ });
+ }
+ function spSyncDealButton() {
+ const btn = document.getElementById('sp-deal');
+ if (!btn) return;
+ const can = spCanDeal();
+ btn.disabled = !can;
+ const st = spCfg();
+ if (st.mode === 'auto' && spRunning) btn.title = 'Auto-dealing is on. Use New Shoe to restart, or Check Count to pause.';
+ else if (!spRunning && spSeen > 0 && spDeck.length === 0) btn.title = 'Shoe finished. Tap New Shoe to reshuffle and start again.';
+ else if (spAnswerOpen()) btn.title = 'Enter the running count, then continue or start a New Shoe.';
+ else if (!spRunning && spSeen > 0 && spDeck.length > 0) btn.title = 'Continue this shoe.';
+ else if (!spRunning) btn.title = 'Start a shoe and deal the first card(s).';
+ else btn.title = 'Deal the next card(s).';
+ }
+ function spResumeShoe() {
+ const st = spCfg();
+ spRunning = true;
+ if (!spTimerId) spTimerId = setInterval(spUpdateStats, 100);
+ if (st.mode === 'auto') {
+ const ms = parseInt(st.interval, 10) || 1000;
+ if (!spAutoId) spAutoId = setInterval(() => { if (spRunning) spNextStep(); }, ms);
+ }
+ }
+ function spDeal() {
+ if (!spCanDeal()) { spSyncDealButton(); return; }
+ const st = spCfg();
+ if (!spRunning) {
+ if (spSeen > 0 && spDeck.length > 0) {
+ spResumeShoe();
+ if (st.mode === 'manual') spNextStep();
+ spSyncDealButton();
+ return;
+ }
+ spNewShoe();
+ return;
+ }
+ if (st.mode === 'manual') spNextStep();
+ spSyncDealButton();
+ }
 
  function spNextStep() {
  if (!spRunning) return;
@@ -4964,6 +5030,7 @@
  spRunning = false;
  spPromptCheck(true);
  }
+ spSyncDealButton();
  }
 
  function spPromptCheck(deckDone = false) {
@@ -4976,6 +5043,7 @@
  const inp = document.getElementById('sp-guess');
  inp.value = '';
  inp.focus();
+ spSyncDealButton();
  }
 
  function spSubmitGuess() {
@@ -4999,15 +5067,17 @@
  fb.textContent = `✗ Entered ${isNaN(guess) ? '?' : guess}, actual Running Count was ${spCount}.`;
  }
  document.getElementById('sp-answer-box').style.display = 'none';
+ spSyncDealButton();
  }
 
- document.getElementById('sp-start').addEventListener('click', spStart);
+ const spDealBtn = document.getElementById('sp-deal');
+ if (spDealBtn) spDealBtn.addEventListener('click', spDeal);
  const spNewBtn = document.getElementById('sp-new-shoe');
  if (spNewBtn) spNewBtn.addEventListener('click', spNewShoe);
  document.getElementById('sp-check').addEventListener('click', () => { if (spSeen > 0) spPromptCheck(spDeck.length === 0); });
  document.getElementById('sp-stage').addEventListener('click', (e) => {
  if (e.target.closest('#sp-answer-box')) return;
- if (spRunning && spCfg().mode === 'manual') spNextStep();
+ if (spCfg().mode === 'manual') spDeal();
  });
  document.getElementById('sp-submit-guess').addEventListener('click', spSubmitGuess);
  document.getElementById('sp-guess').addEventListener('keydown', (e) => { if (e.key === 'Enter') spSubmitGuess(); });
@@ -5373,9 +5443,12 @@
  startDeal();
  }
  } else if (activeTab === 'speed') {
- if (k === ' ' && spRunning && spCfg().mode === 'manual') {
+ if (k === ' ') {
+ const typing = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable);
+ if (!typing && spCfg().mode === 'manual' && spCanDeal()) {
  e.preventDefault();
- spNextStep();
+ spDeal();
+ }
  }
  } else if (activeTab === 'strat') {
  if (k === 'h') sdAnswer('H');
@@ -6099,14 +6172,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
-      if (sessionStorage.getItem('bj-sw-reloaded-v13')) return;
+      if (sessionStorage.getItem('bj-sw-reloaded-v13-1')) return;
       reloading = true;
-      sessionStorage.setItem('bj-sw-reloaded-v13', '1');
+      sessionStorage.setItem('bj-sw-reloaded-v13-1', '1');
       location.reload();
     });
   }
   window.addEventListener('load', () => {
-    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v13'); } catch (e) {} }, 2500);
+    setTimeout(() => { try { sessionStorage.removeItem('bj-sw-reloaded-v13-1'); } catch (e) {} }, 2500);
   });
 }
 </script>

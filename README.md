@@ -21,6 +21,10 @@ A self-contained, mobile-first Progressive Web App (PWA) for learning Basic Stra
 - A two-card 21 after a split is paid as a regular win, not a blackjack.
 - If the cut-card shoe is exhausted mid-hand (rare at these penetrations), a **new shoe is shuffled to finish dealing**. The running count resets for the fresh shoe; cards already on the table, including a hidden hole card from the previous shoe, are not carried into the new count. The new shoe then continues for later hands.
 
+## Feature guide (v13.1)
+
+Speed Count uses a large full-width **Deal** button on the top row (it also starts a run if one has not begun). The bottom row is **New Shoe** and **Check Count**. Deal is disabled while Auto is running and after the shoe ends. Tap the felt or press Space to deal in Manual mode.
+
 ## Feature guide (v13)
 
 v13 gives every mode its own Settings menu (the header gear opens the current page). Table Play, Speed Count, Strategy Drill, Charts, and Risk Tools keep their own decks and rules; App settings only hide modes and reset data. **Apply to all pages** copies shared options such as decks or dealer rules to the pages that have them. Speed Count has a cleaner layout, a **New Shoe** button that reshuffles and restarts immediately, and optional 1/2/4/6/8-deck shoes (a full shoe still ends at RC 0).
@@ -63,6 +67,10 @@ Default toggles keep the core table clean: I18, Fab 4, insurance index, and the 
 Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
+
+### v13.1
+- Speed Count buttons: one large full-width **Deal** on the top row (deals the next card(s) and starts a run if needed). Bottom row is two equal buttons, **New Shoe** and **Check Count**. The extra Start / Restart control is gone. Deal is disabled during Auto deal and after the last card; felt tap and Space still deal in Manual mode.
+- Service worker cache bumped to `bj-trainer-v13-1`.
 
 ### v13
 - Per-page settings: the header gear opens options for the current mode only. Existing universal settings are copied into each page on upgrade so nothing is lost. **Apply to all pages** copies that page's shared settings (decks, dealer rules, HUD, tags, and so on) to every other page that has them, with a short confirmation.
