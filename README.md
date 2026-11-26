@@ -79,6 +79,12 @@ Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
 
+### v14.2.3
+- Player natural blackjack with other seats on is paid once (exactly +1.5× the bet). The already-paid natural is skipped when the dealer finishes the round for the other seats, and the seat still shows `BJ! +$…` instead of a second `WIN`.
+- Phone landscape (short viewports such as iPhone 15 734×343 and Pixel 7 839×360) keeps the full table reachable: compact chrome, a single right-to-left seat row, no clipped felt, and no auto-scroll that hides the dealer or banner. Portrait phone, iPad, and desktop layouts are unchanged.
+- After a double or a split-ace (or any last player card), the dealer hole waits one deal-pace beat before it flips.
+- Cache `bj-trainer-v14-2-3`. Hard-refresh to pick it up.
+
 ### v14.2.2
 - Removed the duplicate `Swept` label in multi-seat panels (kept the single italic `Swept` / `Bust — swept` note inside the card area and cleared the redundant header copy). Cache `bj-trainer-v14-2-2`. Hard-refresh to pick it up.
 
