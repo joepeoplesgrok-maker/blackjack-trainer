@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14.2</title>
+<title>Blackjack & Card Counting Trainer Pro v14.2.1</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -1889,6 +1889,225 @@
  #settings-app { margin-top: 12px; }
  #bet-rec-line { font-size: 0.78rem; color: var(--gold); text-align: center; min-height: 20px; margin: 4px 0; }
  #bet-rec-line.has-bet-grade { color: #f3dc9b; }
+
+ /* v14.2.1: pack the Table Play chrome and felt so a short phone
+    (e.g. 412×750 / 393×720 / 375×667) shows the whole table — dealer,
+    both zig-zag seat rows, and the Deal/action bar — with no in-screen
+    felt or page scroll. Card rows still reserve --card-h so dealt cards
+    do not jump. iPad portrait and desktop keep the existing spacing. */
+ @media (max-width: 767px) {
+ header {
+ padding: 3px 8px;
+ padding-top: max(3px, env(safe-area-inset-top, 3px));
+ gap: 6px;
+ }
+ .mode-select {
+ min-height: 34px;
+ padding: 4px 28px 4px 8px;
+ font-size: 0.92rem;
+ border-radius: 6px;
+ }
+ .icon-btn {
+ min-height: 34px;
+ min-width: 34px;
+ padding: 4px 8px;
+ font-size: 0.72rem;
+ border-radius: 6px;
+ }
+ main { padding: 3px 6px 4px; }
+ #tab-play.tab-view.active { gap: 3px; overflow: hidden; }
+ .strip { padding: 2px 5px; border-radius: 8px; }
+ .stats-grid { gap: 2px; }
+ .stat-cell { padding: 1px 2px; border-radius: 4px; }
+ .stat-cell .label { font-size: 0.5rem; letter-spacing: 0.2px; }
+ .stat-cell .val { font-size: 0.72rem; }
+ .hud-divider { margin-top: 3px; padding-top: 3px; }
+ .shoe-bar-wrap { height: 3px; margin: 2px 0 0; }
+
+ /* Seat picker: one tight row. Hide the redundant "Your seat" label
+    under 500px so four buttons stay on a single line. */
+ .seat-picker { padding: 0; gap: 4px; flex-wrap: nowrap; align-items: center; }
+ .seat-picker .sp-lab { font-size: 0.58rem; letter-spacing: 0.2px; flex: 0 0 auto; }
+ #seat-picker-btns { gap: 3px !important; flex-wrap: nowrap; flex: 1 1 auto; min-width: 0; }
+ .seat-pick { font-size: 0.62rem; padding: 3px 5px; min-height: 28px; border-radius: 6px; flex: 1 1 0; min-width: 0; }
+ #seat-picker-slot.reserved,
+ #tab-play.seats-on #seat-picker-slot.reserved { min-height: 1.7rem; }
+ @media (max-width: 500px) {
+ .seat-picker .sp-lab { display: none; }
+ }
+
+ /* Horizontal shoe / discard bar */
+ #tab-play .table-stage { overflow: hidden; flex: 1 1 auto; min-height: 0; gap: 3px; }
+ #tab-play.tab-view.active .table-stage { overflow-x: hidden; overflow-y: hidden; }
+ #tab-play .live-tray { flex: 0 0 auto; }
+ #tab-play .live-tray-btn {
+ min-height: 26px;
+ height: 26px;
+ padding: 2px 6px;
+ gap: 6px;
+ }
+ #tab-play .live-meter-track { height: 8px; min-height: 8px; }
+ #tab-play .live-meter-label { font-size: 0.55rem; }
+
+ /* Felt packs to its content; dealer zone does not stretch a green gap. */
+ #tab-play .table-felt,
+ #tab-play.seats-on .table-felt,
+ #tab-play.seats-on .table-stage > .table-felt {
+ flex: 0 0 auto;
+ min-height: min-content;
+ max-height: none;
+ padding: 4px 4px 3px;
+ gap: 2px;
+ overflow: hidden;
+ justify-content: flex-start;
+ align-content: flex-start;
+ height: auto;
+ align-self: stretch;
+ }
+ #tab-play .table-felt > .zone,
+ #tab-play.seats-on .table-felt > .zone,
+ #tab-play.seats-on .table-felt > .zone:first-of-type,
+ #tab-play .zone.dealer {
+ flex: 0 0 auto;
+ min-height: min-content;
+ justify-content: flex-start;
+ }
+ /* Reserve exact card height in the dealer row so the deal cannot drop the seats. */
+ #tab-play #dealer-cards,
+ #tab-play.seats-on .table-felt > .zone:first-of-type #dealer-cards,
+ #tab-play.seats-on .table-felt > .zone:first-of-type .cards-row {
+ flex: 0 0 auto;
+ min-height: var(--card-h, 50px);
+ height: var(--card-h, 50px);
+ }
+ #tab-play.seats-on .table-felt > .zone:first-of-type {
+ min-height: calc(1.1rem + var(--card-h, 50px) + 3px);
+ }
+ .zone-title,
+ #tab-play.seats-on .table-felt > .zone:first-of-type .zone-title {
+ min-height: 1.1rem;
+ margin-bottom: 1px;
+ font-size: 0.58rem;
+ gap: 4px;
+ }
+ .hand-score { font-size: 0.64rem; padding: 0 5px; }
+ .feedback-bar,
+ #tab-play .table-felt > .feedback-bar,
+ #tab-play.seats-on .table-felt > .feedback-bar {
+ min-height: 1.35rem;
+ max-height: 2.4em;
+ padding: 2px 6px;
+ font-size: 0.66rem;
+ line-height: 1.15;
+ margin: 0;
+ overflow: hidden;
+ }
+
+ /* Slightly smaller phone cards; --card-h is shared with the reserved row. */
+ .card, .card.large,
+ #tab-play.seats-on #other-seats .card,
+ #tab-play.seats-on #other-seats .card.large {
+ --card-w: 36px;
+ --card-h: 50px;
+ width: 36px;
+ height: 50px;
+ padding: 1px 2px;
+ border-radius: 5px;
+ }
+ .table-felt, .cards-row,
+ #tab-play.seats-on #other-seats,
+ #tab-play.seats-on #other-seats .cards-row,
+ #tab-play.seats-on #other-seats .cards-row.overlap {
+ --card-h: 50px;
+ }
+ #tab-play.seats-on #other-seats .cards-row,
+ #tab-play.seats-on #other-seats .cards-row.overlap,
+ .cards-row {
+ min-height: 50px;
+ }
+ .card-top, .card-bot,
+ #tab-play.seats-on #other-seats .card-top,
+ #tab-play.seats-on #other-seats .card-bot { font-size: 0.52rem; }
+ .card-center,
+ .card.large .card-center,
+ #tab-play.seats-on #other-seats .card-center { font-size: 0.92rem; }
+ .hi-lo-tag { font-size: 9px; padding: 0 3px; }
+
+ #other-seats.table-seats:not([hidden]) { row-gap: 3px; column-gap: 3px; }
+ #other-seats .table-seat,
+ #other-seats .table-seat.you,
+ #tab-play.seats-on .table-seat {
+ padding: 1px 2px 2px;
+ min-width: 0;
+ min-height: calc(1em + 50px + 1.05em + 4px);
+ border-radius: 6px;
+ }
+ .table-seat .os-label { font-size: 0.52rem; letter-spacing: 0; }
+ .table-seat .os-meta { min-height: 1em; font-size: 0.55rem; gap: 1px 4px; }
+ .table-seat .os-meta .os-pot { flex-basis: 3.8em; min-width: 3.8em; max-width: 3.8em; }
+
+ #tab-play > .history-quick,
+ #tab-play.seats-on .history-quick {
+ min-height: 22px;
+ padding: 2px 8px;
+ font-size: 0.65rem;
+ }
+ /* Same reserved height in betting and play so the felt does not jump. */
+ .controls-bar,
+ #tab-play > .controls-bar,
+ #tab-play.seats-on > .controls-bar {
+ min-height: 6.25rem;
+ padding: 4px;
+ }
+ .chips-wrap { gap: 4px; }
+ .chips-row { gap: 6px; }
+ .chip { width: 34px; height: 34px; font-size: 0.62rem; }
+ #bet-rec-line { min-height: 16px; margin: 0 0 2px; font-size: 0.68rem; }
+ .btn, .btn-sm, .btn-gold,
+ .action-grid .btn,
+ #tab-play .action-grid .btn {
+ min-height: 32px;
+ padding: 4px 6px;
+ font-size: 0.76rem;
+ }
+ .bet-actions-row { gap: 4px; width: auto; }
+ .action-grid { gap: 4px; }
+ }
+
+ /* Extra-short phones (SE-class 667px and similar): shave a few more pixels. */
+ @media (max-width: 767px) and (max-height: 680px) {
+ header { padding: 2px 6px; padding-top: max(2px, env(safe-area-inset-top, 2px)); }
+ .mode-select, .icon-btn { min-height: 30px; }
+ main { padding: 2px 5px 3px; }
+ #tab-play.tab-view.active { gap: 2px; }
+ .card, .card.large,
+ #tab-play.seats-on #other-seats .card,
+ #tab-play.seats-on #other-seats .card.large {
+ --card-w: 34px;
+ --card-h: 46px;
+ width: 34px;
+ height: 46px;
+ }
+ .table-felt, .cards-row,
+ #tab-play.seats-on #other-seats,
+ #tab-play.seats-on #other-seats .cards-row,
+ #tab-play.seats-on #other-seats .cards-row.overlap { --card-h: 46px; }
+ #tab-play.seats-on #other-seats .cards-row,
+ #tab-play.seats-on #other-seats .cards-row.overlap,
+ .cards-row { min-height: 46px; }
+ #other-seats .table-seat,
+ #other-seats .table-seat.you,
+ #tab-play.seats-on .table-seat {
+ min-height: calc(1em + 46px + 1.05em + 4px);
+ }
+ #tab-play .live-tray-btn { min-height: 22px; height: 22px; }
+ .controls-bar,
+ #tab-play > .controls-bar,
+ #tab-play.seats-on > .controls-bar { min-height: 5.7rem; padding: 3px; }
+ .chip { width: 30px; height: 30px; font-size: 0.58rem; }
+ .btn, .btn-sm, .btn-gold, .action-grid .btn, #tab-play .action-grid .btn { min-height: 28px; }
+ #tab-play > .history-quick, #tab-play.seats-on .history-quick { min-height: 20px; padding: 1px 8px; }
+ }
 </style>
 </head>
 <body>
