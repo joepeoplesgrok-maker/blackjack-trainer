@@ -79,6 +79,9 @@ Turning a feature off hides its UI and skips its logic.
 
 ## Changelog
 
+### v14.2.1
+- Phone and compact viewports (`max-width: 767px`) rescale the Table Play chrome and felt so the whole table — dealer, both zig-zag seat rows, and the Deal/action bar — fits on one screen with no in-screen felt scroll and no page scroll. Header, HUD, seat picker, shoe/discard bar, hand-history bar, and betting chips are tighter; the dealer zone no longer stretches a tall empty gap; seat cards are slightly smaller (50px, or 46px on short 667px-class phones) with the row height reserved so existing cards do not jump. iPad portrait and desktop spacing is unchanged. Cache `bj-trainer-v14-2-1`. Hard-refresh to pick it up.
+
 ### v14.2
 - Deal pace is a seconds-per-card number in **Settings** (Play), not a named-only menu and not a table or toolbar control. Type 0–3 seconds (step 0.05). 0 is Instant, including the brief 0.05 s paint hold so the bust card and dealer hole stay visible.
 - Recommended chips fill the box: Instant 0, Fast 0.20, Normal 0.45 (default), Casino-realistic 0.60, Slow 0.80. The matching chip stays highlighted.
