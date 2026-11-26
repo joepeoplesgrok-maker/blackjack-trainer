@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14.2.2</title>
+<title>Blackjack & Card Counting Trainer Pro v14.2.3</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -2108,6 +2108,188 @@
  .btn, .btn-sm, .btn-gold, .action-grid .btn, #tab-play .action-grid .btn { min-height: 28px; }
  #tab-play > .history-quick, #tab-play.seats-on .history-quick { min-height: 20px; padding: 1px 8px; }
  }
+
+ /* Short phone / compact landscape (iPhone 15 734×343, Pixel 7 839×360, and similar):
+    compact the chrome, put seats in a single right-to-left row, and keep the
+    dealer, banner, seats, and Deal bar reachable. #tab-play never auto-scrolls
+    the dealer off-screen; the stage may scroll if the table is still taller
+    than the viewport. Portrait phones, iPad, and desktop are unchanged. */
+ @media (max-height: 500px) and (min-aspect-ratio: 5/4) {
+ header { padding: 2px 8px; padding-top: max(2px, env(safe-area-inset-top, 2px)); }
+ .mode-select, .icon-btn { min-height: 26px; padding: 2px 8px; font-size: 0.78rem; }
+ main { padding: 2px 6px 2px; }
+ #tab-play.tab-view.active {
+ overflow: hidden;
+ overflow-anchor: none;
+ overscroll-behavior: none;
+ gap: 2px;
+ }
+ #tab-play.tab-view.active .table-stage {
+ flex-direction: column;
+ flex: 1 1 auto;
+ min-height: 0;
+ overflow-x: hidden;
+ overflow-y: auto;
+ gap: 2px;
+ }
+ .strip { padding: 1px 4px; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: stretch; gap: 4px; }
+ .strip .stats-grid,
+ #tab-play .stats-grid,
+ .stats-grid { flex: 1 1 0; min-width: 0; margin: 0; }
+ .stat-cell { padding: 1px 3px; }
+ .stat-cell .label { font-size: 0.5rem; }
+ .stat-cell .val { font-size: 0.7rem; }
+ .shoe-bar-wrap { height: 2px; margin: 1px 0 0; }
+ #seat-picker-slot, #tab-play.seats-on #seat-picker-slot.reserved { min-height: 0; margin: 0; }
+ .seat-picker { padding: 0 2px; gap: 3px; }
+ .sp-lab { display: none; }
+ .seat-pick { min-height: 22px; padding: 1px 6px; font-size: 0.62rem; }
+ /* Horizontal shoe/discard even on 720px+ short landscape. */
+ #tab-play .live-tray-btn {
+ flex-direction: row;
+ width: 100%;
+ min-width: 0;
+ min-height: 20px;
+ height: 20px;
+ padding: 1px 6px;
+ gap: 8px;
+ }
+ #tab-play .live-meter { flex-direction: row; flex: 1 1 0; gap: 6px; }
+ #tab-play .live-meter-track { width: auto; flex: 1 1 auto; height: 8px; min-height: 8px; }
+ #tab-play .live-meter-fill { top: 0; bottom: 0; right: auto; width: var(--fill, 0%); height: 100%; }
+ #tab-play .live-cut-mark { top: 0; bottom: 0; left: var(--cut, 25%); right: auto; width: 2px; height: auto; }
+ #tab-play .live-tray-exact { padding: 0; align-self: center; white-space: nowrap; font-size: 0.62rem; }
+ .card, .card.large,
+ #tab-play.seats-on #other-seats .card,
+ #tab-play.seats-on #other-seats .card.large {
+ --card-w: 32px;
+ --card-h: 44px;
+ width: 32px;
+ height: 44px;
+ padding: 1px 2px;
+ }
+ .card-top, .card-bot { font-size: 0.55rem; }
+ .card-center, .card.large .card-center,
+ #tab-play.seats-on #other-seats .card-center { font-size: 0.88rem; }
+ .table-felt, .cards-row,
+ #tab-play.seats-on #other-seats,
+ #tab-play.seats-on #other-seats .cards-row,
+ #tab-play.seats-on #other-seats .cards-row.overlap { --card-h: 44px; }
+ .cards-row,
+ #tab-play.seats-on #other-seats .cards-row,
+ #tab-play.seats-on #other-seats .cards-row.overlap { min-height: 44px; }
+ #tab-play .table-felt,
+ #tab-play.seats-on .table-felt,
+ #tab-play.seats-on .table-stage > .table-felt {
+ flex-direction: column;
+ flex-wrap: nowrap;
+ flex: 1 1 auto;
+ width: 100%;
+ align-self: stretch;
+ min-width: 0;
+ min-height: min-content;
+ max-height: none;
+ overflow: visible;
+ padding: 2px 4px;
+ gap: 2px;
+ align-items: stretch;
+ justify-content: flex-start;
+ }
+ #tab-play .table-felt > .zone,
+ #tab-play.seats-on .table-felt > .zone,
+ #tab-play.seats-on .table-felt > .zone:first-of-type,
+ #tab-play .zone.dealer {
+ flex: 0 0 auto;
+ min-height: min-content;
+ width: 100% !important;
+ min-width: 0;
+ justify-content: flex-start;
+ }
+ #tab-play #dealer-cards,
+ #tab-play.seats-on .table-felt > .zone:first-of-type #dealer-cards,
+ #tab-play.seats-on .table-felt > .zone:first-of-type .cards-row {
+ flex: 0 0 auto;
+ min-height: var(--card-h, 44px);
+ height: var(--card-h, 44px);
+ }
+ .zone-title { font-size: 0.55rem; margin-bottom: 1px; }
+ .hand-score { font-size: 0.58rem; }
+ #tab-play .table-felt > .feedback-bar,
+ #tab-play.seats-on .table-felt > .feedback-bar,
+ #tab-play.seats-on .coach-slot .feedback-bar {
+ position: static;
+ flex: 0 0 auto;
+ order: 0;
+ min-height: 16px;
+ margin: 0;
+ padding: 1px 6px;
+ font-size: 0.68rem;
+ width: auto;
+ left: auto;
+ right: auto;
+ bottom: auto;
+ }
+ .coach-slot.reserved,
+ #tab-play.seats-on .coach-slot:not([hidden]) { min-height: 16px; }
+ /* Single right-to-left row (first base at the right) to save height. */
+ #other-seats.table-seats:not([hidden]),
+ #tab-play.seats-on #other-seats:not([hidden]),
+ #tab-play #other-seats:not([hidden]) {
+ display: flex;
+ flex-direction: row-reverse;
+ flex-wrap: nowrap;
+ justify-content: center;
+ align-items: stretch;
+ gap: 3px;
+ width: 100%;
+ flex: 0 0 auto;
+ order: 0;
+ min-height: min-content;
+ max-height: none;
+ overflow: visible;
+ padding: 0;
+ grid-template-rows: none;
+ grid-template-columns: none;
+ }
+ #other-seats .table-seat,
+ #other-seats .table-seat.you,
+ #tab-play.seats-on .table-seat,
+ #other-seats[data-seats] .table-seat[data-seat-index] {
+ grid-column: auto !important;
+ grid-row: auto !important;
+ flex: 1 1 0;
+ width: auto;
+ min-width: 0;
+ max-width: none;
+ min-height: min-content;
+ padding: 1px 2px 2px;
+ }
+ .table-seat .os-label { font-size: 0.5rem; }
+ .table-seat .os-meta { min-height: 0.9em; font-size: 0.5rem; }
+ #tab-play > .history-quick,
+ #tab-play.seats-on .history-quick {
+ min-height: 16px;
+ padding: 0 8px;
+ font-size: 0.6rem;
+ flex: 0 0 auto;
+ }
+ .controls-bar,
+ #tab-play > .controls-bar,
+ #tab-play.seats-on > .controls-bar {
+ min-height: 0;
+ padding: 2px 4px;
+ flex: 0 0 auto;
+ }
+ .chips-wrap { flex-direction: row; justify-content: space-between; align-items: center; gap: 4px; }
+ .chips-row { gap: 4px; }
+ .chip { width: 26px; height: 26px; font-size: 0.52rem; }
+ #bet-rec-line, #tab-play #bet-rec-line { min-height: 14px; margin: 0; font-size: 0.62rem; }
+ .btn, .btn-sm, .btn-gold,
+ .action-grid .btn,
+ #tab-play .action-grid .btn { min-height: 26px; padding: 2px 6px; font-size: 0.7rem; }
+ .bet-actions-row { width: auto; flex: 1; min-width: 0; gap: 4px; }
+ .action-grid { gap: 3px; }
+ }
 </style>
 </head>
 <body>
@@ -2708,7 +2890,7 @@
  <li><strong>Timed decisions</strong> — countdown in Strategy Drill; a timeout is scored as a miss. <strong>Seconds per decision</strong> sets the limit.</li>
  <li><strong>Stats</strong> and <strong>Risk Tools</strong> — show or hide those modes and (for Stats) stop logging.</li>
  <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count. <strong>Your seat</strong> places you at first base through third base.</li>
- <li><strong>Deal pace</strong> — type seconds per card in Settings (0–3 s, step 0.05 s; 0 is Instant). Recommended chips fill the box: Instant 0, Fast 0.20, Normal 0.45 (default), Casino-realistic 0.60, Slow 0.80. Dealer hole and hits wait twice as long as the deal; the bust and end-of-round holds scale with the same number. After a split, the pair is separated and each hand receives its second card at that same pace when play reaches it (split aces still get one card each). Hits and doubles wait the same deal time before the new card appears. Cards appear in place; nothing animates.</li>
+ <li><strong>Deal pace</strong> — type seconds per card in Settings (0–3 s, step 0.05 s; 0 is Instant). Recommended chips fill the box: Instant 0, Fast 0.20, Normal 0.45 (default), Casino-realistic 0.60, Slow 0.80. Dealer hole and hits wait twice as long as the deal; the bust and end-of-round holds scale with the same number. After a split, the pair is separated and each hand receives its second card at that same pace when play reaches it (split aces still get one card each). Hits and doubles wait the same deal time before the new card appears. After a double or a split-ace card (or any last player card), the dealer hole waits one more deal-pace beat before it flips, then hits at twice that spacing. Cards appear in place; nothing animates.</li>
  <li><strong>Last-round review</strong> (off by default) — keep the finished hands on the felt until the next Deal. Off: cards are swept at the end of the round (and after a countable beat on a bust).</li>
  <li><strong>Index-play prompts</strong> (off by default) — when an Illustrious 18 or Fab 4 deviation applies, Table Play shows the index and the recommended action (for example, 16 vs 10, stand at TC ≥ 0).</li>
  <li><strong>Mid-shoe true-count quizzes</strong> (off by default) — optional RC/TC prompts at random points in the shoe, once, twice, or 1–3 times per shoe, in addition to the existing between-hand quizzes.</li>
@@ -4888,6 +5070,80 @@ function formatIndexPrompt(note, tc) {
  return { bankroll: br, net: net, hands: results };
  }
 
+ function settlePlayerHandsAgainstDealer(bankroll, hands, dealerCards) {
+ const dEv = evalHand(dealerCards || []);
+ let br = roundMoney(bankroll);
+ let net = 0;
+ const results = (hands || []).map(h => {
+ const bet = roundMoney((h && h.bet) || 0);
+ const rec = {
+ result: (h && h.result) || '',
+ resultText: (h && h.resultText) || '',
+ net: 0,
+ bet: bet,
+ skipped: false
+ };
+ if (!h) return rec;
+ // Already paid in checkInitialBlackjacks / settleBj: do not pay again or overwrite BJ text.
+ const alreadyPaid = !!(h.settled || h.result === 'res-bj' || (h.result === 'res-push' && /both bj/i.test(h.resultText || '')));
+ if (alreadyPaid) {
+ rec.skipped = true;
+ rec.net = h.result === 'res-bj' ? roundMoney(bet * 1.5) : 0;
+ net = roundMoney(net + rec.net);
+ return rec;
+ }
+ if (h.surrendered) {
+ rec.net = roundMoney(-roundMoney(bet / 2));
+ rec.result = rec.result || 'res-push';
+ rec.resultText = rec.resultText || ('SURR (-' + formatMoney(roundMoney(bet - roundMoney(bet / 2))) + ')');
+ net = roundMoney(net + rec.net);
+ return rec;
+ }
+ const pEv = evalHand(h.cards || []);
+ const isBj = !!(pEv.isBlackjack && !h.fromSplit);
+ if (pEv.isBust) {
+ rec.net = roundMoney(-bet);
+ rec.result = rec.result || 'res-lose';
+ rec.resultText = rec.resultText || ('BUST (-' + formatMoney(bet) + ')');
+ net = roundMoney(net + rec.net);
+ return rec;
+ }
+ if (isBj && !dEv.isBlackjack) {
+ const profit = roundMoney(bet * 1.5);
+ br = roundMoney(br + bet + profit);
+ rec.result = 'res-bj';
+ rec.resultText = 'BJ! +' + formatMoney(profit);
+ rec.net = profit;
+ } else if (isBj && dEv.isBlackjack) {
+ br = roundMoney(br + bet);
+ rec.result = 'res-push';
+ rec.resultText = 'PUSH (Both BJ)';
+ rec.net = 0;
+ } else if (dEv.isBlackjack) {
+ rec.result = 'res-lose';
+ rec.resultText = 'DEALER BJ';
+ rec.net = roundMoney(-bet);
+ } else if (dEv.isBust || pEv.total > dEv.total) {
+ br = roundMoney(br + bet * 2);
+ rec.result = 'res-win';
+ rec.resultText = 'WIN (+' + formatMoney(bet) + ')';
+ rec.net = bet;
+ } else if (pEv.total < dEv.total) {
+ rec.result = 'res-lose';
+ rec.resultText = 'LOSE (-' + formatMoney(bet) + ')';
+ rec.net = roundMoney(-bet);
+ } else {
+ br = roundMoney(br + bet);
+ rec.result = 'res-push';
+ rec.resultText = 'PUSH';
+ rec.net = 0;
+ }
+ net = roundMoney(net + rec.net);
+ return rec;
+ });
+ return { bankroll: br, net: net, hands: results };
+ }
+
  function actionName(code) {
  return { H: 'Hit', S: 'Stand', D: 'Double', P: 'Split', R: 'Surrender' }[code] || code;
  }
@@ -5710,10 +5966,16 @@ function formatIndexPrompt(note, tc) {
  if (typeof updateHandScrollHints === 'function') updateHandScrollHints();
  if (typeof recordTablePaint === 'function') recordTablePaint('renderTable');
  if (typeof updateTopStats === 'function') updateTopStats();
+ const tabEl = document.getElementById('tab-play');
+ if (tabEl && tabEl.scrollTop) tabEl.scrollTop = 0;
  }
 
  function startDeal() {
  if (typeof canStartDeal === 'function' ? !canStartDeal() : (phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer')) return;
+ const dealBtn = document.getElementById('btn-deal');
+ if (dealBtn && document.activeElement === dealBtn && typeof dealBtn.blur === 'function') dealBtn.blur();
+ const tabStart = document.getElementById('tab-play');
+ if (tabStart) tabStart.scrollTop = 0;
  if (typeof tableDealPending !== 'undefined') tableDealPending = false;
  if (typeof clearTableTimer === 'function') clearTableTimer();
  if (typeof clearOverlapLocks === 'function') clearOverlapLocks();
@@ -5849,6 +6111,7 @@ function formatIndexPrompt(note, tc) {
  handNet = roundMoney(-playerHands[0].bet);
  headline = 'Dealer has Blackjack.';
  }
+ playerHands[0].settled = true;
  const coachEl = document.getElementById('play-feedback');
  const prior = (state.coach && coachEl) ? coachEl.textContent.trim() : '';
  const keepPrior = prior && !/^(Your turn|Tap chips|Add chips|Cut card reached|Shoe shuffled|Fresh |Bankroll|Dealing)/i.test(prior) && !/is playing basic strategy/i.test(prior);
@@ -6068,29 +6331,15 @@ function formatIndexPrompt(note, tc) {
  }
 
  function settleDealerRound() {
- const dEv = evalHand(dealerHand);
- let handNet = 0;
-
- playerHands.forEach(h => {
- if (h.surrendered) { handNet = roundMoney(handNet - h.bet / 2); return; }
- const pEv = evalHand(h.cards);
- if (pEv.isBust) {
- handNet = roundMoney(handNet - h.bet);
- } else if (dEv.isBust || pEv.total > dEv.total) {
- state.bankroll = roundMoney(state.bankroll + h.bet * 2);
- h.result = 'res-win';
- h.resultText = `WIN (+${formatMoney(h.bet)})`;
- handNet = roundMoney(handNet + h.bet);
- } else if (pEv.total < dEv.total) {
- h.result = 'res-lose';
- h.resultText = `LOSE (-${formatMoney(h.bet)})`;
- handNet = roundMoney(handNet - h.bet);
- } else {
- state.bankroll = roundMoney(state.bankroll + h.bet);
- h.result = 'res-push';
- h.resultText = 'PUSH';
- }
+ const settled = settlePlayerHandsAgainstDealer(state.bankroll, playerHands, dealerHand);
+ state.bankroll = settled.bankroll;
+ settled.hands.forEach((rec, i) => {
+ const h = playerHands[i];
+ if (!h || rec.skipped) return;
+ h.result = rec.result;
+ h.resultText = rec.resultText;
  });
+ const handNet = settled.net;
 
  if (typeof settleOtherSeatsAgainstDealer === 'function') settleOtherSeatsAgainstDealer();
  phase = 'done';
@@ -6127,6 +6376,8 @@ function formatIndexPrompt(note, tc) {
  }
  settleDealerRound();
  };
+ const revealThenPlay = () => {
+ if (phase !== 'dealer') return;
  if (holeHidden && dealerHand.length >= 2) {
  revealHoleCard();
  renderTable();
@@ -6135,6 +6386,10 @@ function formatIndexPrompt(note, tc) {
  renderTable();
  hitNext();
  }
+ };
+ // One deal-pace beat so a just-dealt double / split-ace / last hit paints
+ // before the hole card flips in a later frame.
+ afterTableDelay(currentStepDelayMs(), revealThenPlay);
  }
 
  function finishRound() {
@@ -8684,6 +8939,7 @@ function startMistakeReview() {
  snapshot() {
  return {
  phase: phase,
+ bankroll: state.bankroll,
  holeHidden: !!holeHidden,
  dealerSwept: !!dealerSwept,
  lastRoundActive: !!lastRoundActive,
