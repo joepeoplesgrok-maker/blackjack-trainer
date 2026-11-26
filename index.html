@@ -168,7 +168,8 @@
  gap: 6px;
  }
  .tab-view.active { display: flex; overflow: hidden; }
- #tab-play.tab-view.active .table-stage { overflow: hidden; min-height: 0; }
+ #tab-play.tab-view.active { overflow: hidden; }
+#tab-play.tab-view.active .table-stage { overflow-x: hidden; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; }
  #tab-history.tab-view.active {
  display: flex;
  flex: 1 1 auto;
@@ -445,6 +446,7 @@
 
  /* Flex-Filling Casino Table */
  .table-felt {
+ --card-h: 86px;
  flex: 1 1 auto;
  min-height: 0;
  background: radial-gradient(circle at 50% 35%, var(--felt-light) 0%, var(--felt) 70%, #0b261c 100%);
@@ -453,7 +455,8 @@
  padding: 10px;
  display: flex;
  flex-direction: column;
- justify-content: space-between;
+ justify-content: flex-start;
+ gap: 6px;
  box-shadow: inset 0 0 36px rgba(0,0,0,0.45);
  overflow: hidden;
  position: relative;
@@ -479,7 +482,8 @@
  flex-wrap: wrap;
  gap: 6px;
  max-width: 100%;
- min-height: 1.7em;
+ min-height: 2rem;
+ box-sizing: border-box;
  }
 
  .hand-score {
@@ -506,10 +510,11 @@
  .tc-badge.neg { border-color: var(--red); color: #ff8c80; }
 
  .cards-row {
+ --card-h: 86px;
  display: flex;
  justify-content: center;
  align-items: center;
- min-height: 82px;
+ min-height: var(--card-h, 86px);
  flex-wrap: nowrap;
  }
 
@@ -778,6 +783,10 @@
  }
  @media (hover: hover) and (pointer: fine) {
  .kbd-hint { display: block; }
+ }
+ @media (max-width: 719px), (max-height: 640px) {
+ #tab-play .kbd-hint { display: none; }
+ #tab-play #bet-rec-line { margin: 0 0 2px; }
  }
 
  /* Modals */
@@ -1084,7 +1093,8 @@
  .card-center { font-size: 1.3rem; }
  .card.large { width: 70px; height: 100px; }
  .card.large .card-center { font-size: 1.85rem; }
- .cards-row { min-height: 74px; }
+ .cards-row { --card-h: 74px; min-height: var(--card-h); }
+ .table-felt { --card-h: 74px; }
  .chip { width: 44px; height: 44px; font-size: 0.72rem; }
  .table-felt { padding: 7px; }
  .action-grid .btn { padding: 10px 2px; font-size: 0.8rem; min-height: 44px; }
@@ -1104,7 +1114,8 @@
  .card, .card.large { --card-w: 40px; --card-h: 56px; width: 40px; height: var(--card-h); padding: 2px 3px; }
  .card-top, .card-bot { font-size: 0.65rem; }
  .card-center, .card.large .card-center { font-size: 1.05rem; }
- .cards-row { min-height: 56px; }
+ .cards-row { --card-h: 56px; min-height: var(--card-h); }
+ .table-felt { --card-h: 56px; }
  .shoe-bar-wrap { height: 3px; margin: 2px 0 0; }
  .zone-title { font-size: 0.62rem; margin-bottom: 2px; }
  /* Keep compact per-hand WIN/LOSE in the title row (do not hide after a split). */
@@ -1187,9 +1198,11 @@
  min-height: 10rem;
  }
  #tab-play #other-seats:not([hidden]) {
- max-height: 64px;
- overflow: auto;
- flex: 0 0 auto;
+ flex: 1 0 100%;
+ order: 4;
+ max-height: none;
+ min-height: 5.2rem;
+ overflow: visible;
  }
  #tab-play .table-felt > .zone {
  flex: 1 1 0;
@@ -1219,20 +1232,21 @@
  .card, .card.large { --card-w: 44px; --card-h: 62px; width: 44px; height: var(--card-h); padding: 2px 3px; }
  .card-top, .card-bot { font-size: 0.62rem; }
  .card-center, .card.large .card-center { font-size: 1.05rem; }
- .cards-row { min-height: 62px; }
+ .cards-row { --card-h: 62px; min-height: var(--card-h); }
+ .table-felt { --card-h: 62px; }
  .cards-row.overlap { --card-overlap: 10px; --card-w: 44px; }
  .strip { padding: 3px 6px; }
  .stat-cell { padding: 2px 3px; }
  .stat-cell .label { font-size: 0.55rem; }
  .stat-cell .val { font-size: 0.78rem; }
  .controls-bar { padding: 6px; }
- #tab-play .table-stage { min-height: 0; flex: 1 1 auto; overflow: hidden; }
+ #tab-play .table-stage { min-height: 0; flex: 1 1 auto; overflow-x: hidden; overflow-y: auto; }
  #tab-play .table-felt {
- overflow: hidden;
+ overflow: visible;
  justify-content: flex-start;
  gap: 6px;
- min-height: 10rem;
- flex: 1 1 auto;
+ min-height: min-content;
+ flex: 1 0 auto;
  }
  .controls-bar { min-height: 5.5rem; }
  #tab-play .table-felt > .feedback-bar {
@@ -1274,7 +1288,9 @@
  }
  @media (min-width: 720px) and (min-height: 540px) {
  .card { --card-w: 70px; --card-h: 100px; width: 70px; height: var(--card-h); }
- .cards-row.overlap { --card-w: 70px; }
+ .cards-row { --card-h: 100px; min-height: var(--card-h); }
+ .table-felt { --card-h: 100px; }
+ .cards-row.overlap { --card-w: 70px; --card-h: 100px; }
  .card-center { font-size: 1.85rem; }
  .card.large { width: 96px; height: 136px; }
  .card.large .card-center { font-size: 2.6rem; }
@@ -1309,23 +1325,126 @@
  .feat-note { color: var(--muted); font-size: 0.75rem; margin: 0 0 6px; }
  .other-seats {
  display: flex;
+ flex-direction: row-reverse;
  flex-wrap: wrap;
  justify-content: center;
+ align-items: stretch;
+ align-content: flex-start;
  gap: 6px;
  width: 100%;
  max-width: 100%;
- padding: 2px 0 4px;
+ padding: 4px 2px 2px;
+ min-height: 6.4rem;
+ box-sizing: border-box;
  }
  .other-seats[hidden] { display: none !important; }
- .table-seats { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 6px; width: 100%; }
- .table-seat { background: rgba(0,0,0,0.25); border: 1px solid var(--panel-border); border-radius: 8px; padding: 3px 6px 5px; min-width: 0; flex: 1 1 90px; max-width: 100%; }
- .table-seat.you { border-color: var(--gold); background: rgba(20, 28, 18, 0.45); flex: 1 1 140px; }
+ /* Second-base view: first base is on the viewer's right, third base on the left. */
+ .table-seats { display: flex; flex-direction: row-reverse; flex-wrap: wrap; justify-content: center; align-items: stretch; align-content: flex-start; gap: 6px; width: 100%; --seat-gap: 6px; --seat-n: 1; }
+ #other-seats { --seat-n: 1; --seat-gap: 6px; }
+ #other-seats[data-seats="1"] { --seat-n: 1; }
+ #other-seats[data-seats="2"] { --seat-n: 2; }
+ #other-seats[data-seats="3"] { --seat-n: 3; }
+ #other-seats[data-seats="4"] { --seat-n: 4; }
+ #other-seats[data-seats="5"] { --seat-n: 5; }
+ #other-seats[data-seats="6"] { --seat-n: 6; }
+ #other-seats[data-seats="7"] { --seat-n: 7; }
+ #other-seats.table-seats:not([hidden]) { flex-direction: row-reverse; flex-wrap: wrap; max-height: none; overflow: visible; }
+ #other-seats .table-seat,
+ #other-seats .table-seat.you {
+ background: rgba(0,0,0,0.25);
+ border: 1px solid var(--panel-border);
+ border-radius: 8px;
+ padding: 3px 5px 4px;
+ box-sizing: border-box;
+ display: flex;
+ flex-direction: column;
+ min-height: calc(1.2em + var(--card-h, 86px) + 1.35em + 10px);
+ height: auto;
+ overflow: visible;
+ min-width: 5.2rem;
+ flex: 1 1 calc((100% - (var(--seat-n) - 1) * var(--seat-gap)) / var(--seat-n));
+ width: calc((100% - (var(--seat-n) - 1) * var(--seat-gap)) / var(--seat-n));
+ max-width: calc((100% - (var(--seat-n) - 1) * var(--seat-gap)) / var(--seat-n));
+ }
+ #other-seats .table-seat .cards-row,
+ #other-seats .table-seat .os-label,
+ #other-seats .table-seat .os-meta { flex-shrink: 0; }
+ #other-seats .table-seat.you { border-color: var(--gold); background: rgba(20, 28, 18, 0.45); box-shadow: inset 0 0 0 1px rgba(229,185,76,0.55); }
+
+ /* Zig-zag seat rail on phones and iPad portrait (max-width 1023px):
+    two staggered rows, first base rightmost on row A (nearer the dealer),
+    each next seat half a panel left on the other row, third base leftmost.
+    Wide desktop (1024px+) stays a single right-to-left row. 2-seat is
+    side by side with a slight vertical stagger (no half-panel overlap).
+    Positions are explicit per seat index so a mid-hand re-render cannot
+    move existing cards. */
+ @media (max-width: 1023px) {
+ #other-seats.table-seats:not([hidden]) {
+ display: grid;
+ grid-template-rows: auto auto;
+ column-gap: 4px;
+ row-gap: 6px;
+ justify-items: stretch;
+ align-items: start;
+ width: 100%;
+ }
+ #other-seats[data-seats="1"] { grid-template-columns: 1fr; }
+ #other-seats[data-seats="2"] { grid-template-columns: 1fr 1fr; }
+ #other-seats[data-seats="3"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+ #other-seats[data-seats="4"] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+ #other-seats[data-seats="5"] { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+ #other-seats[data-seats="6"] { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+ #other-seats[data-seats="7"] { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+ #other-seats .table-seat,
+ #other-seats .table-seat.you {
+ flex: none;
+ width: auto;
+ max-width: none;
+ min-width: 0;
+ }
+ #other-seats[data-seats="1"] .table-seat[data-seat-index="0"] { grid-column: 1; grid-row: 1; }
+ #other-seats[data-seats="2"] .table-seat[data-seat-index="0"] { grid-column: 2; grid-row: 1; }
+ #other-seats[data-seats="2"] .table-seat[data-seat-index="1"] { grid-column: 1; grid-row: 2; }
+ #other-seats[data-seats="3"] .table-seat[data-seat-index="0"] { grid-column: 3 / span 2; grid-row: 1; }
+ #other-seats[data-seats="3"] .table-seat[data-seat-index="1"] { grid-column: 2 / span 2; grid-row: 2; }
+ #other-seats[data-seats="3"] .table-seat[data-seat-index="2"] { grid-column: 1 / span 2; grid-row: 1; }
+ #other-seats[data-seats="4"] .table-seat[data-seat-index="0"] { grid-column: 4 / span 2; grid-row: 1; }
+ #other-seats[data-seats="4"] .table-seat[data-seat-index="1"] { grid-column: 3 / span 2; grid-row: 2; }
+ #other-seats[data-seats="4"] .table-seat[data-seat-index="2"] { grid-column: 2 / span 2; grid-row: 1; }
+ #other-seats[data-seats="4"] .table-seat[data-seat-index="3"] { grid-column: 1 / span 2; grid-row: 2; }
+ #other-seats[data-seats="5"] .table-seat[data-seat-index="0"] { grid-column: 5 / span 2; grid-row: 1; }
+ #other-seats[data-seats="5"] .table-seat[data-seat-index="1"] { grid-column: 4 / span 2; grid-row: 2; }
+ #other-seats[data-seats="5"] .table-seat[data-seat-index="2"] { grid-column: 3 / span 2; grid-row: 1; }
+ #other-seats[data-seats="5"] .table-seat[data-seat-index="3"] { grid-column: 2 / span 2; grid-row: 2; }
+ #other-seats[data-seats="5"] .table-seat[data-seat-index="4"] { grid-column: 1 / span 2; grid-row: 1; }
+ #other-seats[data-seats="6"] .table-seat[data-seat-index="0"] { grid-column: 6 / span 2; grid-row: 1; }
+ #other-seats[data-seats="6"] .table-seat[data-seat-index="1"] { grid-column: 5 / span 2; grid-row: 2; }
+ #other-seats[data-seats="6"] .table-seat[data-seat-index="2"] { grid-column: 4 / span 2; grid-row: 1; }
+ #other-seats[data-seats="6"] .table-seat[data-seat-index="3"] { grid-column: 3 / span 2; grid-row: 2; }
+ #other-seats[data-seats="6"] .table-seat[data-seat-index="4"] { grid-column: 2 / span 2; grid-row: 1; }
+ #other-seats[data-seats="6"] .table-seat[data-seat-index="5"] { grid-column: 1 / span 2; grid-row: 2; }
+ #other-seats[data-seats="7"] .table-seat[data-seat-index="0"] { grid-column: 7 / span 2; grid-row: 1; }
+ #other-seats[data-seats="7"] .table-seat[data-seat-index="1"] { grid-column: 6 / span 2; grid-row: 2; }
+ #other-seats[data-seats="7"] .table-seat[data-seat-index="2"] { grid-column: 5 / span 2; grid-row: 1; }
+ #other-seats[data-seats="7"] .table-seat[data-seat-index="3"] { grid-column: 4 / span 2; grid-row: 2; }
+ #other-seats[data-seats="7"] .table-seat[data-seat-index="4"] { grid-column: 3 / span 2; grid-row: 1; }
+ #other-seats[data-seats="7"] .table-seat[data-seat-index="5"] { grid-column: 2 / span 2; grid-row: 2; }
+ #other-seats[data-seats="7"] .table-seat[data-seat-index="6"] { grid-column: 1 / span 2; grid-row: 1; }
+ }
+ .table-seat { background: rgba(0,0,0,0.25); border: 1px solid var(--panel-border); border-radius: 8px; padding: 3px 5px 4px; min-width: 5.2rem; min-height: 6.2rem; box-sizing: border-box; display: flex; flex-direction: column; }
+ .table-seat.you { border-color: var(--gold); background: rgba(20, 28, 18, 0.45); box-shadow: inset 0 0 0 1px rgba(229,185,76,0.55); }
  .table-seat.acting { outline: 1px solid rgba(212,175,55,0.45); }
- .table-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; }
+ .table-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
  .table-seat.you .os-label { color: var(--gold); font-weight: 700; }
- .table-seat.swept .cards-row { min-height: 0; }
  .table-seat .swept-note, .swept-note { font-size: 0.62rem; color: var(--muted); text-align: center; font-style: italic; padding: 4px 0; }
  .seat-picker { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 4px 0 6px; }
+ #seat-picker-btns { display: flex; flex-direction: row-reverse; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; }
+ .table-seat .os-meta { min-height: 1.15em; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 8px; font-size: 0.62rem; line-height: 1.15; color: var(--muted); flex: 0 0 auto; }
+ .table-seat .os-meta .os-total { font-weight: 700; color: var(--text); }
+ .table-seat.you .os-meta .os-total { color: var(--gold); }
+ .table-seat .os-meta .os-result { font-weight: 700; }
+ .table-seat .os-meta .os-pot { flex: 0 0 4.6em; min-width: 4.6em; max-width: 4.6em; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ .table-seat.you .os-meta .os-pot { color: var(--gold); }
  .seat-picker[hidden] { display: none !important; }
  .seat-picker .sp-lab { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
  .seat-pick { font-size: 0.72rem; padding: 6px 8px; min-height: 36px; border: 1px solid var(--panel-border); background: rgba(0,0,0,0.25); color: var(--text); border-radius: 8px; cursor: pointer; }
@@ -1369,12 +1488,35 @@
  max-width: 100%;
  overflow-x: auto;
  }
- .other-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; }
- .other-seat .cards-row { margin: 0; justify-content: flex-start; width: max-content; }
- .other-seat .cards-row.overlap { --card-w: 36px; --hand-slots: 6; }
- .other-seat .card { --card-w: 36px; width: 36px; height: 50px; padding: 2px 2px; }
+ .other-seat .os-label { font-size: 0.58rem; color: var(--muted); text-align: center; letter-spacing: 0.4px; min-height: 0.9rem; }
+ .other-seat .cards-row { margin: 0; justify-content: flex-start; width: 100%; max-width: 100%; min-height: 50px; }
+ .other-seat .cards-row.overlap { --card-w: 36px; --card-h: 50px; --hand-slots: 6; }
+ .other-seat .card { --card-w: 36px; --card-h: 50px; width: 36px; height: 50px; padding: 2px 2px; }
  .other-seat .card-top, .other-seat .card-bot { font-size: 0.58rem; }
  .other-seat .card-center { font-size: 0.9rem; }
+ .seat-hand-pack {
+ display: flex;
+ flex-direction: row;
+ flex-wrap: nowrap;
+ align-items: flex-start;
+ gap: 4px;
+ width: 100%;
+ min-width: 0;
+ min-height: 50px;
+ }
+ .seat-hand-pack > .cards-row,
+ .seat-hand-pack > .swept-note {
+ flex: 1 1 0;
+ min-width: 0;
+ }
+ .vs-basic-hud { display: none; margin: 2px 0 0; padding: 0 2px; font-size: 0.68rem; color: var(--muted); text-align: center; letter-spacing: 0.2px; }
+ .vs-basic-hud.show { display: block; }
+ .vs-basic-hud[hidden] { display: none !important; }
+ #vs-basic-delta { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+ #vs-basic-delta.ahead { color: var(--green, #3dba7a); }
+ #vs-basic-delta.behind { color: var(--red, #e05555); }
+ .bankroll-chart-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; font-size: 0.68rem; color: var(--muted); margin: 4px 0 0; }
+ .bankroll-chart-legend .swatch { display: inline-block; width: 10px; height: 2px; margin-right: 4px; vertical-align: middle; background: currentColor; }
  .heat-hint {
  display: none;
  margin: 0 0 6px;
@@ -1413,6 +1555,24 @@
  min-height: 16rem;
  overflow: hidden;
  }
+ #tab-play.seats-on .table-stage > .table-felt {
+ min-height: min-content;
+ max-height: none;
+ overflow: visible;
+ flex: 0 0 auto;
+ height: auto;
+ align-self: stretch;
+ }
+ @media (min-width: 720px) {
+ /* Fill the width beside the shoe tray so equal seat panels stay put when
+    the You label moves. Do not stretch to the tray height (that reopened
+    a tall gap between the dealer and the player rail). */
+ #tab-play.seats-on .table-stage > .table-felt {
+ flex: 1 1 auto;
+ min-width: 0;
+ align-self: flex-start;
+ }
+ }
  /* v11-2: the history link takes a row under the felt; do not shrink
     dealer/player cards under the result banner when space is tight. */
  #tab-play .table-felt > .zone {
@@ -1422,9 +1582,56 @@
  #tab-play .table-felt > .feedback-bar {
  position: relative;
  z-index: 3;
+ flex: 0 0 auto;
  flex-shrink: 0;
  margin-top: 2px;
  margin-bottom: 2px;
+ }
+ /* Seats sit above the stage. Keep the strip one row tall so it cannot
+    grow mid-round and shove the dealer cards (NEW-2). When seats are on,
+    the felt only needs the dealer and the banner; shrink it to the stage
+    so overflow:hidden cannot clip Your turn / the result (NEW-1). */
+ #tab-play.seats-on .table-felt {
+ min-height: min-content;
+ justify-content: flex-start;
+ align-content: flex-start;
+ overflow: visible;
+ gap: 4px;
+ }
+ #tab-play.seats-on .table-felt > .zone,
+ #tab-play.seats-on .table-felt > .zone:first-of-type {
+ flex: 0 0 auto;
+ justify-content: flex-start;
+ min-height: min-content;
+ }
+ #tab-play.seats-on .table-felt > .feedback-bar { margin-top: 0; }
+ #tab-play.seats-on #other-seats:not([hidden]) {
+ flex: 0 0 auto;
+ width: 100%;
+ min-height: min-content;
+ max-height: none;
+ overflow: visible;
+ }
+ #tab-play.seats-on .solo-player-zone { display: none; }
+ #tab-play > .history-quick { flex: 0 0 auto; }
+ #tab-play > .controls-bar { min-height: 7.5rem; flex: 0 0 auto; }
+ #table-stage { flex-wrap: nowrap; }
+ .coach-slot { flex: 1 0 100%; width: 100%; min-height: 0; box-sizing: border-box; }
+ .coach-slot.reserved, #tab-play.seats-on .coach-slot:not([hidden]) { min-height: 36px; }
+ #tab-play.seats-on .coach-slot { display: block; }
+ #tab-play.seats-on .coach-slot .feedback-bar { margin: 0 0 4px; min-height: 36px; }
+ @media (max-height: 700px) {
+ #tab-play.seats-on .table-felt { padding: 6px; gap: 4px; }
+ #tab-play.seats-on .table-felt > .feedback-bar { min-height: 36px; padding: 4px 8px; }
+ #tab-play.seats-on #other-seats:not([hidden]) { min-height: min-content; max-height: none; overflow: visible; }
+ }
+ @media (max-height: 640px) {
+ #tab-play.seats-on #seat-picker-slot.reserved { min-height: 2rem; }
+ #tab-play.seats-on #other-seats:not([hidden]) { min-height: min-content; max-height: none; padding: 2px 0; overflow: visible; }
+ #tab-play.seats-on .table-seat { min-width: 4.6rem; min-height: min-content; padding: 2px 3px 3px; }
+ #tab-play.seats-on .history-quick { padding: 4px 8px; }
+ #tab-play.seats-on > .controls-bar { min-height: 7.5rem; padding: 6px; }
+ #tab-play.seats-on .table-felt > .feedback-bar { min-height: 32px; }
  }
  .live-tray {
  flex: 0 0 auto;
@@ -1514,6 +1721,79 @@
  padding: 1px 0 0;
  }
  .live-tray-exact[hidden] { display: none !important; }
+ /* Narrow screens: a compact full-width shoe/discard bar above the felt,
+    so the tray cannot wrap into an empty first row and steal felt height. */
+ @media (max-width: 719px) {
+ #tab-play .table-stage {
+ flex-direction: column;
+ flex-wrap: nowrap;
+ align-items: stretch;
+ gap: 4px;
+ }
+ #tab-play .live-tray {
+ flex: 0 0 auto;
+ width: 100%;
+ align-self: stretch;
+ }
+ #tab-play .live-tray-btn {
+ flex-direction: row;
+ width: 100%;
+ min-width: 0;
+ min-height: 44px;
+ height: 44px;
+ padding: 4px 8px;
+ gap: 10px;
+ }
+ #tab-play .live-meter {
+ flex-direction: row;
+ flex: 1 1 0;
+ gap: 6px;
+ align-items: center;
+ min-height: 0;
+ }
+ #tab-play .live-meter-track {
+ width: auto;
+ flex: 1 1 auto;
+ height: 12px;
+ min-height: 12px;
+ min-width: 0;
+ }
+ #tab-play .live-meter-fill {
+ top: 0;
+ bottom: 0;
+ right: auto;
+ width: var(--fill, 0%);
+ height: 100%;
+ }
+ #tab-play .live-cut-mark {
+ top: 0;
+ bottom: 0;
+ left: var(--cut, 25%);
+ right: auto;
+ width: 2px;
+ height: auto;
+ }
+ #tab-play .live-tray-exact {
+ padding: 0;
+ align-self: center;
+ white-space: nowrap;
+ }
+
+ #tab-play.seats-on .history-quick { min-height: 32px; padding: 4px 8px; font-size: 0.72rem; }
+ #tab-play.seats-on .table-felt > .zone:first-of-type .zone-title { min-height: 1.2rem; margin-bottom: 2px; }
+ #tab-play.seats-on #other-seats { --card-h: 56px; }
+ #tab-play.seats-on #other-seats .card,
+ #tab-play.seats-on #other-seats .card.large {
+ --card-w: 40px; --card-h: 56px; width: 40px; height: 56px; padding: 2px 3px;
+ }
+ #tab-play.seats-on #other-seats .card-top,
+ #tab-play.seats-on #other-seats .card-bot { font-size: 0.58rem; }
+ #tab-play.seats-on #other-seats .card-center { font-size: 1.05rem; }
+ #tab-play.seats-on #other-seats .cards-row,
+ #tab-play.seats-on #other-seats .cards-row.overlap {
+ --card-h: 56px; --card-w: 40px; min-height: 56px;
+ }
+ }
  @media (prefers-reduced-motion: reduce) {
  .live-meter-fill { transition: none; }
  }
@@ -1661,6 +1941,7 @@
  </div>
  </div>
  </div>
+ <div id="vs-basic-hud" class="vs-basic-hud" hidden>You vs 1U basic: <span id="vs-basic-delta">—</span></div>
 
  <div id="heat-hint" class="heat-hint" role="status"></div>
  <div id="seat-picker-slot">
@@ -1669,8 +1950,8 @@
   <div id="seat-picker-btns" class="row" style="gap:6px;flex-wrap:wrap;justify-content:center;"></div>
  </div>
  </div>
- <div id="other-seats" class="other-seats table-seats" hidden></div>
  <div class="table-stage" id="table-stage">
+ <div id="coach-slot" class="coach-slot" hidden></div>
  <div id="live-tray" class="live-tray">
  <button type="button" class="live-tray-btn" id="live-tray-btn" aria-label="Estimate decks remaining from the shoe and discard bars">
  <div class="live-meter live-shoe">
@@ -1701,7 +1982,8 @@
  <div class="feedback-bar" id="play-feedback">Tap chips (or tap Sug Bet) and hit Deal to start.</div>
  <div id="shoe-shuffle-notice" class="shoe-shuffle-notice" hidden role="status"></div>
 
- <div class="zone" style="width:100%;">
+ <div id="other-seats" class="other-seats table-seats" hidden></div>
+ <div class="zone solo-player-zone" style="width:100%;">
  <div class="player-hands" id="player-hands"></div>
  </div>
  <div id="index-prompt-slot"><div id="index-prompt" hidden role="status"></div></div>
@@ -1996,6 +2278,7 @@
  <div id="st-cats" style="width:100%;"></div>
  <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Bankroll (this device)</h3>
  <canvas id="bankroll-chart" width="600" height="160" aria-label="Bankroll history chart"></canvas>
+ <div id="bankroll-chart-legend" class="bankroll-chart-legend" hidden><span><i class="swatch" style="background:#e5b94c;"></i>You</span><span><i class="swatch" style="background:#7eb8a0;"></i>1U basic average</span></div>
  <h3 style="margin:8px 0 0; color:var(--gold); font-size:1rem; align-self:flex-start;">Progress over sessions</h3>
  <div class="progress-charts">
   <canvas id="acc-chart" width="600" height="120" aria-label="Decision accuracy over time"></canvas>
@@ -2173,7 +2456,7 @@
  <details class="guide-block">
  <summary>Other seats and heat hints</summary>
  <div class="guide-block-body">
- <p>You can add 1–6 other seats that play <strong>basic strategy</strong> from the same shoe. Their cards are dealt and counted in the running count, which changes true counts and penetration the way a full table does. They do not use deviations and do not affect your bankroll. Choose <strong>Your seat</strong> so you can practice first base or third base. Deal and action order always run first base → third base → dealer.</p>
+ <p>You can add 1–6 other seats that play <strong>pure basic strategy</strong> from the same shoe (the active rules, including DAS and late surrender). Their cards are dealt and counted in the running count, which changes true counts and penetration the way a full table does. They always bet a <strong>flat 1 unit</strong> (the table’s 1U size), never vary the bet with the count, never take insurance, and never use deviations. Each seat keeps its own pot, starting at the same <strong>$1,000</strong> as you. Those pots persist across a reload and across <strong>New Shoe</strong> (New Shoe only reshuffles, just like your bankroll). <strong>Reset $1,000</strong> and <strong>Reload $1,000</strong> reset their pots too. An optional <strong>You vs 1U basic</strong> comparison (off by default) shows a HUD delta and a second line on the bankroll chart: your pot versus the average of the other seats. Choose <strong>Your seat</strong> so you can practice first base or third base. Deal and action order always run first base → third base → dealer. On phones and iPad portrait the seats sit in two staggered rows that zig-zag from first base (rightmost, nearer the dealer) to third base (leftmost), like a shallow arc; on a wide desktop they stay a single row.</p>
  <p><strong>Heat hints</strong> are educational only. If a bet jumps more than 2×, or you leap from a small bet to the top of the spread, you will see a reminder that ramping with the count is quieter than jumping after a win or loss. Nothing is blocked.</p>
  </div>
  </details>
@@ -2206,7 +2489,7 @@
  <li><strong>Timed decisions</strong> — countdown in Strategy Drill; a timeout is scored as a miss. <strong>Seconds per decision</strong> sets the limit.</li>
  <li><strong>Stats</strong> and <strong>Risk Tools</strong> — show or hide those modes and (for Stats) stop logging.</li>
  <li><strong>Other seats</strong> — 1–6 basic-strategy seats that share the shoe and the count. <strong>Your seat</strong> places you at first base through third base.</li>
- <li><strong>Deal pace</strong> — type seconds per card in Settings (0–3 s, step 0.05 s; 0 is Instant). Recommended chips fill the box: Instant 0, Fast 0.20, Normal 0.45 (default), Casino-realistic 0.60, Slow 0.80. Dealer hole and hits wait twice as long as the deal; the bust and end-of-round holds scale with the same number. Cards appear in place; nothing animates.</li>
+ <li><strong>Deal pace</strong> — type seconds per card in Settings (0–3 s, step 0.05 s; 0 is Instant). Recommended chips fill the box: Instant 0, Fast 0.20, Normal 0.45 (default), Casino-realistic 0.60, Slow 0.80. Dealer hole and hits wait twice as long as the deal; the bust and end-of-round holds scale with the same number. After a split, the pair is separated and each hand receives its second card at that same pace when play reaches it (split aces still get one card each). Hits and doubles wait the same deal time before the new card appears. Cards appear in place; nothing animates.</li>
  <li><strong>Last-round review</strong> (off by default) — keep the finished hands on the felt until the next Deal. Off: cards are swept at the end of the round (and after a countable beat on a bust).</li>
  <li><strong>Index-play prompts</strong> (off by default) — when an Illustrious 18 or Fab 4 deviation applies, Table Play shows the index and the recommended action (for example, 16 vs 10, stand at TC ≥ 0).</li>
  <li><strong>Mid-shoe true-count quizzes</strong> (off by default) — optional RC/TC prompts at random points in the shoe, once, twice, or 1–3 times per shoe, in addition to the existing between-hand quizzes.</li>
@@ -2386,6 +2669,8 @@
 <option value="0" selected>First base</option>
 </select>
 </div>
+ <div class="setting-row" data-settings-pages="play"><span class="lbl">You vs 1U basic (HUD &amp; chart)</span><input type="checkbox" id="feat-vs-basic" aria-label="Compare your bankroll to the flat 1-unit basic-strategy average"></div>
+ <p class="feat-note" data-settings-pages="play" style="margin-top:-4px;">Off by default. Other seats always bet a flat 1 unit and play pure basic strategy (no insurance, no deviations). Their pots start at $1,000, persist across reload and New Shoe, and reset when you reset or reload your bankroll.</p>
 <div class="setting-row" data-settings-pages="play"><span class="lbl">Deal pace (seconds per card)</span>
 <div class="deal-pace-ui">
 <div class="deal-pace-input-row">
@@ -2589,7 +2874,7 @@
 
 
  const PAGE_SETTING_KEYS = {
- play: ['decks','s17','das','ls','splitAcesOneCard','betStrat','showHud','showTags','coach','featI18','featFab4','featIns','tcRounding','featBetRamp','featBetGrade','unitSize','spreadMin','spreadMax','featQuiz','quizInterval','featLiveTray','featShowExactDecks','featShowTotals','deckEstInterval','featDeckEst','featSeats','otherSeats','playerSeat','dealPace','featLastRoundReview','featIndexPrompts','featShoeQuiz','shoeQuizFreq','featDistract','featDistractNoise','featHeat'],
+ play: ['decks','s17','das','ls','splitAcesOneCard','betStrat','showHud','showTags','coach','featI18','featFab4','featIns','tcRounding','featBetRamp','featBetGrade','unitSize','spreadMin','spreadMax','featQuiz','quizInterval','featLiveTray','featShowExactDecks','featShowTotals','deckEstInterval','featDeckEst','featSeats','otherSeats','playerSeat','dealPace','featLastRoundReview','featIndexPrompts','featShoeQuiz','shoeQuizFreq','featDistract','featDistractNoise','featHeat','featVsBasic'],
  speed: ['decks','batch','mode','interval','showTags','featDeckEst'],
  strat: ['decks','s17','das','ls','splitAcesOneCard','featI18','featFab4','featIns','featTimed','decisionSec'],
  charts: ['decks','s17','das','ls','splitAcesOneCard'],
@@ -2599,7 +2884,7 @@
  guide: []
  };
  const PAGE_SETTING_LABELS = { play: 'Table Play', speed: 'Speed Count', strat: 'Strategy Drill', charts: 'Charts', stats: 'Stats', risk: 'Risk Tools', history: 'Hand History', guide: 'How It Works' };
- const SETTING_KEY_LABELS = { decks: 'Decks', s17: 'Dealer soft 17', das: 'DAS', ls: 'Late surrender', splitAcesOneCard: 'Split aces one card', betStrat: 'Betting strategy', showHud: 'Count HUD', showTags: 'Hi-Lo tags', coach: 'Live coach', featI18: 'Illustrious 18', featFab4: 'Fab 4', featIns: 'Insurance index', tcRounding: 'True-count rounding', featBetRamp: 'Bet ramp', featBetGrade: 'Grade bets', unitSize: 'Unit size', spreadMin: 'Spread min', spreadMax: 'Spread max', featQuiz: 'Count quizzes', quizInterval: 'Quiz frequency', featLiveTray: 'Live shoe bars', featShowExactDecks: 'Exact decks', featShowTotals: 'Card totals', deckEstInterval: 'Deck-estimate prompt', featDeckEst: 'Deck-estimate drill', featSeats: 'Other seats', otherSeats: 'Other-seat count', playerSeat: 'Your seat', dealPace: 'Deal pace', featLastRoundReview: 'Last-round review', featIndexPrompts: 'Index-play prompts', featShoeQuiz: 'Mid-shoe TC quizzes', shoeQuizFreq: 'Mid-shoe quiz frequency', featDistract: 'Casino distraction mode', featDistractNoise: 'Ambient noise', featHeat: 'Heat hints', featTimed: 'Timed decisions', decisionSec: 'Seconds per decision', batch: 'Cards per step', mode: 'Deal mode', interval: 'Auto interval' };
+ const SETTING_KEY_LABELS = { decks: 'Decks', s17: 'Dealer soft 17', das: 'DAS', ls: 'Late surrender', splitAcesOneCard: 'Split aces one card', betStrat: 'Betting strategy', showHud: 'Count HUD', showTags: 'Hi-Lo tags', coach: 'Live coach', featI18: 'Illustrious 18', featFab4: 'Fab 4', featIns: 'Insurance index', tcRounding: 'True-count rounding', featBetRamp: 'Bet ramp', featBetGrade: 'Grade bets', unitSize: 'Unit size', spreadMin: 'Spread min', spreadMax: 'Spread max', featQuiz: 'Count quizzes', quizInterval: 'Quiz frequency', featLiveTray: 'Live shoe bars', featShowExactDecks: 'Exact decks', featShowTotals: 'Card totals', deckEstInterval: 'Deck-estimate prompt', featDeckEst: 'Deck-estimate drill', featSeats: 'Other seats', otherSeats: 'Other-seat count', playerSeat: 'Your seat', dealPace: 'Deal pace', featLastRoundReview: 'Last-round review', featIndexPrompts: 'Index-play prompts', featShoeQuiz: 'Mid-shoe TC quizzes', shoeQuizFreq: 'Mid-shoe quiz frequency', featDistract: 'Casino distraction mode', featDistractNoise: 'Ambient noise', featHeat: 'Heat hints', featVsBasic: 'You vs 1U basic', featTimed: 'Timed decisions', decisionSec: 'Seconds per decision', batch: 'Cards per step', mode: 'Deal mode', interval: 'Auto interval' };
 
  function defaultPageSettings() {
  return {
@@ -2829,7 +3114,7 @@
  if (totalSeats <= 1) return 'You';
  if (index === 0) return 'First base';
  if (index === totalSeats - 1) return 'Third base';
- if (totalSeats === 3 && index === 1) return 'Middle';
+ if (totalSeats % 2 === 1 && index === Math.floor((totalSeats - 1) / 2)) return 'Second base';
  return 'Seat ' + (index + 1);
  }
  function tableSeatLayout(otherSeats, playerSeat) {
@@ -2929,11 +3214,15 @@ function formatIndexPrompt(note, tc) {
  function instantPaintHoldMs() { return 50; }
  function tableActionsShouldLock(phase, opts) {
  opts = opts || {};
+ if (opts.dealPending) return true;
  if (phase === 'dealing' || phase === 'others' || phase === 'dealer') return true;
  if (opts.bustVisible) return true;
  if (phase === 'playing' && opts.handFinished) return true;
  if (phase === 'done' && !opts.dealerSwept) return true;
  return false;
+ }
+ function handNeedsSplitCard(h) {
+ return !!(h && h.fromSplit && !h.finished && !h.swept && Array.isArray(h.cards) && h.cards.length === 1);
  }
  function v13ParityKeys() {
  return {
@@ -3081,7 +3370,7 @@ function formatIndexPrompt(note, tc) {
  sdBest: 0,
  speedBestCps: 0,
  speedBestMs: 0,
- schemaVersion: 13,
+ schemaVersion: 14,
  pageSettings: defaultPageSettings(),
  featI18: true,
  featFab4: true,
@@ -3109,6 +3398,8 @@ function formatIndexPrompt(note, tc) {
  otherSeats: 0,
  playerSeat: 0,
  dealPace: 0.45,
+ otherSeatBanks: {},
+ featVsBasic: false,
  featLastRoundReview: false,
  featIndexPrompts: false,
  featShoeQuiz: false,
@@ -3128,7 +3419,7 @@ function formatIndexPrompt(note, tc) {
  if (saved.featI18 === undefined && saved.devCoach === 'basic') {
  s.featI18 = false; s.featFab4 = false; s.featIns = false;
  }
- s.schemaVersion = 13;
+ s.schemaVersion = 14;
  s.dealPace = normalizeDealPaceSec(saved.dealPace === undefined ? 0.45 : saved.dealPace);
  if (saved.playerSeat === undefined) s.playerSeat = 0;
  if (saved.featLastRoundReview === undefined) s.featLastRoundReview = false;
@@ -3137,6 +3428,16 @@ function formatIndexPrompt(note, tc) {
  if (saved.shoeQuizFreq === undefined) s.shoeQuizFreq = '1';
  if (saved.featDistract === undefined) s.featDistract = false;
  if (saved.featDistractNoise === undefined) s.featDistractNoise = false;
+ if (saved.featVsBasic === undefined) s.featVsBasic = false;
+ if (!s.otherSeatBanks || typeof s.otherSeatBanks !== 'object' || Array.isArray(s.otherSeatBanks)) s.otherSeatBanks = {};
+ else {
+ const banks = {};
+ Object.keys(s.otherSeatBanks).forEach(k => {
+ const n = Number(s.otherSeatBanks[k]);
+ if (isFinite(n)) banks[String(k)] = roundMoney(n);
+ });
+ s.otherSeatBanks = banks;
+ }
  if (!s.stats || typeof s.stats !== 'object') s.stats = { v: 1, session: emptyCategoryStats(), lifetime: emptyCategoryStats(), mistakes: [], bankrollHistory: [], missedMap: {}, progress: { acc: [], speed: [], tc: [] } };
  if (!s.stats.progress || typeof s.stats.progress !== 'object') s.stats.progress = { acc: [], speed: [], tc: [] };
  ['acc','speed','tc'].forEach(k => { if (!Array.isArray(s.stats.progress[k])) s.stats.progress[k] = []; });
@@ -4266,6 +4567,108 @@ function formatIndexPrompt(note, tc) {
  return { action: code, note: null };
  }
 
+ const STARTING_BANKROLL = 1000;
+
+ function tableUnitSize(st) {
+ const s = st || (typeof state !== 'undefined' ? state : null);
+ const raw = s && s.unitSize != null ? s.unitSize : 25;
+ const n = Number(raw);
+ return roundMoney(isFinite(n) && n > 0 ? n : 25);
+ }
+
+ /* Other seats always bet a flat 1 unit; the true count is ignored. */
+ function otherSeatFlatBet(unitSize, tc) {
+ void tc;
+ const n = Number(unitSize);
+ return roundMoney(isFinite(n) && n > 0 ? n : 25);
+ }
+
+ function normalizeOtherSeatBanks(raw) {
+ const out = {};
+ if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+ Object.keys(raw).forEach(k => {
+ const n = Number(raw[k]);
+ if (isFinite(n)) out[String(k)] = roundMoney(n);
+ });
+ return out;
+ }
+
+ function averageOtherSeatBanks(banks, seatIndexes) {
+ const idxs = (seatIndexes || []).map(String);
+ if (!idxs.length) return null;
+ let sum = 0;
+ idxs.forEach(k => {
+ const n = banks && isFinite(Number(banks[k])) ? Number(banks[k]) : STARTING_BANKROLL;
+ sum += n;
+ });
+ return roundMoney(sum / idxs.length);
+ }
+
+ function youVsBasicDelta(yourBank, avg) {
+ if (avg == null || !isFinite(Number(avg))) return null;
+ return roundMoney((Number(yourBank) || 0) - Number(avg));
+ }
+
+ /* Settle already-wagered hands (bets deducted) against the dealer. No insurance. BJ pays 3:2 if not from a split. */
+ function settleSeatHands(bankroll, hands, dealerCards) {
+ const dEv = evalHand(dealerCards || []);
+ let br = roundMoney(bankroll);
+ let net = 0;
+ const results = (hands || []).map(h => {
+ const bet = roundMoney((h && h.bet) || 0);
+ const rec = { result: '', resultText: '', net: 0, bet: bet };
+ if (!h || h.settled) return rec;
+ if (!bet) { rec.result = 'res-idle'; rec.resultText = ''; return rec; }
+ if (h.surrendered) {
+ if (!h.surrenderRefunded) br = roundMoney(br + roundMoney(bet / 2));
+ rec.net = roundMoney(-roundMoney(bet / 2));
+ rec.result = 'res-surr';
+ rec.resultText = 'SURR (' + formatMoney(rec.net) + ')';
+ net = roundMoney(net + rec.net);
+ return rec;
+ }
+ const pEv = evalHand(h.cards || []);
+ const isBj = !!(pEv.isBlackjack && !h.fromSplit);
+ if (pEv.isBust) {
+ rec.result = 'res-lose';
+ rec.resultText = 'BUST (-' + formatMoney(bet) + ')';
+ rec.net = roundMoney(-bet);
+ } else if (isBj && !dEv.isBlackjack) {
+ const profit = roundMoney(bet * 1.5);
+ br = roundMoney(br + bet + profit);
+ rec.result = 'res-bj';
+ rec.resultText = 'BJ! +' + formatMoney(profit);
+ rec.net = profit;
+ } else if (isBj && dEv.isBlackjack) {
+ br = roundMoney(br + bet);
+ rec.result = 'res-push';
+ rec.resultText = 'PUSH (Both BJ)';
+ rec.net = 0;
+ } else if (dEv.isBlackjack) {
+ rec.result = 'res-lose';
+ rec.resultText = 'DEALER BJ';
+ rec.net = roundMoney(-bet);
+ } else if (dEv.isBust || pEv.total > dEv.total) {
+ br = roundMoney(br + bet * 2);
+ rec.result = 'res-win';
+ rec.resultText = 'WIN (+' + formatMoney(bet) + ')';
+ rec.net = bet;
+ } else if (pEv.total < dEv.total) {
+ rec.result = 'res-lose';
+ rec.resultText = 'LOSE (-' + formatMoney(bet) + ')';
+ rec.net = roundMoney(-bet);
+ } else {
+ br = roundMoney(br + bet);
+ rec.result = 'res-push';
+ rec.resultText = 'PUSH';
+ rec.net = 0;
+ }
+ net = roundMoney(net + rec.net);
+ return rec;
+ });
+ return { bankroll: br, net: net, hands: results };
+ }
+
  function actionName(code) {
  return { H: 'Hit', S: 'Stand', D: 'Double', P: 'Split', R: 'Surrender' }[code] || code;
  }
@@ -4783,6 +5186,21 @@ function formatIndexPrompt(note, tc) {
  document.getElementById('chips-row').style.display = isBroke ? 'none' : 'flex';
  document.getElementById('bet-actions-row').style.display = isBroke ? 'none' : 'grid';
  document.getElementById('btn-quick-reload').style.display = isBroke ? 'block' : 'none';
+ if (typeof updateVsBasicHud === 'function') updateVsBasicHud();
+ }
+ function updateVsBasicHud() {
+ const el = document.getElementById('vs-basic-hud');
+ const dEl = document.getElementById('vs-basic-delta');
+ if (!el) return;
+ const show = !!(state.featVsBasic && typeof multiSeatOn === 'function' && multiSeatOn());
+ el.hidden = !show;
+ el.classList.toggle('show', show);
+ if (!show || !dEl) return;
+ const avg = (typeof currentBasicAverage === 'function') ? currentBasicAverage() : null;
+ const delta = youVsBasicDelta(state.bankroll, avg);
+ if (delta == null) { dEl.textContent = '—'; dEl.className = ''; return; }
+ dEl.textContent = (delta > 0 ? '+' : '') + formatMoney(delta);
+ dEl.className = delta > 0 ? 'ahead' : (delta < 0 ? 'behind' : '');
  }
 
  function setFeedback(msg, cls = '') {
@@ -4829,13 +5247,54 @@ function formatIndexPrompt(note, tc) {
  document.addEventListener('click', revealScoreFromEvent);
  document.addEventListener('keydown', revealScoreFromEvent);
 
+ function clearOverlapLocks(root) {
+ if (typeof document === 'undefined') return;
+ const scope = root || document;
+ scope.querySelectorAll('.cards-row[data-overlap-locked]').forEach(r => { delete r.dataset.overlapLocked; });
+ }
+ function fitOverlapRow(row) {
+ if (!row || !row.classList || !row.classList.contains('overlap')) return;
+ if (row.dataset.overlapLocked === '1') return;
+ const box = row.closest('.player-hand-box, .table-seat, .zone, .table-felt') || row.parentElement;
+ const avail = Math.max(0, (box ? box.clientWidth : row.clientWidth) || 0);
+ if (avail <= 0) return;
+ const styles = (typeof getComputedStyle === 'function') ? getComputedStyle(row) : null;
+ const cardW = Math.max(8, parseFloat(styles && styles.getPropertyValue('--card-w')) || parseFloat(row.style.getPropertyValue('--card-w')) || 60);
+ const slots = Math.max(2, parseInt(styles && styles.getPropertyValue('--hand-slots'), 10) || parseInt(row.style.getPropertyValue('--hand-slots'), 10) || 7);
+ const raw = (cardW * slots - avail) / (slots - 1);
+ const overlap = Math.max(0, Math.min(cardW - 8, raw));
+ row.style.setProperty('--card-overlap', overlap.toFixed(2) + 'px');
+ row.style.width = '100%';
+ row.style.maxWidth = '100%';
+ const n = row.querySelectorAll('.card').length;
+ if (n >= 2) row.dataset.overlapLocked = '1';
+ }
+ function fitAllOverlapRows() {
+ if (typeof document === 'undefined') return;
+ document.querySelectorAll('.cards-row.overlap').forEach(fitOverlapRow);
+ }
+ function placeCoachBanner() {
+ const bar = document.getElementById('play-feedback');
+ const slot = document.getElementById('coach-slot');
+ const felt = document.querySelector('#table-stage .table-felt');
+ const notice = document.getElementById('shoe-shuffle-notice');
+ const rail = document.getElementById('other-seats');
+ if (!bar || !felt) return;
+ if (bar.parentElement !== felt) {
+ felt.insertBefore(bar, notice || rail || felt.querySelector('.solo-player-zone') || null);
+ }
+ if (slot) { slot.hidden = true; slot.classList.remove('reserved'); }
+ }
  function updateHandScrollHints() {
+ if (typeof fitAllOverlapRows === 'function') fitAllOverlapRows();
  document.querySelectorAll('#player-hands .player-hand-shell').forEach(shell => {
  const box = shell.querySelector('.player-hand-box');
+ const row = shell.querySelector('.cards-row');
  if (!box) return;
- const max = box.scrollWidth - box.clientWidth;
- shell.classList.toggle('has-scroll-right', max > 2 && box.scrollLeft < max - 2);
- shell.classList.toggle('has-scroll-left', box.scrollLeft > 2);
+ const scroller = (row && row.scrollWidth > row.clientWidth + 2) ? row : box;
+ const max = scroller.scrollWidth - scroller.clientWidth;
+ shell.classList.toggle('has-scroll-right', max > 2 && scroller.scrollLeft < max - 2);
+ shell.classList.toggle('has-scroll-left', scroller.scrollLeft > 2);
  });
  }
  if (typeof window !== 'undefined') {
@@ -5026,12 +5485,19 @@ function formatIndexPrompt(note, tc) {
  updateHud();
  if (typeof syncIndexPrompt === 'function') syncIndexPrompt();
  if (typeof syncDistractUI === 'function') syncDistractUI();
+ const playTab = document.getElementById('tab-play');
+ if (playTab && typeof multiSeatOn === 'function') playTab.classList.toggle('seats-on', multiSeatOn());
+ if (typeof placeCoachBanner === 'function') placeCoachBanner();
+ if (typeof updateHandScrollHints === 'function') updateHandScrollHints();
  if (typeof recordTablePaint === 'function') recordTablePaint('renderTable');
+ if (typeof updateTopStats === 'function') updateTopStats();
  }
 
  function startDeal() {
  if (typeof canStartDeal === 'function' ? !canStartDeal() : (phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer')) return;
+ if (typeof tableDealPending !== 'undefined') tableDealPending = false;
  if (typeof clearTableTimer === 'function') clearTableTimer();
+ if (typeof clearOverlapLocks === 'function') clearOverlapLocks();
  lastRoundActive = false;
  dealerSwept = false;
  actingSeatIndex = -1;
@@ -5062,7 +5528,14 @@ function formatIndexPrompt(note, tc) {
 
  const layout = currentTableLayout();
  playerHands = [{ cards: [], bet: state.bet, doubled: false, fromSplit: false, surrendered: false, finished: false, result: '', resultText: '', swept: false }];
- otherSeatHands = layout.filter(s => !s.you).map(s => ({ cards: [], label: s.label, seatIndex: s.index, otherIndex: s.otherIndex, swept: false, fromSplit: false }));
+ ensureOtherSeatBanks();
+ const otherUnit = otherSeatFlatBet(tableUnitSize(state), getTrueCount());
+ otherSeatHands = layout.filter(s => !s.you).map(s => {
+ const bank = getOtherSeatBank(s.index);
+ const bet = bank >= otherUnit ? otherUnit : 0;
+ if (bet) setOtherSeatBank(s.index, roundMoney(bank - bet));
+ return { cards: [], label: s.label, seatIndex: s.index, otherIndex: s.otherIndex, swept: false, fromSplit: false, bet: bet, doubled: false, surrendered: false, settled: false, surrenderRefunded: false, result: '', resultText: '' };
+ });
  dealerHand = [];
  activeHandIdx = 0;
  phase = 'dealing';
@@ -5159,11 +5632,24 @@ function formatIndexPrompt(note, tc) {
  }
  const coachEl = document.getElementById('play-feedback');
  const prior = (state.coach && coachEl) ? coachEl.textContent.trim() : '';
- const keepPrior = prior && !/^(Your turn|Tap chips|Add chips|Cut card reached|Shoe shuffled|Fresh |Bankroll)/i.test(prior);
+ const keepPrior = prior && !/^(Your turn|Tap chips|Add chips|Cut card reached|Shoe shuffled|Fresh |Bankroll|Dealing)/i.test(prior) && !/is playing basic strategy/i.test(prior);
  const prefix = [keepPrior ? prior : '', headline].filter(Boolean).map(s => s.replace(/[. ]+$/, '')).join('. ');
  const banner = composeRoundBanner(handNet, insuranceBet, dEv.isBlackjack, prefix);
  setFeedback(banner.text, banner.cls);
  if (typeof finalizeRoundLog === 'function') finalizeRoundLog(handNet);
+ if (dEv.isBlackjack) {
+ if (typeof settleOtherSeatsAgainstDealer === 'function') settleOtherSeatsAgainstDealer();
+ finishRound();
+ return;
+ }
+ // Player BJ, dealer does not: pay the player now, then let other seats play and the dealer finish for them.
+ const othersLive = multiSeatOn() && otherSeatHands.some(h => h.cards && h.cards.length >= 2 && !evalHand(h.cards).isBlackjack);
+ if (othersLive) {
+ renderTable();
+ playOtherSeatsRange('before', () => playOtherSeatsRange('after', () => runDealerTurn()));
+ return;
+ }
+ if (typeof settleOtherSeatsAgainstDealer === 'function') settleOtherSeatsAgainstDealer();
  finishRound();
  };
  if (holeHidden && dealerHand.length >= 2) {
@@ -5222,7 +5708,57 @@ function formatIndexPrompt(note, tc) {
  function advanceHandOrDealer() {
  while (activeHandIdx < playerHands.length && playerHands[activeHandIdx].finished) activeHandIdx++;
  if (activeHandIdx >= playerHands.length) playOtherSeatsRange('after', () => runDealerTurn());
- else renderTable();
+ else if (typeof handNeedsSplitCard === 'function' && handNeedsSplitCard(playerHands[activeHandIdx])) {
+ renderTable();
+ dealSplitCardToActiveHand();
+ } else renderTable();
+ }
+
+ function beginTableDeal(fn) {
+ tableDealPending = true;
+ renderTable();
+ afterTableDelay(currentStepDelayMs(), () => {
+ fn();
+ if (!tableTimer) {
+ tableDealPending = false;
+ renderTable();
+ }
+ });
+ }
+
+ function finishActiveHandAfterDraw(h) {
+ const ev = evalHand(h.cards);
+ if (splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard) || ev.total >= 21 || ev.isBust) {
+ h.finished = true;
+ if (ev.isBust) {
+ h.result = 'res-lose';
+ h.resultText = `BUST (-${formatMoney(h.bet)})`;
+ if (shouldSweepOnBust(true)) {
+ renderTable();
+ sweepHandAfterVisible(h, 'bust', () => advanceHandOrDealer());
+ return true;
+ }
+ }
+ renderTable();
+ advanceHandOrDealer();
+ return true;
+ }
+ renderTable();
+ return false;
+ }
+
+ function dealSplitCardToActiveHand() {
+ if (phase !== 'playing') return;
+ const idx = activeHandIdx;
+ const h = playerHands[idx];
+ if (!handNeedsSplitCard(h)) { renderTable(); return; }
+ beginTableDeal(() => {
+ if (phase !== 'playing' || activeHandIdx !== idx) return;
+ const cur = playerHands[activeHandIdx];
+ if (!handNeedsSplitCard(cur)) { renderTable(); return; }
+ cur.cards.push(drawCard(true));
+ finishActiveHandAfterDraw(cur);
+ });
  }
 
  function playerHit() {
@@ -5230,22 +5766,15 @@ function formatIndexPrompt(note, tc) {
  const cur = playerHands[activeHandIdx];
  if (splitAceMustStand(cur.cards, cur.fromSplit, state.splitAcesOneCard)) return;
  evaluateCoach('H');
- const h = playerHands[activeHandIdx];
- h.cards.push(drawCard(true));
- const ev = evalHand(h.cards);
- renderTable();
- if (ev.isBust || ev.total === 21) {
- h.finished = true;
- if (ev.isBust) {
- h.result = 'res-lose';
- h.resultText = `BUST (-${formatMoney(h.bet)})`;
- if (shouldSweepOnBust(true)) {
- sweepHandAfterVisible(h, 'bust', () => advanceHandOrDealer());
- return;
- }
- }
- advanceHandOrDealer();
- }
+ const idx = activeHandIdx;
+ const h = playerHands[idx];
+ beginTableDeal(() => {
+ if (phase !== 'playing' || activeHandIdx !== idx) return;
+ const hand = playerHands[activeHandIdx];
+ if (!hand || hand.finished) return;
+ hand.cards.push(drawCard(true));
+ if (!finishActiveHandAfterDraw(hand)) renderTable();
+ });
  }
 
  function playerStand() {
@@ -5261,22 +5790,28 @@ function formatIndexPrompt(note, tc) {
  if (splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard)) return;
  if (h.cards.length !== 2 || state.bankroll < h.bet || (h.fromSplit && !state.das)) return;
  evaluateCoach('D');
+ const idx = activeHandIdx;
  state.bankroll = roundMoney(state.bankroll - h.bet);
  h.bet = roundMoney(h.bet * 2);
  h.doubled = true;
- h.cards.push(drawCard(true));
- h.finished = true;
- const ev = evalHand(h.cards);
+ beginTableDeal(() => {
+ if (phase !== 'playing' || activeHandIdx !== idx) return;
+ const hand = playerHands[activeHandIdx];
+ if (!hand) return;
+ hand.cards.push(drawCard(true));
+ hand.finished = true;
+ const ev = evalHand(hand.cards);
  renderTable();
  if (ev.isBust) {
- h.result = 'res-lose';
- h.resultText = `BUST (-${formatMoney(h.bet)})`;
+ hand.result = 'res-lose';
+ hand.resultText = `BUST (-${formatMoney(hand.bet)})`;
  if (shouldSweepOnBust(true)) {
- sweepHandAfterVisible(h, 'bust', () => advanceHandOrDealer());
+ sweepHandAfterVisible(hand, 'bust', () => advanceHandOrDealer());
  return;
  }
  }
  advanceHandOrDealer();
+ });
  }
 
  function playerSplit() {
@@ -5288,17 +5823,15 @@ function formatIndexPrompt(note, tc) {
  state.bankroll = roundMoney(state.bankroll - h.bet);
  const c1 = h.cards[0];
  const c2 = h.cards[1];
- const isAces = normalizeRank(c1.rank) === 'A';
-
- const cards1 = [c1, drawCard(true)];
- const cards2 = [c2, drawCard(true)];
- const aceOne = isAces && state.splitAcesOneCard !== false;
- const hand1 = { cards: cards1, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: aceOne || evalHand(cards1).total >= 21, result: '', resultText: '' };
- const hand2 = { cards: cards2, bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: aceOne || evalHand(cards2).total >= 21, result: '', resultText: '' };
-
+ // Casino procedure: separate the pair, then deal a second card only to the
+ // hand about to be played, at the deal pace. Play that hand out, then deal
+ // the next hand's second card when play moves to it.
+ const hand1 = { cards: [c1], bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: false, result: '', resultText: '', swept: false };
+ const hand2 = { cards: [c2], bet: h.bet, doubled: false, fromSplit: true, surrendered: false, finished: false, result: '', resultText: '', swept: false };
  playerHands.splice(activeHandIdx, 1, hand1, hand2);
+ if (typeof clearOverlapLocks === 'function') clearOverlapLocks(document.getElementById('player-hands'));
  renderTable();
- advanceHandOrDealer();
+ dealSplitCardToActiveHand();
  }
 
  function playerSurrender() {
@@ -5340,10 +5873,12 @@ function formatIndexPrompt(note, tc) {
  }
  });
 
+ if (typeof settleOtherSeatsAgainstDealer === 'function') settleOtherSeatsAgainstDealer();
  phase = 'done';
  // A remaining insuranceBet on this path means the dealer did not have BJ, so insurance lost.
  const coachEl = document.getElementById('play-feedback');
- const prior = (state.coach && playerHands.length === 1 && coachEl) ? coachEl.textContent.trim() : '';
+ const priorRaw = (state.coach && playerHands.length === 1 && coachEl) ? coachEl.textContent.trim() : '';
+ const prior = priorRaw && /^[✓✗]/.test(priorRaw) ? priorRaw : '';
  const banner = composeRoundBanner(handNet, insuranceBet, false, prior);
  let combined = banner.text;
  const priorCls = coachEl && prior ? (coachEl.className.includes('warn') ? 'warn' : coachEl.className.includes('good') ? 'good' : banner.cls) : banner.cls;
@@ -5384,6 +5919,7 @@ function formatIndexPrompt(note, tc) {
  }
 
  function finishRound() {
+ if (typeof tableDealPending !== 'undefined') tableDealPending = false;
  state.handsPlayed++;
  handsSinceQuiz++;
  if (state.bankroll < 5) {
@@ -5502,11 +6038,11 @@ function formatIndexPrompt(note, tc) {
  saveState();
  });
  document.getElementById('btn-quick-reload').addEventListener('click', () => {
- state.bankroll = 1000;
- state.bet = 25;
+ resetPlayerAndOtherBanks();
  saveState();
- setFeedback('Bankroll reloaded to $1,000.', 'info');
+ setFeedback('Bankroll reloaded to $1,000. Other seats’ pots were reset too.', 'info');
  renderTable();
+ if (typeof updateTopStats === 'function') updateTopStats();
  });
 
  document.getElementById('btn-deal').addEventListener('click', startDeal);
@@ -5604,11 +6140,12 @@ function formatIndexPrompt(note, tc) {
  });
 
  document.getElementById('btn-reset-bank').addEventListener('click', () => {
- state.bankroll = 1000;
- state.bet = 25;
+ resetPlayerAndOtherBanks();
  saveState();
  updateTopStats();
- setFeedback('Bankroll reset to $1,000.', 'info');
+ if (typeof renderTable === 'function') renderTable();
+ if (typeof renderStatsTab === 'function') renderStatsTab();
+ setFeedback('Bankroll reset to $1,000. Other seats’ pots were reset too.', 'info');
  settingsModal.classList.remove('open');
  });
 
@@ -5706,7 +6243,12 @@ function formatIndexPrompt(note, tc) {
  if (key === 'otherSeats' || key === 'playerSeat' || key === 'featSeats') {
  const c = clampPlayerSeat(state.playerSeat || 0, state.featSeats ? (state.otherSeats || 0) : 0);
  if (state.playerSeat !== c.playerSeat) state.playerSeat = c.playerSeat;
+ if (typeof ensureOtherSeatBanks === 'function') ensureOtherSeatBanks();
  if (typeof syncSeatSelect === 'function') syncSeatSelect();
+ }
+ if (key === 'featVsBasic') {
+ if (typeof updateVsBasicHud === 'function') updateVsBasicHud();
+ if (typeof renderStatsTab === 'function') renderStatsTab();
  }
  updateHud();
  renderTable();
@@ -6392,6 +6934,7 @@ function formatIndexPrompt(note, tc) {
  /* ==================== V7 UI: FEATURES, SEATS, STATS, RISK, DRILLS ==================== */
  let otherSeatHands = [];
  let tableTimer = null;
+ let tableDealPending = false;
  let qaDealInstant = false;
  let qaHoldRound = false;
  let qaPendingDraws = null;
@@ -6449,7 +6992,8 @@ function formatIndexPrompt(note, tc) {
  bustVisible: !!bustVisible,
  handFinished: !!(h && (h.finished || h.swept)),
  lastRoundActive: !!(typeof lastRoundActive !== 'undefined' && lastRoundActive),
- dealerSwept: !!(typeof dealerSwept !== 'undefined' && dealerSwept)
+ dealerSwept: !!(typeof dealerSwept !== 'undefined' && dealerSwept),
+ dealPending: !!(typeof tableDealPending !== 'undefined' && tableDealPending)
  });
  }
  function canStartDeal() {
@@ -6469,7 +7013,7 @@ function formatIndexPrompt(note, tc) {
  dealerSwept: !!dealerSwept,
  dealerCount: typeof dealerHand !== 'undefined' ? dealerHand.length : 0,
  player: (typeof playerHands !== 'undefined' ? playerHands : []).map(h => ({ n: (h.cards || []).length, swept: !!h.swept, bust: !!(h.cards && h.cards.length && typeof evalHand === 'function' && evalHand(h.cards).isBust), ranks: (h.cards || []).map(c => c.rank) })),
- others: (typeof otherSeatHands !== 'undefined' ? otherSeatHands : []).map(h => ({ n: (h.cards || []).length, swept: !!h.swept, ranks: (h.cards || []).map(c => c.rank) })),
+ others: (typeof otherSeatHands !== 'undefined' ? otherSeatHands : []).map(h => ({ n: (h.cards || []).length, swept: !!h.swept, ranks: (h.cards || []).map(c => c.rank), bet: h.bet || 0, seatIndex: h.seatIndex, resultText: h.resultText || '' })),
  nodeIds: cardEls.map(el => el.getAttribute('data-card-id') || ''),
  cardCount: cardEls.length
  });
@@ -6493,6 +7037,64 @@ function formatIndexPrompt(note, tc) {
  const c = clampPlayerSeat(state.playerSeat || 0, n);
  if ((state.playerSeat | 0) !== c.playerSeat) state.playerSeat = c.playerSeat;
  return tableSeatLayout(c.otherSeats, c.playerSeat);
+ }
+ function otherSeatIndexes() {
+ return currentTableLayout().filter(s => !s.you).map(s => s.index);
+ }
+ function ensureOtherSeatBanks() {
+ if (!state.otherSeatBanks || typeof state.otherSeatBanks !== 'object' || Array.isArray(state.otherSeatBanks)) state.otherSeatBanks = {};
+ otherSeatIndexes().forEach(i => {
+ const k = String(i);
+ if (!isFinite(Number(state.otherSeatBanks[k]))) state.otherSeatBanks[k] = STARTING_BANKROLL;
+ else state.otherSeatBanks[k] = roundMoney(state.otherSeatBanks[k]);
+ });
+ return state.otherSeatBanks;
+ }
+ function getOtherSeatBank(seatIndex) {
+ ensureOtherSeatBanks();
+ const n = Number(state.otherSeatBanks[String(seatIndex)]);
+ return roundMoney(isFinite(n) ? n : STARTING_BANKROLL);
+ }
+ function setOtherSeatBank(seatIndex, value) {
+ ensureOtherSeatBanks();
+ state.otherSeatBanks[String(seatIndex)] = roundMoney(value);
+ return state.otherSeatBanks[String(seatIndex)];
+ }
+ function resetOtherSeatBanksToStart() {
+ const next = {};
+ otherSeatIndexes().forEach(i => { next[String(i)] = STARTING_BANKROLL; });
+ state.otherSeatBanks = next;
+ return next;
+ }
+ function resetPlayerAndOtherBanks() {
+ state.bankroll = STARTING_BANKROLL;
+ state.bet = 25;
+ resetOtherSeatBanksToStart();
+ }
+ function currentBasicAverage() {
+ const idxs = otherSeatIndexes();
+ if (!idxs.length) return null;
+ return averageOtherSeatBanks(ensureOtherSeatBanks(), idxs);
+ }
+ function settleOtherSeatsAgainstDealer() {
+ if (!multiSeatOn() || !otherSeatHands.length) return;
+ const bySeat = {};
+ otherSeatHands.forEach(h => {
+ const k = String(h.seatIndex);
+ (bySeat[k] = bySeat[k] || []).push(h);
+ });
+ Object.keys(bySeat).forEach(k => {
+ const hands = bySeat[k].filter(h => !h.settled);
+ if (!hands.length) return;
+ const out = settleSeatHands(getOtherSeatBank(+k), hands, dealerHand);
+ setOtherSeatBank(+k, out.bankroll);
+ hands.forEach((h, i) => {
+ const rec = out.hands[i] || {};
+ h.settled = true;
+ if (rec.result) h.result = rec.result;
+ if (rec.resultText) h.resultText = rec.resultText;
+ });
+ });
  }
  function markHandSwept(h, reason) {
  if (!h || h.swept) return;
@@ -6570,7 +7172,7 @@ function formatIndexPrompt(note, tc) {
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
  'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
- 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-index-prompts': 'featIndexPrompts', 'feat-shoe-quiz': 'featShoeQuiz', 'feat-distract': 'featDistract', 'feat-distract-noise': 'featDistractNoise', 'feat-heat': 'featHeat'
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-index-prompts': 'featIndexPrompts', 'feat-shoe-quiz': 'featShoeQuiz', 'feat-distract': 'featDistract', 'feat-distract-noise': 'featDistractNoise', 'feat-heat': 'featHeat', 'feat-vs-basic': 'featVsBasic'
  };
  Object.keys(map).forEach(id => {
  const el = document.getElementById(id);
@@ -6627,7 +7229,7 @@ function formatIndexPrompt(note, tc) {
  'feat-quiz': 'featQuiz', 'feat-deck-est': 'featDeckEst',
  'feat-live-tray': 'featLiveTray', 'feat-exact-decks': 'featShowExactDecks', 'feat-show-totals': 'featShowTotals',
  'feat-speed': 'featSpeed', 'feat-strat': 'featStrat', 'feat-timed': 'featTimed',
- 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-index-prompts': 'featIndexPrompts', 'feat-shoe-quiz': 'featShoeQuiz', 'feat-distract': 'featDistract', 'feat-distract-noise': 'featDistractNoise', 'feat-heat': 'featHeat'
+ 'feat-stats': 'featStats', 'feat-risk': 'featRisk', 'feat-seats': 'featSeats', 'feat-last-round-review': 'featLastRoundReview', 'feat-index-prompts': 'featIndexPrompts', 'feat-shoe-quiz': 'featShoeQuiz', 'feat-distract': 'featDistract', 'feat-distract-noise': 'featDistractNoise', 'feat-heat': 'featHeat', 'feat-vs-basic': 'featVsBasic'
  };
  Object.keys(boolMap).forEach(id => {
  const el = document.getElementById(id);
@@ -6912,6 +7514,28 @@ function formatIndexPrompt(note, tc) {
  const step = () => {
  if (i >= hands.length) { actingSeatIndex = seat.seatIndex; finish(); return; }
  const h = hands[i];
+ if (h && h.fromSplit && h.cards && h.cards.length === 1 && !h.finished && !h.surrendered) {
+ afterTableDelay(currentStepDelayMs(), () => {
+ h.cards.push(drawCard(true));
+ if (h.origin) h.origin.cards = h.cards;
+ renderTable();
+ const ev1 = evalHand(h.cards);
+ if (ev1.isBust || ev1.total >= 21 || splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard)) {
+ h.finished = true;
+ if (h.origin) h.origin.finished = true;
+ if (ev1.isBust && shouldSweepOnBust(true)) {
+ const target = h.origin || h.extraEl || h;
+ sweepHandAfterVisible(target, 'bust', () => { i++; step(); });
+ return;
+ }
+ i++;
+ step();
+ return;
+ }
+ step();
+ });
+ return;
+ }
  const ev = evalHand(h.cards);
  if (ev.isBust) {
  const target = h.origin || h.extraEl || h;
@@ -6922,33 +7546,52 @@ function formatIndexPrompt(note, tc) {
  i++; afterTableDelay(currentStepDelayMs(), step); return;
  }
  if (ev.isBlackjack) { i++; afterTableDelay(currentStepDelayMs(), step); return; }
- const canSplit = canSplitPair(h.cards, h.fromSplit, hands.length);
+ const stake = roundMoney(h.bet || (h.origin && h.origin.bet) || 0);
+ const bank = getOtherSeatBank(seat.seatIndex);
+ const canSplit = canSplitPair(h.cards, h.fromSplit, hands.length) && bank >= stake && stake > 0;
  const oneCard = splitAceMustStand(h.cards, h.fromSplit, state.splitAcesOneCard);
  if (oneCard) { i++; afterTableDelay(currentStepDelayMs(), step); return; }
  const dec = getOptimalDecision(h.cards, dealerHand[0].rank, {
- canDouble: h.cards.length === 2 && (!h.fromSplit || state.das) && !oneCard,
+ canDouble: h.cards.length === 2 && (!h.fromSplit || state.das) && !oneCard && bank >= stake && stake > 0,
  canSplit,
- canSurrender: state.ls && h.cards.length === 2 && !h.fromSplit && hands.length === 1,
+ canSurrender: state.ls && h.cards.length === 2 && !h.fromSplit && hands.length === 1 && stake > 0,
  fromSplit: !!h.fromSplit,
  splitAcesOneCard: state.splitAcesOneCard !== false,
  useI18: false, useFab4: false, useDeviations: false,
  tc: getTrueCount(), rc: runningCount, decks: state.decks
  });
- if (dec.action === 'R') { h.surrendered = true; if (h.origin) h.origin.surrendered = true; i++; afterTableDelay(currentStepDelayMs(), step); return; }
+ if (dec.action === 'R') {
+ h.surrendered = true;
+ if (h.origin) h.origin.surrendered = true;
+ const back = roundMoney(stake / 2);
+ setOtherSeatBank(seat.seatIndex, roundMoney(getOtherSeatBank(seat.seatIndex) + back));
+ h.surrenderRefunded = true;
+ if (h.origin) h.origin.surrenderRefunded = true;
+ h.result = 'res-surr';
+ h.resultText = 'SURR (-' + formatMoney(back) + ')';
+ if (h.origin) { h.origin.result = h.result; h.origin.resultText = h.resultText; }
+ i++; afterTableDelay(currentStepDelayMs(), step); return;
+ }
  if (dec.action === 'P' && canSplit) {
+ setOtherSeatBank(seat.seatIndex, roundMoney(getOtherSeatBank(seat.seatIndex) - stake));
  const c1 = h.cards.pop();
- h.cards.push(drawCard(true));
  h.fromSplit = true;
  if (h.origin) h.origin.fromSplit = true;
- const extra = { cards: [c1, drawCard(true)], fromSplit: true, surrendered: false, seatIndex: seat.seatIndex, otherIndex: seat.otherIndex, label: (seat.label || 'Seat') + ' split', swept: false };
- hands.splice(i + 1, 0, { cards: extra.cards, fromSplit: true, surrendered: false, extraEl: extra });
+ const extra = { cards: [c1], fromSplit: true, surrendered: false, seatIndex: seat.seatIndex, otherIndex: seat.otherIndex, label: (seat.label || 'Seat') + ' split', swept: false, bet: stake, doubled: false, settled: false, result: '', resultText: '' };
+ hands.splice(i + 1, 0, { cards: extra.cards, fromSplit: true, surrendered: false, extraEl: extra, bet: stake });
  otherSeatHands.push(extra);
- if (h.origin) h.origin.cards = h.cards;
+ if (h.origin) { h.origin.cards = h.cards; h.origin.fromSplit = true; }
+ if (typeof clearOverlapLocks === 'function') clearOverlapLocks(document.getElementById('other-seats'));
  renderTable();
- afterTableDelay(currentStepDelayMs(), step);
+ step();
  return;
  }
- if (dec.action === 'D' && h.cards.length === 2 && (!h.fromSplit || state.das) && !oneCard) {
+ if (dec.action === 'D' && h.cards.length === 2 && (!h.fromSplit || state.das) && !oneCard && getOtherSeatBank(seat.seatIndex) >= stake && stake > 0) {
+ setOtherSeatBank(seat.seatIndex, roundMoney(getOtherSeatBank(seat.seatIndex) - stake));
+ h.bet = roundMoney(stake * 2);
+ h.doubled = true;
+ if (h.origin) { h.origin.bet = h.bet; h.origin.doubled = true; }
+ if (h.extraEl) { h.extraEl.bet = h.bet; h.extraEl.doubled = true; }
  h.cards.push(drawCard(true));
  if (h.origin) h.origin.cards = h.cards;
  i++;
@@ -7011,34 +7654,40 @@ function formatIndexPrompt(note, tc) {
  }
 
  function syncSeatHands(box, hands, prefix) {
+ let pack = box.querySelector(':scope > .seat-hand-pack');
+ if (!pack) {
+ pack = document.createElement('div');
+ pack.className = 'seat-hand-pack';
+ box.appendChild(pack);
+ }
  (hands || []).forEach((h, idx) => {
  const key = prefix + idx;
  if (h.swept) {
- const row = box.querySelector(':scope > .cards-row[data-hand="' + key + '"]');
+ const row = pack.querySelector(':scope > .cards-row[data-hand="' + key + '"]') || box.querySelector(':scope > .cards-row[data-hand="' + key + '"]');
  if (row) row.remove();
- let note = box.querySelector(':scope > .swept-note[data-hand="' + key + '"]');
+ let note = pack.querySelector(':scope > .swept-note[data-hand="' + key + '"]') || box.querySelector(':scope > .swept-note[data-hand="' + key + '"]');
  if (!note) {
  note = document.createElement('div');
  note.className = 'swept-note';
  note.dataset.hand = key;
- box.appendChild(note);
- }
+ pack.appendChild(note);
+ } else if (note.parentElement !== pack) pack.appendChild(note);
  const want = h.sweepReason === 'bust' ? 'Bust — swept' : 'Swept';
  if (note.textContent !== want) note.textContent = want;
  } else {
- const note = box.querySelector(':scope > .swept-note[data-hand="' + key + '"]');
+ const note = pack.querySelector(':scope > .swept-note[data-hand="' + key + '"]') || box.querySelector(':scope > .swept-note[data-hand="' + key + '"]');
  if (note) note.remove();
- let row = box.querySelector(':scope > .cards-row[data-hand="' + key + '"]');
+ let row = pack.querySelector(':scope > .cards-row[data-hand="' + key + '"]') || box.querySelector(':scope > .cards-row[data-hand="' + key + '"]');
  if (!row) {
  row = document.createElement('div');
  row.className = 'cards-row overlap';
  row.dataset.hand = key;
- box.appendChild(row);
- }
+ pack.appendChild(row);
+ } else if (row.parentElement !== pack) pack.appendChild(row);
  syncCardRow(row, h.cards || [], { showTag: state.showTags });
  }
  });
- [...box.querySelectorAll(':scope > .cards-row, :scope > .swept-note')].forEach(el => {
+ [...box.querySelectorAll('.cards-row, .swept-note')].forEach(el => {
  const k = el.getAttribute('data-hand') || '';
  if (!k.startsWith(prefix)) { el.remove(); return; }
  const idx = parseInt(k.slice(prefix.length), 10);
@@ -7050,8 +7699,12 @@ function formatIndexPrompt(note, tc) {
  if (!wrap) return;
  if (typeof renderSeatPicker === 'function') renderSeatPicker();
  const layout = currentTableLayout();
- const show = multiSeatOn() && (otherSeatHands.length || phase === 'dealing' || phase === 'others' || phase === 'playing' || phase === 'insurance' || phase === 'dealer' || phase === 'done');
+ const show = multiSeatOn();
  wrap.hidden = !show;
+ if (wrap) {
+ wrap.setAttribute('data-seats', show ? String(layout.length) : '0');
+ wrap.style.setProperty('--seat-n', show ? String(layout.length) : '1');
+ }
  const pZone0 = document.getElementById('player-hands');
  const pWrap0 = pZone0 && pZone0.closest('.zone');
  if (!show) {
@@ -7080,39 +7733,76 @@ function formatIndexPrompt(note, tc) {
  lab.className = 'os-label';
  box.insertBefore(lab, box.firstChild);
  }
+ let meta = box.querySelector(':scope > .os-meta');
+ if (!meta) {
+ meta = document.createElement('div');
+ meta.className = 'os-meta';
+ meta.innerHTML = '<span class="os-total"></span><span class="os-pot"></span><span class="os-bet"></span><span class="os-result"></span>';
+ if (lab && lab.nextSibling) box.insertBefore(meta, lab.nextSibling);
+ else box.appendChild(meta);
+ }
+ if (meta && !meta.querySelector('.os-pot')) {
+ const pot = document.createElement('span');
+ pot.className = 'os-pot';
+ const tot = meta.querySelector('.os-total');
+ if (tot && tot.nextSibling) meta.insertBefore(pot, tot.nextSibling);
+ else meta.appendChild(pot);
+ }
+ const totEl = meta.querySelector('.os-total');
+ const potEl = meta.querySelector('.os-pot');
+ const betEl = meta.querySelector('.os-bet');
+ const resEl = meta.querySelector('.os-result');
+ const setMeta = (totalText, potText, betText, resultText, scoreOpts) => {
+ if (totEl && totEl.textContent !== totalText) totEl.textContent = totalText;
+ if (potEl && potEl.textContent !== potText) potEl.textContent = potText;
+ if (betEl && betEl.textContent !== betText) betEl.textContent = betText;
+ if (resEl && resEl.textContent !== resultText) resEl.textContent = resultText;
+ const ev = scoreOpts && scoreOpts.ev;
+ const hide = !!(scoreOpts && scoreOpts.hideTotal);
+ if (hide && ev) {
+ totEl.classList.add('score-hidden');
+ totEl.dataset.scoreKey = scoreOpts.key;
+ totEl.title = 'Tap to reveal total';
+ totEl.setAttribute('role', 'button');
+ totEl.tabIndex = 0;
+ } else if (totEl) {
+ totEl.classList.remove('score-hidden');
+ totEl.removeAttribute('data-score-key');
+ totEl.removeAttribute('title');
+ totEl.removeAttribute('role');
+ totEl.removeAttribute('tabindex');
+ }
+ };
  if (s.you) {
- const hands = playerHands.length ? playerHands : [{ cards: [], bet: state.bet || 0, swept: false }];
- const ev0 = hands[0].cards.length ? evalHand(hands[0].cards) : null;
- const labWant = s.label + ' · You' + (hands[0].swept ? ' · swept' : (ev0 && ev0.isBust ? ' · BUST' : ev0 && ev0.isBlackjack && !hands[0].fromSplit ? ' · BJ!' : ''));
+ const hands = playerHands.length ? playerHands : [{ cards: [], bet: state.bet || 0, swept: false, resultText: '' }];
+ const ev0 = hands[0].cards && hands[0].cards.length ? evalHand(hands[0].cards) : null;
+ const labWant = s.label + ' · You';
  if (lab.textContent !== labWant) lab.textContent = labWant;
  lab.classList.remove('score-hidden');
  lab.removeAttribute('data-score-key');
  lab.removeAttribute('title');
  lab.removeAttribute('role');
  lab.removeAttribute('tabindex');
+ const totalText = !ev0 ? '' : (hands[0].swept ? '' : ev0.isBust ? 'BUST' : ev0.isBlackjack && !hands[0].fromSplit ? 'BJ' : String(ev0.total));
+ const betSum = hands.reduce((n, h) => n + (Number(h.bet) || 0), 0);
+ const betText = betSum ? formatMoney(betSum) : '';
+ const resultText = hands[0].swept ? (hands[0].sweepReason === 'bust' ? 'Bust — swept' : 'Swept') : (hands.map(h => h.resultText).filter(Boolean).join(' · '));
+ setMeta(totalText, formatMoney(state.bankroll), betText, resultText, { ev: ev0, hideTotal: !!(ev0 && !totalsVisible() && !revealedTotals.player && !ev0.isBust && !ev0.isBlackjack && !hands[0].swept), key: 'player' });
  syncFlag(box, ':scope > .last-round-flag', lastRoundActive && phase === 'done', 'last-round-flag', 'Last round');
  syncSeatHands(box, hands, 'player-');
  } else {
  const seats = otherSeatHands.filter(h => h.seatIndex === s.index);
- const seat = seats[0] || { cards: [], swept: false };
+ const seat = seats[0] || { cards: [], swept: false, resultText: '' };
  const ev = seat.cards && seat.cards.length ? evalHand(seat.cards) : null;
  const i = seat.otherIndex != null ? seat.otherIndex : s.otherIndex;
- const labWant = s.label + (seat.swept ? ' · swept' : ev && (totalsVisible() || revealedTotals['os' + i]) ? (' · ' + (ev.isBust ? 'Bust ' : '') + ev.total) : ev && ev.isBust ? ' · BUST' : ev && ev.isBlackjack ? ' · BJ!' : ev ? ' · · · ·' : '');
+ const labWant = s.label;
  if (lab.textContent !== labWant) lab.textContent = labWant;
- const showTot = ev && (totalsVisible() || revealedTotals['os' + i]);
- if (ev && !showTot && !ev.isBust && !ev.isBlackjack && !seat.swept) {
- lab.classList.add('score-hidden');
- lab.dataset.scoreKey = 'os' + i;
- lab.title = 'Tap to reveal total';
- lab.setAttribute('role', 'button');
- lab.tabIndex = 0;
- } else {
- lab.classList.remove('score-hidden');
- lab.removeAttribute('data-score-key');
- lab.removeAttribute('title');
- lab.removeAttribute('role');
- lab.removeAttribute('tabindex');
- }
+ const totalText = !ev ? '' : (seat.swept ? '' : ev.isBust ? 'BUST' : ev.isBlackjack ? 'BJ' : String(ev.total));
+ const resultText = seat.swept ? (seat.sweepReason === 'bust' ? 'Bust — swept' : 'Swept') : (seats.map(h => h.resultText).filter(Boolean).join(' · ') || seat.resultText || '');
+ const betSum = seats.reduce((n, h) => n + (Number(h.bet) || 0), 0);
+ const betText = betSum ? formatMoney(betSum) : '';
+ const hideTotal = !!(ev && !totalsVisible() && !revealedTotals['os' + i] && !ev.isBust && !ev.isBlackjack && !seat.swept);
+ setMeta(totalText, formatMoney(getOtherSeatBank(s.index)), betText, resultText, { ev: ev, hideTotal: hideTotal, key: 'os' + i });
  const flag = box.querySelector(':scope > .last-round-flag');
  if (flag) flag.remove();
  syncSeatHands(box, seats.length ? seats : [{ cards: [], swept: false }], 'other-');
@@ -7156,7 +7846,10 @@ function formatIndexPrompt(note, tc) {
 
  function snapshotBankroll() {
  if (!state.stats) return;
- state.stats.bankrollHistory.push({ t: Date.now(), br: state.bankroll });
+ const pt = { t: Date.now(), br: state.bankroll };
+ const avg = (typeof currentBasicAverage === 'function') ? currentBasicAverage() : null;
+ if (avg != null) pt.bs = avg;
+ state.stats.bankrollHistory.push(pt);
  if (state.stats.bankrollHistory.length > HISTORY_CAP) state.stats.bankrollHistory.splice(0, state.stats.bankrollHistory.length - HISTORY_CAP);
  }
 
@@ -7218,24 +7911,42 @@ function formatIndexPrompt(note, tc) {
  const hist = state.stats.bankrollHistory || [];
  ctx.fillStyle = 'rgba(0,0,0,0.25)';
  ctx.fillRect(0, 0, w, h);
+ const legendEl = document.getElementById('bankroll-chart-legend');
  if (hist.length < 2) {
  ctx.fillStyle = '#9bb0a6';
  ctx.font = '14px sans-serif';
  ctx.fillText('Play some hands to see your bankroll line.', 16, h / 2);
+ if (legendEl) legendEl.hidden = true;
  return;
  }
- const ys = hist.map(p => p.br);
+ const showBs = !!(state.featVsBasic && hist.some(p => p.bs != null && isFinite(p.bs)));
+ const ys = hist.map(p => p.br).concat(showBs ? hist.filter(p => p.bs != null).map(p => p.bs) : []);
  const min = Math.min(...ys, 0), max = Math.max(...ys, 1);
  const pad = 8;
+ const xAt = i => pad + (w - 2 * pad) * i / (hist.length - 1);
+ const yAt = v => h - pad - (h - 2 * pad) * ((v - min) / (max - min || 1));
+ if (showBs) {
+ ctx.strokeStyle = '#7eb8a0';
+ ctx.lineWidth = 2;
+ ctx.beginPath();
+ let started = false;
+ hist.forEach((p, i) => {
+ if (p.bs == null || !isFinite(p.bs)) return;
+ const x = xAt(i), y = yAt(p.bs);
+ if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+ });
+ ctx.stroke();
+ }
  ctx.strokeStyle = '#e5b94c';
  ctx.lineWidth = 2;
  ctx.beginPath();
  hist.forEach((p, i) => {
- const x = pad + (w - 2 * pad) * i / (hist.length - 1);
- const y = h - pad - (h - 2 * pad) * ((p.br - min) / (max - min || 1));
+ const x = xAt(i), y = yAt(p.br);
  if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
  });
  ctx.stroke();
+ const leg = document.getElementById('bankroll-chart-legend');
+ if (leg) leg.hidden = !showBs;
  }
 
  function renderRiskTab() {
@@ -7741,7 +8452,7 @@ function startMistakeReview() {
  waitUntilIdle() {
  return new Promise(resolve => {
  const tick = () => {
- if (tableTimer || phase === 'dealing' || phase === 'others' || phase === 'dealer') setTimeout(tick, 20);
+ if (tableTimer || tableDealPending || phase === 'dealing' || phase === 'others' || phase === 'dealer') setTimeout(tick, 20);
  else resolve(phase);
  };
  tick();
@@ -7757,14 +8468,19 @@ function startMistakeReview() {
  holeHidden: !!holeHidden,
  dealerSwept: !!dealerSwept,
  lastRoundActive: !!lastRoundActive,
+ dealPending: !!tableDealPending,
+ actionsLocked: typeof tableActionsLocked === 'function' ? !!tableActionsLocked() : false,
+ activeHandIdx: typeof activeHandIdx !== 'undefined' ? activeHandIdx : 0,
  runningCount: runningCount,
  cardsDealtCount: cardsDealtCount,
  burnCardCount: burnCardCount,
  burnRank: burnCard ? burnCard.rank : null,
  dealer: dealerHand.map((c, i) => ({ rank: c.rank, hidden: holeHidden && i === 1 })),
  player: playerHands.map(h => ({ ranks: (h.cards || []).map(c => c.rank), swept: !!h.swept, result: h.resultText || '' })),
- others: otherSeatHands.map(h => ({ ranks: (h.cards || []).map(c => c.rank), swept: !!h.swept, seatIndex: h.seatIndex, label: h.label })),
+ others: otherSeatHands.map(h => ({ ranks: (h.cards || []).map(c => c.rank), swept: !!h.swept, seatIndex: h.seatIndex, label: h.label, bet: h.bet || 0, resultText: h.resultText || '', settled: !!h.settled })),
  playerSeat: state.playerSeat || 0,
+ otherBanks: (typeof ensureOtherSeatBanks === 'function') ? Object.assign({}, ensureOtherSeatBanks()) : {},
+ unitSize: (typeof tableUnitSize === 'function') ? tableUnitSize(state) : (state.unitSize || 25),
  dealPace: state.dealPace,
  featLastRoundReview: !!state.featLastRoundReview,
  feedback: ((document.getElementById('play-feedback') || {}).textContent || ''),
@@ -7792,6 +8508,15 @@ function startMistakeReview() {
  restoreShoeQuizzes,
  setPlayerSeat(n) { writePageSetting('play', 'playerSeat', n); if (typeof afterPageSettingChanged === 'function') afterPageSettingChanged('play', 'playerSeat'); return state.playerSeat; },
  setRunningCount(n) { runningCount = Number(n) || 0; if (typeof updateHud === 'function') updateHud(); if (typeof syncIndexPrompt === 'function') syncIndexPrompt(); return runningCount; },
+ getOtherSeatBanks() { return Object.assign({}, ensureOtherSeatBanks()); },
+ setOtherSeatBank(i, v) { setOtherSeatBank(i, v); saveState(); if (typeof renderTable === 'function') renderTable(); if (typeof updateTopStats === 'function') updateTopStats(); return getOtherSeatBank(i); },
+ otherSeatFlatBet() { return otherSeatFlatBet(tableUnitSize(state), (typeof getTrueCount === 'function') ? getTrueCount() : 0); },
+ currentBasicAverage() { return currentBasicAverage(); },
+ youVsBasicDelta() { return youVsBasicDelta(state.bankroll, currentBasicAverage()); },
+ startingBankroll() { return STARTING_BANKROLL; },
+ setFeatVsBasic(on) { writePageSetting('play', 'featVsBasic', !!on); if (typeof afterPageSettingChanged === 'function') afterPageSettingChanged('play', 'featVsBasic'); return !!state.featVsBasic; },
+ setUnitSize(n) { writePageSetting('play', 'unitSize', Math.max(1, Number(n) || 25)); if (typeof saveState === 'function') saveState(); if (typeof syncFeatureToggles === 'function') syncFeatureToggles(); return tableUnitSize(state); },
+ resetPlayerAndOtherBanks() { resetPlayerAndOtherBanks(); saveState(); if (typeof renderTable === 'function') renderTable(); if (typeof updateTopStats === 'function') updateTopStats(); return { bankroll: state.bankroll, others: Object.assign({}, state.otherSeatBanks) }; },
  exportData() { return exportTrainerData(); },
  importData(obj) { return importTrainerData(obj); }
  };
