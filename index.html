@@ -11,7 +11,7 @@
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 
-<title>Blackjack & Card Counting Trainer Pro v14.2.1</title>
+<title>Blackjack & Card Counting Trainer Pro v14.2.2</title>
 <style>
  :root {
  --bg-dark: #0b1914;
@@ -8005,7 +8005,7 @@ function formatIndexPrompt(note, tc) {
  const totalText = !ev0 ? '' : (hands[0].swept ? '' : ev0.isBust ? 'BUST' : ev0.isBlackjack && !hands[0].fromSplit ? 'BJ' : String(ev0.total));
  const betSum = hands.reduce((n, h) => n + (Number(h.bet) || 0), 0);
  const betText = betSum ? formatMoney(betSum) : '';
- const resultText = hands[0].swept ? (hands[0].sweepReason === 'bust' ? 'Bust — swept' : 'Swept') : (hands.map(h => h.resultText).filter(Boolean).join(' · '));
+ const resultText = hands[0].swept ? '' : (hands.map(h => h.resultText).filter(Boolean).join(' · '));
  setMeta(totalText, formatMoney(state.bankroll), betText, resultText, { ev: ev0, hideTotal: !!(ev0 && !totalsVisible() && !revealedTotals.player && !ev0.isBust && !ev0.isBlackjack && !hands[0].swept), key: 'player' });
  syncFlag(box, ':scope > .last-round-flag', lastRoundActive && phase === 'done', 'last-round-flag', 'Last round');
  syncSeatHands(box, hands, 'player-');
@@ -8017,7 +8017,7 @@ function formatIndexPrompt(note, tc) {
  const labWant = s.label;
  if (lab.textContent !== labWant) lab.textContent = labWant;
  const totalText = !ev ? '' : (seat.swept ? '' : ev.isBust ? 'BUST' : ev.isBlackjack ? 'BJ' : String(ev.total));
- const resultText = seat.swept ? (seat.sweepReason === 'bust' ? 'Bust — swept' : 'Swept') : (seats.map(h => h.resultText).filter(Boolean).join(' · ') || seat.resultText || '');
+ const resultText = seat.swept ? '' : (seats.map(h => h.resultText).filter(Boolean).join(' · ') || seat.resultText || '');
  const betSum = seats.reduce((n, h) => n + (Number(h.bet) || 0), 0);
  const betText = betSum ? formatMoney(betSum) : '';
  const hideTotal = !!(ev && !totalsVisible() && !revealedTotals['os' + i] && !ev.isBust && !ev.isBlackjack && !seat.swept);
